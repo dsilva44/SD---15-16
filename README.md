@@ -1,18 +1,15 @@
 # Projeto de Sistemas Distribuídos 2015-2016 #
 
-Grupo de SD ... - Campus ...
-*(preencher com número do grupo de SD no Fénix e depois apagar esta linha)*
+Grupo de SD 27 - Campus Tagus Parque
 
-... ... ...
+77928 Frederico Teixeira frederico.teixeira@tecnico.ulisboa.pt
 
-... ... ...
+78015 David Silva d.silva44@hotmail.com
 
-... ... ...
-*(preencher com nome, número e email de membro do grupo e depois apagar esta linha)*
-
+78052 Miguel Carvalho migueloak59@hotmail.com
 
 Repositório:
-[tecnico-distsys/C_XX-project](https://github.com/tecnico-distsys/C_XX-project/)
+[tecnico-distsys/T_27-project](https://github.com/tecnico-distsys/T_27-project/)
 
 -------------------------------------------------------------------------------
 
@@ -23,8 +20,9 @@ Repositório:
 
 [0] Iniciar sistema operativo
 
-Indicar Windows ou Linux
-*(escolher um dos dois, que esteja disponível nos laboratórios, e depois apagar esta linha)*
+```
+Linux
+```
 
 
 [1] Iniciar servidores de apoio
