@@ -36,12 +36,12 @@ public class PingIT {
     // tests
 
     @Test
-    public void nullNameShouldNotReturnNull() {
-        assertEquals("Null Name", "Pong!", port.ping(null));;
+    public void nullNameShouldReturnDefaultMessage() {
+        assertEquals("Null Name", "Pong!", port.ping(null));
     }
 
     @Test
-    public void notNullNameShouldNotReturnNull() {
+    public void notNullNameShouldReturnMessage() {
         assertEquals("Not Null Name", "Pong Friend!", port.ping("Friend"));
     }
 

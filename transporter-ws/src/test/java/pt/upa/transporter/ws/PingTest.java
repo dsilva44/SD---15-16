@@ -12,13 +12,13 @@ import static org.junit.Assert.*;
 public class PingTest {
 
     @Test
-    public void nullNameShouldNotReturnNull() {
+    public void nullNameShouldReturnDefaultMessage() {
         TransporterPort port = new TransporterPort();
         assertEquals("Null Name", "Pong!", port.ping(null));
     }
 
     @Test
-    public void notNullNameShouldNotReturnNull() {
+    public void notNullNameShouldReturnMessage() {
         TransporterPort port = new TransporterPort();
         assertEquals("Not Null Name", "Pong Friend!", port.ping("Friend"));
     }
