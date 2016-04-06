@@ -4,21 +4,17 @@ import org.junit.*;
 import static org.junit.Assert.*;
 
 /**
- *  Unit Test example
- *  
+ *  Unit Test TransporterPort
+ *
  *  Invoked by Maven in the "test" life-cycle phase
- *  If necessary, should invoke "mock" remote servers 
+ *  If necessary, should invoke "mock" remote servers
  */
-public class ExampleTest {
-
+public class TransporterPortTest {
     // static members
 
-
     // one-time initialization and clean-up
-
     @BeforeClass
     public static void oneTimeSetUp() {
-
     }
 
     @AfterClass
@@ -29,9 +25,7 @@ public class ExampleTest {
 
     // members
 
-
     // initialization and clean-up for each test
-
     @Before
     public void setUp() {
     }
@@ -42,12 +36,10 @@ public class ExampleTest {
 
 
     // tests
-
     @Test
-    public void test() {
-
-        // assertEquals(expected, actual);
-        // if the assert fails, the test fails
+    public void successPingShouldNotReturnNull() {
+        TransporterPort port = new TransporterPort();
+        assertNotNull("Ping return null", port.ping("friend"));
     }
 
 }

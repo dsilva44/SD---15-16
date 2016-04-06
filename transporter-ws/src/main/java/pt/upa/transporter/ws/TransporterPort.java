@@ -14,8 +14,7 @@ public class TransporterPort implements TransporterPortType {
 
     @Override
     public String ping(String name) {
-        if (name == null) {return "Pong!";}
-        else return "Pong " + name + "!";
+        return "Pong " + name + "!";
     }
 
     @Override
