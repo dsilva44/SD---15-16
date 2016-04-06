@@ -3,25 +3,20 @@ package pt.upa.transporter.ws.cli;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
-import pt.upa.transporter.ws.TransporterPortType;
-import pt.upa.transporter.ws.TransporterService;
+import pt.upa.transporter.ws.*;
 
 import javax.xml.ws.BindingProvider;
+import java.util.List;
 import java.util.Map;
 
 import static javax.xml.ws.BindingProvider.ENDPOINT_ADDRESS_PROPERTY;
 
-public class TransporterClient {
+public class TransporterClient implements TransporterPortType {
 	static private final Logger log = LogManager.getRootLogger();
 
-	private String uddiURL;
-	private String wsName;
 	private TransporterPortType port;
 
 	public TransporterClient(String uddiURL, String wsName) throws Exception {
-		this.uddiURL = uddiURL;
-		this.wsName = wsName;
-
 		log.info("Contacting UDDI at " + uddiURL);
 		UDDINaming uddiNaming = new UDDINaming(uddiURL);
 
@@ -45,15 +40,33 @@ public class TransporterClient {
 		requestContext.put(ENDPOINT_ADDRESS_PROPERTY, endpointAddress);
 	}
 
-	public TransporterPortType getPort() {
-		return port;
+	@Override
+	public String ping(String name) {
+		return port.ping(name);
 	}
 
-	public String getUddiURL() {
-		return uddiURL;
+	@Override
+	public JobView requestJob(String origin, String destination, int price) throws BadLocationFault_Exception, BadPriceFault_Exception {
+		return port.requestJob(origin, destination, price);
 	}
 
-	public String getWsName() {
-		return wsName;
+	@Override
+	public JobView decideJob(String id, boolean accept) throws BadJobFault_Exception {
+		return port.decideJob(id, accept);
+	}
+
+	@Override
+	public JobView jobStatus(String id) {
+		return port.jobStatus(id);
+	}
+
+	@Override
+	public List<JobView> listJobs() {
+		return port.listJobs();
+	}
+
+	@Override
+	public void clearJobs() {
+		port.clearJobs();
 	}
 }
