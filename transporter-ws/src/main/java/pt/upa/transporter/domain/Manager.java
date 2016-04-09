@@ -1,16 +1,17 @@
-package pt.upa.transporter.ws;
+package pt.upa.transporter.domain;
 
-import java.lang.reflect.Array;
+import pt.upa.transporter.ws.JobView;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class DomainManager {
+public class Manager {
     private final String parity;
     private List<String> workCities;
     private List<JobView> jobs;
 
-    public DomainManager(String transporterName) {
+    public Manager(String transporterName) {
         int tNum = Integer.parseInt(transporterName.substring(transporterName.length() - 1));
         if (tNum % 2 == 0) { parity = "EVEN"; }
         else parity = "ODD";
