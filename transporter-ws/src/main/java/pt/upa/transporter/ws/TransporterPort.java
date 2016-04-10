@@ -1,8 +1,10 @@
 package pt.upa.transporter.ws;
 
 import javax.jws.WebService;
-import java.util.List;
 
+import pt.upa.transporter.domain.Manager;
+
+import java.util.List;
 @WebService(
         endpointInterface = "pt.upa.transporter.ws.TransporterPortType",
         wsdlLocation = "transporter.1_0.wsdl",
@@ -11,7 +13,8 @@ import java.util.List;
         serviceName = "TransporterService"
 )
 public class TransporterPort implements TransporterPortType {
-
+	
+	Manager m = Manager.getInstance();
     @Override
     public String ping(String name) {
         return "Pong " + name + "!";
@@ -42,7 +45,8 @@ public class TransporterPort implements TransporterPortType {
     }
 
     @Override
-    public void clearJobs() {
+    public void clearJobs(){
         //TODO clearJobs
+    	m.setJobs(null);
     }
 }

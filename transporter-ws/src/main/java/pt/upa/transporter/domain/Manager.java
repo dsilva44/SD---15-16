@@ -42,4 +42,13 @@ public class Manager {
     public void TransportSimulation() {
         // TODO
     }
+    
+    public void setJobs(List<JobView> list){ 
+    	if (list == null){
+    		jobs.clear();
+    	}
+    	else{
+    		jobs = list;
+    	}
+    }
 }
