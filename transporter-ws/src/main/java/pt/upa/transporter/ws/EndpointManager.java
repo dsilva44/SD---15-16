@@ -3,7 +3,6 @@ package pt.upa.transporter.ws;
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
 import pt.upa.transporter.exception.CannotCreateUddiNamingException;
 import pt.upa.transporter.exception.InvalidTransporterNameException;
-import pt.upa.transporter.exception.InvalidURLException;
 
 import javax.xml.registry.JAXRException;
 import javax.xml.ws.Endpoint;
@@ -30,9 +29,9 @@ public class EndpointManager {
         boolean validWsName = Pattern.matches(upaTransporterNameRegex, wsName);
         boolean validWsURL = Pattern.matches(urlRegex, wsURL);
 
-        if (!validUddiURL) throw new InvalidURLException(uddiURL);
+        if (!validUddiURL) throw new IllegalArgumentException(uddiURL + " must be the form - http://host:port format!");
         else if (!validWsName) throw new InvalidTransporterNameException(wsName);
-        else if (!validWsURL) throw new InvalidURLException(wsURL);
+        else if (!validWsURL) throw new IllegalArgumentException(wsURL + " must be the form - http://host:port format!");
 
         this.uddiURL = uddiURL;
         this.wsName = wsName;
