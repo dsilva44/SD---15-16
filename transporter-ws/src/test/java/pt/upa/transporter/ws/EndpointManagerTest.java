@@ -6,7 +6,6 @@ import org.junit.*;
 import org.junit.runner.RunWith;
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
 import pt.upa.transporter.exception.InvalidTransporterNameException;
-import pt.upa.transporter.exception.InvalidURLException;
 
 import javax.xml.ws.Endpoint;
 
@@ -57,21 +56,24 @@ public class EndpointManagerTest {
         assertEquals("uddiURL not properly set", validUddiURL, endpointManager.getUddiURL());
         assertEquals("wsName not properly set", validWsName, endpointManager.getWsName());
         assertEquals("wsURL not properly set", validWsURL, endpointManager.getWsURL());
+
+        assertNotNull("endpoint not initialize correctly", endpointManager.getEndpoint());
+        assertNotNull("uddiNaming not initialize correctly", endpointManager.getUddiURL());
     }
 
-    @Test(expected = InvalidURLException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void invalidUddiURL() {
-        EndpointManager endpointManager = new EndpointManager(invalidUddiURL, validWsName, validWsURL);
+        new EndpointManager(invalidUddiURL, validWsName, validWsURL);
     }
 
     @Test(expected = InvalidTransporterNameException.class)
     public void invalidWsName() {
-        EndpointManager endpointManager = new EndpointManager(validUddiURL, invalidWsName, validWsURL);
+        new EndpointManager(validUddiURL, invalidWsName, validWsURL);
     }
 
-    @Test(expected = InvalidURLException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void invalidWsURL() {
-        EndpointManager endpointManager = new EndpointManager(validUddiURL, validWsName, invalidWsURL);
+        new EndpointManager(validUddiURL, validWsName, invalidWsURL);
     }
 
     @Test
