@@ -3,6 +3,7 @@ package pt.upa.transporter.domain;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.After;
@@ -16,7 +17,7 @@ import pt.upa.transporter.ws.JobView;
 public class ManagerTest {
 	
     // static members
-	static Manager m = new Manager("upa1");
+	static Manager m = Manager.getInstance();
 
     // one-time initialization and clean-up
     @BeforeClass
@@ -25,7 +26,7 @@ public class ManagerTest {
 		JobView job2 = new JobView();
 		JobView job3 = new JobView();
 		
-		List<JobView> list = null;
+		ArrayList<JobView> list = null;
 		list.add(job1);
 		list.add(job2);
 		list.add(job3);

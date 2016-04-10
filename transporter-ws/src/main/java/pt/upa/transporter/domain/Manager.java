@@ -11,7 +11,7 @@ public class Manager {
 
     private String parity;
     private ArrayList<String> workCities;
-    private ArrayList<String> jobs;
+    private ArrayList<JobView> jobs;
 
     private Manager() {}
 
@@ -53,7 +53,7 @@ public class Manager {
         // TODO
     }
     
-    public void setJobs(List<JobView> list){ 
+    public void setJobs(ArrayList<JobView> list){ 
     	if (list == null){
     		jobs.clear();
     	}
