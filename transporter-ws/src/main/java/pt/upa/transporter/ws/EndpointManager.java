@@ -1,7 +1,10 @@
 package pt.upa.transporter.ws;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
-import pt.upa.transporter.exception.CannotCreateUddiNamingException;
+import pt.upa.transporter.exception.TransporterEndpointExeption;
+import pt.upa.transporter.exception.TransporterUddiNamingException;
 import pt.upa.transporter.exception.InvalidTransporterNameException;
 
 import javax.xml.registry.JAXRException;
@@ -9,6 +12,8 @@ import javax.xml.ws.Endpoint;
 import java.util.regex.Pattern;
 
 public class EndpointManager {
+    static private final Logger log = LogManager.getRootLogger();
+
     private Endpoint endpoint = null;
     private UDDINaming uddiNaming = null;
 
@@ -16,8 +21,8 @@ public class EndpointManager {
     private String wsName;
     private String wsURL;
 
-    private boolean isStarted;
-    private boolean isAwaitConnection;
+    private boolean isStarted = false;
+    private boolean isAwaitConnection = false;
 
 
 
@@ -41,22 +46,58 @@ public class EndpointManager {
         try {
             uddiNaming = new UDDINaming(uddiURL);
         } catch (JAXRException e) {
-            throw new CannotCreateUddiNamingException();
+            throw new TransporterUddiNamingException("Cannot Create uddiNaming instance");
         }
     }
 
-    public void start() throws Exception {
-        // TODO
+    public void start() {
+        try {
+            // publish endpoint
+            log.info("Starting: " + wsURL);
+            endpoint.publish(wsURL);
+        } catch (Exception e) {
+            throw new TransporterEndpointExeption("Error publish endpoint");
+        }
+
+        try {
+            // publish to UDDI
+            log.info("Publishing '"+ wsName + "' to UDDI at "+ uddiURL);
+            uddiNaming.rebind(wsName, wsURL);
+        } catch (Exception e) {
+            throw new TransporterUddiNamingException("Error on rebind");
+        }
+        isStarted = true;
     }
 
     public boolean awaitConnections() {
-        return false;
-        // TODO
+        return isAwaitConnection = isStarted & endpoint.isPublished();
     }
 
-    public boolean stop() {
-        return false;
-        // TODO
+    public void stop() {
+        if(isAwaitConnection || isStarted) {
+            try {
+                if (endpoint != null) {
+                    // stop endpoint
+                    endpoint.stop();
+                    log.info("Stopped " + wsURL);
+                }
+            } catch (Exception e) {
+                log.error("Caught exception when stopping", e);
+                throw new TransporterEndpointExeption("Fail to stop");
+            }
+            try {
+                if (uddiNaming != null) {
+                    // delete from UDDI
+                    uddiNaming.unbind(wsName);
+                    log.info("Deleted '"+ wsName +"' from UDDI");
+                }
+            } catch (Exception e) {
+                log.error("Caught exception when deleting", e);
+                throw new TransporterUddiNamingException("Fail to delete bind");
+            }
+        }
+        isAwaitConnection = false;
+        isStarted = false;
     }
 
     void setEndpoint(Endpoint endpoint) { this.endpoint = endpoint; }
@@ -77,5 +118,5 @@ public class EndpointManager {
 
     void setStarted(boolean started) { isStarted = started; }
 
-    public void setAwaitConnection(boolean awaitConnection) { isAwaitConnection = awaitConnection; }
+    void setAwaitConnection(boolean awaitConnection) { isAwaitConnection = awaitConnection; }
 }
