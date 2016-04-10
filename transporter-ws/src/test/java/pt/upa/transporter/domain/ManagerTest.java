@@ -1,10 +1,8 @@
 package pt.upa.transporter.domain;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
-import java.util.ArrayList;
-import java.util.List;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -22,15 +20,7 @@ public class ManagerTest {
     // one-time initialization and clean-up
     @BeforeClass
     public static void oneTimeSetUp() {
-		JobView job1 = new JobView();
-		JobView job2 = new JobView();
-		JobView job3 = new JobView();
 		
-		ArrayList<JobView> list = null;
-		list.add(job1);
-		list.add(job2);
-		list.add(job3);
-    	m.setJobs(list);
     }
 
     @AfterClass
@@ -44,7 +34,6 @@ public class ManagerTest {
     // initialization and clean-up for each test
     @Before
     public void setUp() {
-    	
     }
 
     @After
@@ -52,8 +41,29 @@ public class ManagerTest {
     }
 	
 	@Test
-	public void successJobListShouldBeEmpty() {
+	public void successSetJobsShouldClearList() {
+		JobView job1 = new JobView();
+		m.init("UpaTransporter1");
+		m.addJob(job1);
+		
 		m.setJobs(null);
-        assertEquals("Job list should be empty", 0,m.getJobs().size());
+        assertEquals(0,m.getJobs().size());
     }
+	
+	@Test
+	public void successGetJobViewExisting() {
+		JobView job1 = new JobView();
+		job1.setJobIdentifier("id1");
+		m.init("UpaTransporter1");
+		m.addJob(job1);
+		
+		assertEquals(job1,m.getJobView("id1"));
+	}
+	
+	@Test
+	public void successGetJobViewNonExisting(){
+		m.init("UpaTransporter1");
+		assertNull(m.getJobView("id"));
+	}
+	
 }

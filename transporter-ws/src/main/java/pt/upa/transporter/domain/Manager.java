@@ -36,6 +36,8 @@ public class Manager {
                 centro.addAll(sul);
                 workCities = new ArrayList<>(centro);
         }
+        
+        jobs = new ArrayList<JobView>();
     }
 
     public String getParity() {
@@ -64,6 +66,10 @@ public class Manager {
     	else{
     		jobs = list;
     	}
+    }
+    
+    public void addJob(JobView job){
+    	jobs.add(job);
     }
     
     public JobView getJobView(String id){
