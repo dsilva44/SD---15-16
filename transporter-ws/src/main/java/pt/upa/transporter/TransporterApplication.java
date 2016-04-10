@@ -1,6 +1,7 @@
 package pt.upa.transporter;
 
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
+import pt.upa.transporter.domain.Manager;
 import pt.upa.transporter.ws.TransporterPort;
 
 import javax.xml.ws.Endpoint;
@@ -11,6 +12,7 @@ public class TransporterApplication {
 	static private final Logger log = LogManager.getRootLogger();
 
 	public static void main(String[] args) {
+
 		// Check arguments
 		if (args.length < 3) {
 			log.error("Argument(s) missing!");
@@ -21,6 +23,8 @@ public class TransporterApplication {
 		String uddiURL = args[0];
 		String name = args[1];
 		String url = args[2];
+
+		Manager.getInstance().init(name);
 
 		Endpoint endpoint = null;
 		UDDINaming uddiNaming = null;

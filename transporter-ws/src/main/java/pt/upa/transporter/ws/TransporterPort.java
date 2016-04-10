@@ -3,6 +3,8 @@ package pt.upa.transporter.ws;
 import javax.jws.WebService;
 
 import pt.upa.transporter.domain.Manager;
+import pt.upa.transporter.exception.JobDoesNotExistException;
+import pt.upa.transporter.exception.WrongStateToConfirmException;
 
 import java.util.List;
 @WebService(
@@ -14,7 +16,8 @@ import java.util.List;
 )
 public class TransporterPort implements TransporterPortType {
 	
-	Manager m = Manager.getInstance();
+	private Manager m = Manager.getInstance();
+
     @Override
     public String ping(String name) {
         return "Pong " + name + "!";
@@ -28,8 +31,19 @@ public class TransporterPort implements TransporterPortType {
 
     @Override
     public JobView decideJob(String id, boolean accept) throws BadJobFault_Exception {
-        //TODO decideJob
-        return null;
+        JobView job;
+
+        try{
+            job = m.confirmationJobs(id, accept);
+        }catch(Exception d){
+
+            BadJobFault fault = new BadJobFault();
+            fault.setId(id);
+            throw new BadJobFault_Exception("not existing id or wrong state", fault);
+        }
+
+        return job;
+
     }
 
     @Override
@@ -41,6 +55,7 @@ public class TransporterPort implements TransporterPortType {
     @Override
     public List<JobView> listJobs() {
         //TODO listJobs
+
         return null;
     }
 
