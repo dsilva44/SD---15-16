@@ -27,7 +27,6 @@ public class ManagerTest {
     @BeforeClass
     public static void oneTimeSetUp() {
         m.init("UpaTransporter1");
-
     }
 
     @AfterClass
@@ -37,8 +36,8 @@ public class ManagerTest {
 
 
     // members
-    private JobView validjob;
-    private JobView invalidjob;
+    JobView validjob;
+    JobView invalidjob;
 
     // initialization and clean-up for each test
     @Before
@@ -73,7 +72,6 @@ public class ManagerTest {
 	@Test
 	public void successSetJobsShouldClearList() {
 		JobView job1 = new JobView();
-		m.init("UpaTransporter1");
 		m.addJob(job1);
 
 		m.setJobs(null);
@@ -84,7 +82,6 @@ public class ManagerTest {
 	public void successGetJobViewExisting() {
 		JobView job1 = new JobView();
 		job1.setJobIdentifier("id1");
-		m.init("UpaTransporter1");
 		m.addJob(job1);
 
 		assertEquals(job1,m.getJobView("id1"));
@@ -92,7 +89,6 @@ public class ManagerTest {
 
 	@Test
 	public void successGetJobViewNonExisting(){
-		m.init("UpaTransporter1");
 		assertNull(m.getJobView("id"));
 	}
 

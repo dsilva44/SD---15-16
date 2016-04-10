@@ -99,7 +99,7 @@ public class Manager {
     	}
     }
 
-    private JobView getJobView(String id){
+    public JobView getJobView(String id){
         for (JobView job:jobs){
             if (job.getJobIdentifier().equals(id)){
                 return job;
