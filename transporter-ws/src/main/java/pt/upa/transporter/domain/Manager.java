@@ -42,6 +42,10 @@ public class Manager {
         return parity;
     }
 
+    public ArrayList<JobView> getJobs() {
+        return jobs;
+    }
+
     public List<String> getWorkCities() { return workCities; }
 
     public boolean decideResponde() {
