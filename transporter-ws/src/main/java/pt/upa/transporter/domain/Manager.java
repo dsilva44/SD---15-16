@@ -1,5 +1,8 @@
 package pt.upa.transporter.domain;
 
+import pt.upa.transporter.exception.JobDoesNotExistException;
+import pt.upa.transporter.exception.WrongStateToConfirmException;
+import pt.upa.transporter.ws.JobStateView;
 import pt.upa.transporter.ws.JobView;
 
 import java.util.ArrayList;
@@ -36,7 +39,7 @@ public class Manager {
                 centro.addAll(sul);
                 workCities = new ArrayList<>(centro);
         }
-        
+
         jobs = new ArrayList<JobView>();
     }
 
@@ -48,6 +51,7 @@ public class Manager {
         return jobs;
     }
 
+
     public List<String> getWorkCities() { return workCities; }
 
     public boolean decideResponde() {
@@ -58,7 +62,34 @@ public class Manager {
     public void TransportSimulation() {
         // TODO
     }
-    
+
+    public JobView confirmationJobs(String id, boolean bool) throws Exception{
+
+        JobView job = getJobView(id);
+        if(job == null){
+            throw new JobDoesNotExistException(id);
+        }
+
+        if (job.getJobState() != JobStateView.PROPOSED) throw new WrongStateToConfirmException();
+
+        if (bool){
+            job.setJobState(JobStateView.ACCEPTED);
+        }
+        else{
+            job.setJobState(JobStateView.REJECTED);
+        }
+
+        return job;
+    }
+
+    public void addJob(JobView jobtoadd){
+        jobs.add(jobtoadd);
+    }
+
+    public void removeJob(JobView jobtoremove){
+        jobs.remove(jobtoremove);
+    }
+
     public void setJobs(ArrayList<JobView> list){ 
     	if (list == null){
     		jobs.clear();
@@ -67,17 +98,13 @@ public class Manager {
     		jobs = list;
     	}
     }
-    
-    public void addJob(JobView job){
-    	jobs.add(job);
-    }
-    
-    public JobView getJobView(String id){
-    	for (JobView job:jobs){
-    		if (job.getJobIdentifier().equals(id)){
-    			return job;
-    		}
-    	}
-    	return null;
+
+    private JobView getJobView(String id){
+        for (JobView job:jobs){
+            if (job.getJobIdentifier().equals(id)){
+                return job;
+            }
+        }
+        return null;
     }
 }
