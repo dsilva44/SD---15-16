@@ -61,4 +61,13 @@ public class Manager {
     		jobs = list;
     	}
     }
+    
+    public JobView getJobView(String id){
+    	for (JobView job:jobs){
+    		if (job.getJobIdentifier().equals(id)){
+    			return job;
+    		}
+    	}
+    	return null;
+    }
 }

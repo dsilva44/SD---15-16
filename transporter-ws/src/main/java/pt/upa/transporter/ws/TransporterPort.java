@@ -35,7 +35,7 @@ public class TransporterPort implements TransporterPortType {
     @Override
     public JobView jobStatus(String id) {
         //TODO jobStatus
-        return null;
+        return m.getJobView(id);
     }
 
     @Override
