@@ -57,6 +57,9 @@ public class EndpointManagerTest {
         assertEquals("uddiURL not properly set", validUddiURL, endpointManager.getUddiURL());
         assertEquals("wsName not properly set", validWsName, endpointManager.getWsName());
         assertEquals("wsURL not properly set", validWsURL, endpointManager.getWsURL());
+
+        assertNotNull("endpoint not initialize correctly", endpointManager.getEndpoint());
+        assertNotNull("uddiNaming not initialize correctly", endpointManager.getUddiURL());
     }
 
     @Test(expected = InvalidURLException.class)
