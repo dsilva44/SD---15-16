@@ -11,7 +11,7 @@ public class Manager {
 
     private String parity;
     private ArrayList<String> workCities;
-    private ArrayList<String> jobs;
+    private ArrayList<JobView> jobs;
 
     private Manager() {}
 
@@ -36,10 +36,16 @@ public class Manager {
                 centro.addAll(sul);
                 workCities = new ArrayList<>(centro);
         }
+        
+        jobs = new ArrayList<JobView>();
     }
 
     public String getParity() {
         return parity;
+    }
+
+    public ArrayList<JobView> getJobs() {
+        return jobs;
     }
 
     public List<String> getWorkCities() { return workCities; }
@@ -51,5 +57,27 @@ public class Manager {
 
     public void TransportSimulation() {
         // TODO
+    }
+    
+    public void setJobs(ArrayList<JobView> list){ 
+    	if (list == null){
+    		jobs.clear();
+    	}
+    	else{
+    		jobs = list;
+    	}
+    }
+    
+    public void addJob(JobView job){
+    	jobs.add(job);
+    }
+    
+    public JobView getJobView(String id){
+    	for (JobView job:jobs){
+    		if (job.getJobIdentifier().equals(id)){
+    			return job;
+    		}
+    	}
+    	return null;
     }
 }
