@@ -1,8 +1,11 @@
 package pt.upa.transporter.ws;
 
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
+import pt.upa.transporter.exception.InvalidTransporterNameException;
+import pt.upa.transporter.exception.InvalidURLException;
 
 import javax.xml.ws.Endpoint;
+import java.util.regex.Pattern;
 
 public class EndpointManager {
     private Endpoint endpoint;
@@ -18,7 +21,20 @@ public class EndpointManager {
 
 
     public EndpointManager(String uddiURL, String wsName, String wsURL) {
-        // TODO
+        String urlRegex = "^(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]";
+        String upaTransporterNameRegex = "UpaTransporter[1-9][0-9]*";
+
+        boolean validUddiURL = Pattern.matches(urlRegex, uddiURL);
+        boolean validWsName = Pattern.matches(upaTransporterNameRegex, wsName);
+        boolean validWsURL = Pattern.matches(urlRegex, wsURL);
+
+        if (!validUddiURL) throw new InvalidURLException(uddiURL);
+        else if (!validWsName) throw new InvalidTransporterNameException(wsName);
+        else if (!validWsURL) throw new InvalidURLException(wsURL);
+
+        this.uddiURL = uddiURL;
+        this.wsName = wsName;
+        this.wsURL = wsURL;
     }
 
     public void start() throws Exception {
