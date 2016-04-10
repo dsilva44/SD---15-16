@@ -1,6 +1,5 @@
 package pt.upa.transporter.ws;
 
-import com.sun.javaws.exceptions.InvalidArgumentException;
 import mockit.*;
 import mockit.integration.junit4.JMockit;
 import org.junit.*;
