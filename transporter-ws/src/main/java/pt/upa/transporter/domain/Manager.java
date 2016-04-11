@@ -3,24 +3,30 @@ package pt.upa.transporter.domain;
 import pt.upa.transporter.exception.JobDoesNotExistException;
 import pt.upa.transporter.exception.WrongStateToConfirmException;
 import pt.upa.transporter.ws.JobStateView;
-import pt.upa.transporter.ws.JobView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+import java.util.regex.Pattern;
 
 public class Manager {
     private static Manager manager = new Manager();
 
     private String parity;
     private ArrayList<String> workCities;
-    private ArrayList<JobView> jobs;
+    private ArrayList<Job> jobs;
 
-    private Manager() {}
+    private Manager() {
+        workCities = new ArrayList<>();
+        jobs = new ArrayList<>();
+    }
 
     public static Manager getInstance() { return manager; }
 
     public void init(String transporterName) {
+        String upaTransporterNameRegex = "UpaTransporter[1-9][0-9]*";
+        boolean validTransporterName = Pattern.matches(upaTransporterNameRegex, transporterName);
+        if (!validTransporterName) throw new IllegalArgumentException(transporterName);
+
         int tNum = Integer.parseInt(transporterName.substring(transporterName.length() - 1));
         if (tNum % 2 == 0) { parity = "EVEN"; }
         else parity = "ODD";
@@ -35,24 +41,21 @@ public class Manager {
             case "EVEN":
                 centro.addAll(norte);
                 workCities = new ArrayList<>(centro);
+                break;
             case "ODD":
                 centro.addAll(sul);
                 workCities = new ArrayList<>(centro);
+                break;
         }
-
-        jobs = new ArrayList<JobView>();
     }
 
-    public String getParity() {
-        return parity;
-    }
+    String getParity() { return parity; }
 
-    public ArrayList<JobView> getJobs() {
+    ArrayList<String> getWorkCities() { return workCities; }
+
+    ArrayList<Job> getJobs() {
         return jobs;
     }
-
-
-    public List<String> getWorkCities() { return workCities; }
 
     public boolean decideResponde() {
         //TODO RequestJob
@@ -63,9 +66,9 @@ public class Manager {
         // TODO
     }
 
-    public JobView confirmationJobs(String id, boolean bool) throws Exception{
+    public Job confirmationJobs(String id, boolean bool) {
 
-        JobView job = getJobView(id);
+        Job job = getJobById(id);
         if(job == null){
             throw new JobDoesNotExistException(id);
         }
@@ -82,15 +85,15 @@ public class Manager {
         return job;
     }
 
-    public void addJob(JobView jobtoadd){
-        jobs.add(jobtoadd);
+    void addJob(Job job){
+        jobs.add(job);
     }
 
-    public void removeJob(JobView jobtoremove){
-        jobs.remove(jobtoremove);
+    void removeJob(Job job){
+        jobs.remove(job);
     }
 
-    public void setJobs(ArrayList<JobView> list){ 
+    public void setJobs(ArrayList<Job> list){
     	if (list == null){
     		jobs.clear();
     	}
@@ -99,8 +102,8 @@ public class Manager {
     	}
     }
 
-    public JobView getJobView(String id){
-        for (JobView job:jobs){
+    public Job getJobById(String id){
+        for (Job job:jobs){
             if (job.getJobIdentifier().equals(id)){
                 return job;
             }

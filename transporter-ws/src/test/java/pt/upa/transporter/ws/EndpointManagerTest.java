@@ -12,8 +12,6 @@ import pt.upa.transporter.exception.TransporterUddiNamingException;
 import javax.xml.registry.JAXRException;
 import javax.xml.ws.Endpoint;
 
-import java.io.ByteArrayInputStream;
-
 import static org.junit.Assert.*;
 
 /**

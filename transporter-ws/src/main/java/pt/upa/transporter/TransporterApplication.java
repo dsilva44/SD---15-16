@@ -1,5 +1,6 @@
 package pt.upa.transporter;
 
+import pt.upa.transporter.domain.Manager;
 import pt.upa.transporter.ws.EndpointManager;
 
 import org.apache.logging.log4j.LogManager;

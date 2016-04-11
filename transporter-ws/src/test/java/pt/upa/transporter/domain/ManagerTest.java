@@ -1,10 +1,8 @@
 package pt.upa.transporter.domain;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import pt.upa.transporter.exception.WrongStateToConfirmException;
 import pt.upa.transporter.exception.JobDoesNotExistException;
@@ -16,17 +14,17 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import pt.upa.transporter.ws.JobStateView;
-import pt.upa.transporter.ws.JobView;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class ManagerTest {
 	
     // static members
-	private static Manager m = Manager.getInstance();
 
     // one-time initialization and clean-up
     @BeforeClass
     public static void oneTimeSetUp() {
-        m.init("UpaTransporter1");
     }
 
     @AfterClass
@@ -36,90 +34,100 @@ public class ManagerTest {
 
 
     // members
-    JobView validjob;
-    JobView invalidjob;
+    private Manager manager = Manager.getInstance();
+    private Job validJob = new Job("UpaTransporter1", "validjobtest", "Lisboa", "Leiria", 50, JobStateView.PROPOSED);
+    private Job invalidJob = new Job( "UpaTransporter1", "invalidjobtest", "Lisboa", "Leiria", 50, JobStateView.HEADING);
 
     // initialization and clean-up for each test
     @Before
     public void setUp() {
-
-        validjob = new JobView();
-        validjob.setCompanyName("UpaTransporter1");
-        validjob.setJobDestination("Lisboa");
-        validjob.setJobOrigin("Leiria");
-        validjob.setJobIdentifier("validjobtest");
-        validjob.setJobPrice(50);
-        validjob.setJobState(JobStateView.PROPOSED);
-
-        invalidjob = new JobView();
-        invalidjob.setCompanyName("UpaTransporter1");
-        invalidjob.setJobDestination("Lisboa");
-        invalidjob.setJobOrigin("Leiria");
-        invalidjob.setJobIdentifier("invalidjobtest");
-        invalidjob.setJobPrice(50);
-        invalidjob.setJobState(JobStateView.HEADING);
-
-        m.addJob(validjob);
-        m.addJob(invalidjob);
+        manager.addJob(validJob);
+        manager.addJob(invalidJob);
     }
 
     @After
     public void tearDown() {
-        m.removeJob(validjob);
-        m.removeJob(invalidjob);
+        manager.removeJob(validJob);
+        manager.removeJob(invalidJob);
     }
 
 	@Test
 	public void successSetJobsShouldClearList() {
-		JobView job1 = new JobView();
-		m.addJob(job1);
+		Job job1 = new Job();
+		manager.addJob(job1);
 
-		m.setJobs(null);
-        assertEquals(0,m.getJobs().size());
+		manager.setJobs(null);
+        assertEquals(0, manager.getJobs().size());
     }
 
-	@Test
-	public void successGetJobViewExisting() {
-		JobView job1 = new JobView();
-		job1.setJobIdentifier("id1");
-		m.addJob(job1);
+    @Test
+    public void successODDTransporterInit() {
+        String validTransporterName = "UpaTransporter983";
+        ArrayList<String> workCities = new ArrayList<>(Arrays.asList(
+                "Lisboa", "Leiria", "Santarém", "Castelo Branco", "Coimbra", "Aveiro", "Viseu", "Guarda",
+                "Setúbal", "Évora", "Portalegre", "Beja", "Faro"));
 
-		assertEquals(job1,m.getJobView("id1"));
+        manager.init(validTransporterName);
+
+        assertEquals("wrong parity", "ODD", manager.getParity());
+        assertEquals("wrong work cities", workCities, manager.getWorkCities());
+    }
+
+    @Test
+    public void successEVENTransporterInit() {
+        String validTransporterName = "UpaTransporter4864";
+        ArrayList<String> workCities = new ArrayList<>(Arrays.asList(
+                "Lisboa", "Leiria", "Santarém", "Castelo Branco", "Coimbra", "Aveiro", "Viseu", "Guarda",
+                "Porto", "Braga", "Viana do Castelo", "Vila Real", "Bragança"));
+
+        manager.init(validTransporterName);
+
+        assertEquals("wrong parity", "EVEN", manager.getParity());
+        assertEquals("wrong work cities", workCities, manager.getWorkCities());
+    }
+
+    @Test
+	public void successGetJobViewExisting() {
+		Job job1 = new Job();
+		job1.setJobIdentifier("id1");
+		manager.addJob(job1);
+
+		assertEquals(job1, manager.getJobById("id1"));
 	}
 
 	@Test
 	public void successGetJobViewNonExisting(){
-		assertNull(m.getJobView("id"));
+		assertNull(manager.getJobById("id"));
 	}
 
 
     @Test(expected=JobDoesNotExistException.class)
     public void ConfirmJobWithInvalidIDTest() throws Exception{
 
-        m.confirmationJobs("bananas", true);
+        manager.confirmationJobs("bananas", true);
     }
 
     @Test(expected=WrongStateToConfirmException.class)
-    public void trueConfirmJobWithWrongStateTest() throws Exception{
+    public void trueConfirmJobWithWrongStateTest() throws Exception {
 
-       m.confirmationJobs("invalidjobtest", true);
+       manager.confirmationJobs("invalidjobtest", true);
     }
 
     @Test
     public void trueConfirmJobWithCorrectStateTest() throws Exception{
-        JobView job = m.confirmationJobs("validjobtest", true);
+        Job job = manager.confirmationJobs("validjobtest", true);
 
         assertEquals("confirmation job did not work correctly", job.getJobState(), JobStateView.ACCEPTED);
     }
 
     @Test(expected = WrongStateToConfirmException.class)
     public void falseConfirmWithWrongStateJobTest() throws Exception{
-        m.confirmationJobs("invalidjobtest", false);
+        manager.confirmationJobs("invalidjobtest", false);
     }
 
     @Test
     public void falseConfirmWithCorrectStateJobTest() throws Exception{
-        JobView job = m.confirmationJobs("validjobtest", false);
+        Job job = manager.confirmationJobs("validjobtest", false);
 
         assertEquals("confirmation job did not work correctly", job.getJobState(), JobStateView.REJECTED) ;
     }
