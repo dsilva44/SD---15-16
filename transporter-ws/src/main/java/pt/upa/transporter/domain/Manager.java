@@ -11,11 +11,13 @@ import java.util.regex.Pattern;
 public class Manager {
     private static Manager manager = new Manager();
 
-    private String parity;
+    private ArrayList<String> knowCities;
     private ArrayList<String> workCities;
+    private String parity;
     private ArrayList<Job> jobs;
 
     private Manager() {
+        knowCities = new ArrayList<>();
         workCities = new ArrayList<>();
         jobs = new ArrayList<>();
     }
@@ -36,17 +38,18 @@ public class Manager {
         ArrayList<String> norte = new ArrayList<>(Arrays.asList("Porto", "Braga", "Viana do Castelo", "Vila Real",
                                                                     "Bragança"));
         ArrayList<String> sul = new ArrayList<>(Arrays.asList("Setúbal", "Évora", "Portalegre", "Beja", "Faro"));
+        workCities.addAll(centro);
 
         switch (parity) {
             case "EVEN":
-                centro.addAll(norte);
-                workCities = new ArrayList<>(centro);
+                workCities.addAll(norte);
                 break;
             case "ODD":
-                centro.addAll(sul);
-                workCities = new ArrayList<>(centro);
+                workCities.addAll(sul);
                 break;
         }
+
+
     }
 
     String getParity() { return parity; }
@@ -93,13 +96,14 @@ public class Manager {
         jobs.remove(job);
     }
 
-    public void setJobs(ArrayList<Job> list){
-    	if (list == null){
-    		jobs.clear();
-    	}
-    	else{
-    		jobs = list;
-    	}
+    public void setJobs(ArrayList<Job> jobs){
+    	if (jobs == null) this.jobs.clear();
+    	else this.jobs = jobs;
+    }
+
+    void setWorkCities(ArrayList<String> workCities) {
+        if (workCities == null) this.workCities.clear();
+        else this.workCities = workCities;
     }
 
     public Job getJobById(String id){

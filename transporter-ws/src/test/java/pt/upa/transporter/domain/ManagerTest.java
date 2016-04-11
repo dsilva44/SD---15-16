@@ -1,9 +1,5 @@
 package pt.upa.transporter.domain;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-
 import pt.upa.transporter.exception.WrongStateToConfirmException;
 import pt.upa.transporter.exception.JobDoesNotExistException;
 
@@ -17,6 +13,8 @@ import pt.upa.transporter.ws.JobStateView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+
+import static org.junit.Assert.*;
 
 public class ManagerTest {
 	
@@ -49,15 +47,37 @@ public class ManagerTest {
     public void tearDown() {
         manager.removeJob(validJob);
         manager.removeJob(invalidJob);
+        manager.setWorkCities(null);
     }
 
 	@Test
-	public void successSetJobsShouldClearList() {
+	public void successSetNullJobsShouldClearList() {
 		Job job1 = new Job();
 		manager.addJob(job1);
 
 		manager.setJobs(null);
         assertEquals(0, manager.getJobs().size());
+    }
+
+    @Test
+    public void successSetNullWorkCitiesShouldClearList() {
+        manager.init("UpaTransporter1");
+
+        assertFalse("work cities is empty", manager.getWorkCities().isEmpty());
+
+        manager.setWorkCities(null);
+
+        assertNotNull("work cities attribute is null", manager.getWorkCities());
+        assertTrue("work cities is not empty", manager.getWorkCities().isEmpty());
+    }
+
+    @Test
+    public void successSetNewWorkCities() {
+        ArrayList<String> newArrayList = new ArrayList<>();
+
+        manager.setWorkCities(newArrayList);
+
+        assertEquals("wrong set of array", newArrayList, manager.getWorkCities());
     }
 
     @Test
