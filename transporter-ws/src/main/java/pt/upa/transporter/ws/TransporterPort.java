@@ -52,10 +52,8 @@ public class TransporterPort implements TransporterPortType {
 
     @Override
     public JobView jobStatus(String id) {
-    	Job job = manager.getJobById(id);		//cannot change PortType prototype to throw exceptions
-    	
+    	Job job = manager.getJobById(id);
 
-    	Job job = m.getJobById(id);
     	if (job==null){
     		return null;
     	}
