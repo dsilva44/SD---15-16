@@ -86,6 +86,13 @@ public class ManagerTest {
         assertEquals("wrong work cities", workCities, manager.getWorkCities());
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void invalidTransporterNameInitShouldReturnException() {
+        String validTransporterName = "BATATA";
+
+        manager.init(validTransporterName);
+    }
+
     @Test
 	public void successGetJobViewExisting() {
 		Job job1 = new Job();

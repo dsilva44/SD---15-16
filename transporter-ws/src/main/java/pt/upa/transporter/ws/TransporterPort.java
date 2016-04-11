@@ -41,7 +41,7 @@ public class TransporterPort implements TransporterPortType {
             throw new BadJobFault_Exception("not existing id or wrong state", fault);
         }
 
-        return job.getJobView();
+        return job.toJobView();
 
     }
 
@@ -52,7 +52,7 @@ public class TransporterPort implements TransporterPortType {
     	if (job == null){
     		job = new Job();
     	}
-    	return job.getJobView();
+    	return job.toJobView();
     }
 
     @Override

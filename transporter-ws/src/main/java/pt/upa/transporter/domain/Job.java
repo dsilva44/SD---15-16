@@ -72,7 +72,7 @@ public class Job {
         this.jobState = jobState;
     }
 
-    public JobView getJobView() {
+    public JobView toJobView() {
         JobView jobView = new JobView();
 
         jobView.setCompanyName(companyName);
