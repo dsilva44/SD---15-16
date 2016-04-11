@@ -11,15 +11,26 @@ import java.util.regex.Pattern;
 public class Manager {
     private static Manager manager = new Manager();
 
-    private ArrayList<String> knowCities;
-    private ArrayList<String> workCities;
     private String parity;
     private ArrayList<Job> jobs;
+
+    private final ArrayList<String> knowCities;
+    private ArrayList<String> workCities;
+    private final ArrayList<String> centro = new ArrayList<>(Arrays.asList("Lisboa", "Leiria", "Santarém",
+            "Castelo Branco", "Coimbra", "Aveiro", "Viseu", "Guarda"));
+    private final ArrayList<String> norte = new ArrayList<>(Arrays.asList("Porto", "Braga", "Viana do Castelo",
+            "Vila Real", "Bragança"));
+    private final ArrayList<String> sul = new ArrayList<>(Arrays.asList("Setúbal", "Évora", "Portalegre", "Beja",
+            "Faro"));
 
     private Manager() {
         knowCities = new ArrayList<>();
         workCities = new ArrayList<>();
         jobs = new ArrayList<>();
+
+        knowCities.addAll(centro);
+        knowCities.addAll(norte);
+        knowCities.addAll(sul);
     }
 
     public static Manager getInstance() { return manager; }
@@ -33,11 +44,6 @@ public class Manager {
         if (tNum % 2 == 0) { parity = "EVEN"; }
         else parity = "ODD";
 
-        ArrayList<String> centro = new ArrayList<>(Arrays.asList("Lisboa", "Leiria", "Santarém", "Castelo Branco",
-                                                                    "Coimbra", "Aveiro", "Viseu", "Guarda"));
-        ArrayList<String> norte = new ArrayList<>(Arrays.asList("Porto", "Braga", "Viana do Castelo", "Vila Real",
-                                                                    "Bragança"));
-        ArrayList<String> sul = new ArrayList<>(Arrays.asList("Setúbal", "Évora", "Portalegre", "Beja", "Faro"));
         workCities.addAll(centro);
 
         switch (parity) {
@@ -48,8 +54,6 @@ public class Manager {
                 workCities.addAll(sul);
                 break;
         }
-
-
     }
 
     String getParity() { return parity; }
@@ -60,9 +64,9 @@ public class Manager {
         return jobs;
     }
 
-    public boolean decideResponde() {
-        //TODO RequestJob
-        return false;
+    public Job decideResponse(String origin, String destination, int price) {
+        //TODO
+        return new Job();
     }
 
     public void TransportSimulation() {
