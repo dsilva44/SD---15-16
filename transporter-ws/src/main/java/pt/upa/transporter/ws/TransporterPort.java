@@ -2,9 +2,8 @@ package pt.upa.transporter.ws;
 
 import javax.jws.WebService;
 
+import pt.upa.transporter.domain.Job;
 import pt.upa.transporter.domain.Manager;
-import pt.upa.transporter.exception.JobDoesNotExistException;
-import pt.upa.transporter.exception.WrongStateToConfirmException;
 
 import java.util.List;
 @WebService(
@@ -31,7 +30,7 @@ public class TransporterPort implements TransporterPortType {
 
     @Override
     public JobView decideJob(String id, boolean accept) throws BadJobFault_Exception {
-        JobView job;
+        Job job;
 
         try{
             job = m.confirmationJobs(id, accept);
@@ -42,13 +41,21 @@ public class TransporterPort implements TransporterPortType {
             throw new BadJobFault_Exception("not existing id or wrong state", fault);
         }
 
-        return job;
+        return job.toJobView();
 
     }
 
     @Override
     public JobView jobStatus(String id) {
-    	return m.getJobView(id);
+    	
+    	
+    	Job job = m.getJobById(id);
+    	if (job==null){
+    		return null;
+    	}
+    	else{ 
+    		return job.toJobView();
+    	}
     }
 
     @Override

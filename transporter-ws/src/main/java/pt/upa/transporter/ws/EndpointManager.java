@@ -3,6 +3,7 @@ package pt.upa.transporter.ws;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
+import pt.upa.transporter.domain.Manager;
 import pt.upa.transporter.exception.TransporterEndpointExeption;
 import pt.upa.transporter.exception.TransporterUddiNamingException;
 import pt.upa.transporter.exception.InvalidTransporterNameException;
@@ -48,6 +49,8 @@ public class EndpointManager {
         } catch (JAXRException e) {
             throw new TransporterUddiNamingException("Cannot Create uddiNaming instance");
         }
+
+        Manager.getInstance().init(wsName);
     }
 
     public void start() {
@@ -56,6 +59,7 @@ public class EndpointManager {
             log.info("Starting: " + wsURL);
             endpoint.publish(wsURL);
         } catch (Exception e) {
+            log.error("Error publish endpoint", e);
             throw new TransporterEndpointExeption("Error publish endpoint");
         }
 
@@ -64,6 +68,7 @@ public class EndpointManager {
             log.info("Publishing '"+ wsName + "' to UDDI at "+ uddiURL);
             uddiNaming.rebind(wsName, wsURL);
         } catch (Exception e) {
+            log.error("Error on uddiNaming rebind", e);
             throw new TransporterUddiNamingException("Error on rebind");
         }
         isStarted = true;

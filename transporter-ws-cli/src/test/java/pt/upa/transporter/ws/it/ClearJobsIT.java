@@ -1,6 +1,6 @@
 package pt.upa.transporter.ws.it;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
@@ -9,7 +9,6 @@ public class ClearJobsIT extends AbstractIntegrationTest {
     @Test
     public void successClearJobsShouldEmptyList() {
     	client.clearJobs();
-    	
-        assertEquals(0, client.listJobs().size());
+        assertTrue(client.listJobs().isEmpty());
     }
 }
