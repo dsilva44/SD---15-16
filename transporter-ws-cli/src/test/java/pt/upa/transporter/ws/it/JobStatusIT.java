@@ -10,6 +10,7 @@ public class JobStatusIT extends AbstractIntegrationTest {
 
     @Test
     public void successJobStatusShouldReturnJobViewOrNull() {
+        //FIXME What is This ???
     	assertTrue(client.jobStatus("id") == null || client.jobStatus("id") instanceof JobView);
     }
 }

@@ -15,7 +15,7 @@ import java.util.List;
 )
 public class TransporterPort implements TransporterPortType {
 	
-	private Manager m = Manager.getInstance();
+	private Manager manager = Manager.getInstance();
 
     @Override
     public String ping(String name) {
@@ -23,8 +23,13 @@ public class TransporterPort implements TransporterPortType {
     }
 
     @Override
-    public JobView requestJob(String origin, String destination, int price) throws BadLocationFault_Exception, BadPriceFault_Exception {
-        //TODO requestJob
+    public JobView requestJob(String origin, String destination, int price)
+            throws BadLocationFault_Exception, BadPriceFault_Exception {
+        manager.validateRequestedJob(origin, destination, price);
+        Job offerJob = manager.decideResponse(origin, destination, price);
+
+        if (offerJob != null) return offerJob.toJobView();
+
         return null;
     }
 
@@ -33,7 +38,7 @@ public class TransporterPort implements TransporterPortType {
         Job job;
 
         try{
-            job = m.confirmationJobs(id, accept);
+            job = manager.confirmationJobs(id, accept);
         }catch(Exception d){
 
             BadJobFault fault = new BadJobFault();
@@ -47,13 +52,12 @@ public class TransporterPort implements TransporterPortType {
 
     @Override
     public JobView jobStatus(String id) {
-    	
-    	
-    	Job job = m.getJobById(id);
+    	Job job = manager.getJobById(id);
+
     	if (job==null){
     		return null;
     	}
-    	else{ 
+    	else{
     		return job.toJobView();
     	}
     }
@@ -67,6 +71,6 @@ public class TransporterPort implements TransporterPortType {
 
     @Override
     public void clearJobs(){
-    	m.setJobs(null);
+    	manager.setJobs(null);
     }
 }
