@@ -36,11 +36,8 @@ public class EndpointManagerTest {
 
     // members
     private String validUddiURL = "http://localhost:9090";
-    private String invalidUddiURL = "POTATO";
     private String validWsName = "UpaTransporter1";
-    private String invalidWsName = "UpaTransporterPOTATO";
     private String validWsURL = "http://localhost:8081/transporter-ws/endpoint";
-    private String invalidWsURL = "POTATO";
 
     // initialization and clean-up for each test
     @Before
@@ -67,16 +64,19 @@ public class EndpointManagerTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void invalidUddiURL() {
+        String invalidUddiURL = "POTATO";
         new EndpointManager(invalidUddiURL, validWsName, validWsURL);
     }
 
     @Test(expected = InvalidTransporterNameException.class)
     public void invalidWsName() {
+        String invalidWsName = "UpaTransporterPOTATO";
         new EndpointManager(validUddiURL, invalidWsName, validWsURL);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void invalidWsURL() {
+        String invalidWsURL = "POTATO";
         new EndpointManager(validUddiURL, validWsName, invalidWsURL);
     }
 
@@ -148,7 +148,7 @@ public class EndpointManagerTest {
     }
 
     @Test
-    public void shouldNotAwaitConnectionsWhenWsIsNotStarted(@Mocked Endpoint endpointMock) {
+    public void shouldNotAwaitConnectionsWhenWsIsNotStarted() {
         EndpointManager endpointManager = new EndpointManager(validUddiURL, validWsName, validWsURL);
 
         endpointManager.setStarted(false);

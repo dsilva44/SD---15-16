@@ -13,6 +13,6 @@ public class ListJobsIT extends AbstractIntegrationTest {
     @Test
     public void successListJobsResponse() {
         // FIXME What is this ????
-    	assertTrue(client.listJobs() instanceof List);
+    	assertTrue(client1.listJobs() instanceof List);
     }
 }

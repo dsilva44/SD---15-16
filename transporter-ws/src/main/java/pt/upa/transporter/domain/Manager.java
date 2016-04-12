@@ -116,7 +116,7 @@ public class Manager {
             BadPriceFault faultInfo = new BadPriceFault();
             faultInfo.setPrice(price);
             log.warn(price + " is not valid");
-            throw new BadPriceFault_Exception(price + " is not valid", faultInfo);
+            throw new BadPriceFault_Exception(price + " is not a valid price", faultInfo);
         }
     }
 

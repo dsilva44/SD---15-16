@@ -18,19 +18,26 @@ import pt.upa.transporter.ws.cli.TransporterClient;
 public abstract class AbstractIntegrationTest {
     // static members
     protected static final Logger log = LogManager.getRootLogger();
-    protected static TransporterClient client;
+    protected static TransporterClient client1, client2, client3;
 
     // one-time initialization and clean-up
     @BeforeClass
     public static void oneTimeSetUp() throws Exception {
         String uddiURL = "http://localhost:9090";
-        String wsName = "UpaTransporter1";
-        client = new TransporterClient(uddiURL,wsName);
+        String wsName1 = "UpaTransporter1";
+        String wsName2 = "UpaTransporter2";
+        String wsName3 = "UpaTransporter3";
+
+        client1 = new TransporterClient(uddiURL,wsName1);
+        client2 = new TransporterClient(uddiURL,wsName2);
+        client3 = new TransporterClient(uddiURL,wsName3);
     }
 
     @AfterClass
     public static void oneTimeTearDown() {
-        client = null;
+        client1 = null;
+        client2 = null;
+        client3 = null;
     }
 
     // members

@@ -8,7 +8,7 @@ public class ClearJobsIT extends AbstractIntegrationTest {
 
     @Test
     public void successClearJobsShouldEmptyList() {
-    	client.clearJobs();
-        assertTrue(client.listJobs().isEmpty());
+    	client1.clearJobs();
+        assertTrue(client1.listJobs().isEmpty());
     }
 }
