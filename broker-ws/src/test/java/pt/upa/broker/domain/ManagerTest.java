@@ -10,6 +10,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import pt.upa.broker.ws.InvalidPriceFault_Exception;
+import pt.upa.broker.ws.TransportStateView;
 import pt.upa.broker.ws.UnavailableTransportFault_Exception;
 import pt.upa.broker.ws.UnavailableTransportPriceFault_Exception;
 import pt.upa.broker.ws.UnknownLocationFault_Exception;
@@ -32,8 +33,8 @@ public class ManagerTest {
     // members
     private Manager manager = Manager.getInstance();
 
-    private Transport validJob = new Transport("UpaTransporter1", "validjobtest", "Lisboa", "Leiria", 50, JobStateView.PROPOSED);
-    private Transport invalidJob = new Transport( "UpaTransporter1", "invalidjobtest", "Lisboa", "Leiria", 50, JobStateView.HEADING);
+    private Transport validTransport = new Transport("id1", "Lisboa", "Leiria", 50, "UpaTransporter1", TransportStateView.REQUESTED);
+    private Transport invalidTransport = new Transport( "id2", "Lisboa", "Leiria",  50, "UpaTransporter2", TransportStateView.REQUESTED);
 
     private final ArrayList<String> centro = new ArrayList<>(Arrays.asList("Lisboa", "Leiria", "Santarém",
             "Castelo Branco", "Coimbra", "Aveiro", "Viseu", "Guarda"));
@@ -47,6 +48,8 @@ public class ManagerTest {
     private String unknownLocation = "BATATA";
     private String oddLocation = "Faro";
     private String evenLocation = "Braga";
+    private int validPrice = 20;
+    private int invalidPrice = -1;
 
     // initialization and clean-up for each test
     @Before
@@ -59,18 +62,19 @@ public class ManagerTest {
     
     @Test(expected= UnknownLocationFault_Exception.class)
     public void failUnknownOrigin(){
-    	
+    	manager.requestTransport(unknownLocation, centroLocation1, validPrice);
     }
     
     @Test(expected= UnknownLocationFault_Exception.class)
     public void failUnknownDestination(){
-    	
+    	manager.requestTransport(centroLocation1,unknownLocation, validPrice);
     }
     
     @Test(expected= InvalidPriceFault_Exception.class)
     public void failInvalidPrice(){
-    	
+    	manager.requestTransport(centroLocation1,centroLocation2, invalidPrice);
     }
+    
     @Test(expected= UnavailableTransportFault_Exception.class)
     public void failUnavailableTransport(){
     	
