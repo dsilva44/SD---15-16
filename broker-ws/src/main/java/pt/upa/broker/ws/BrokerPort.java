@@ -2,8 +2,13 @@ package pt.upa.broker.ws;
 
 import java.util.List;
 
+import pt.upa.broker.domain.Manager;
+import pt.upa.broker.domain.Transport;
+
 public class BrokerPort implements BrokerPortType{
 
+	private Manager manager = Manager.getInstance();
+	
 	@Override
 	public String ping(String name) {
 		// TODO Auto-generated method stub
@@ -26,14 +31,19 @@ public class BrokerPort implements BrokerPortType{
 
 	@Override
 	public List<TransportView> listTransports() {
-		// TODO Auto-generated method stub
+		/*List<Transport> transports = manager.listTransports();
+		List <TransportView> transportViews = new List<TransportView>();
+		
+		for (Transport t : transports){
+			transportViews.add(t.toTransportView());
+		}
+		return transportViews;*/
 		return null;
 	}
 
 	@Override
 	public void clearTransports() {
-		// TODO Auto-generated method stub
-		
+		//must remove transports in Transporter also
 	}
 
 	// TODO
