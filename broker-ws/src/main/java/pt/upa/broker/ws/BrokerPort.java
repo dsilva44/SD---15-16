@@ -3,7 +3,6 @@ package pt.upa.broker.ws;
 import java.util.List;
 
 import pt.upa.broker.domain.Manager;
-import pt.upa.broker.domain.Transport;
 
 public class BrokerPort implements BrokerPortType{
 
@@ -11,7 +10,7 @@ public class BrokerPort implements BrokerPortType{
 	
 	@Override
 	public String ping(String name) {
-		// TODO Auto-generated method stub
+		//TODO
 		return null;
 	}
 
