@@ -20,10 +20,7 @@ public class ListJobsIT extends AbstractIntegrationTest {
     private int validPrice2 = 50;
     
     @Test
-    public void successListJobsWithListEmpty() throws BadLocationFault_Exception, BadPriceFault_Exception {
-    	client1.requestJob(invalidLocation, validLocation2, validPrice1);
-    	client1.requestJob(validLocation1, invalidLocation, validPrice2);
-    	
+    public void successListJobsWithListEmpty() throws BadLocationFault_Exception, BadPriceFault_Exception {    	
     	assertEquals(0,client1.listJobs().size());
     }
     
