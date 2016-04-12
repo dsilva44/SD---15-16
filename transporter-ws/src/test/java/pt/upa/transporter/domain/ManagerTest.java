@@ -144,7 +144,8 @@ public class ManagerTest {
 	public void successGetJobViewNonExisting(){
 		assertNull(manager.getJobById("id"));
 	}
-
+	
+	//----------------------------------------------------------------------
 
     @Test(expected=JobDoesNotExistException.class)
     public void ConfirmJobWithInvalidIDTest() throws Exception{
