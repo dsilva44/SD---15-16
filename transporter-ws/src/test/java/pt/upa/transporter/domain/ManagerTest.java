@@ -219,7 +219,7 @@ public class ManagerTest {
     }
 
     @Test
-    public void shouldReturnNullOnOriginThatDontWork() throws BadLocationFault_Exception, BadPriceFault_Exception  {
+    public void shouldReturnNullOnInvalidWorkZoneOrigin() throws BadLocationFault_Exception, BadPriceFault_Exception  {
         int referencePrice = 50;
         manager.init("UpaTransporter1");
 
@@ -230,7 +230,7 @@ public class ManagerTest {
     }
 
     @Test
-    public void shouldReturnNullOnInvalidDestination() throws BadLocationFault_Exception, BadPriceFault_Exception  {
+    public void shouldReturnNullOnInvalidWorkZoneDestination() throws BadLocationFault_Exception, BadPriceFault_Exception  {
         int referencePrice = 50;
         manager.init("UpaTransporter2");
 

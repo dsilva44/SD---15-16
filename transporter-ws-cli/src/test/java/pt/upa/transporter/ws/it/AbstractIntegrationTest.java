@@ -6,7 +6,6 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import pt.upa.transporter.ws.TransporterPortType;
 import pt.upa.transporter.ws.cli.TransporterClient;
 
 /**
@@ -18,7 +17,7 @@ import pt.upa.transporter.ws.cli.TransporterClient;
 public abstract class AbstractIntegrationTest {
     // static members
     protected static final Logger log = LogManager.getRootLogger();
-    protected static TransporterClient client1, client2, client3;
+    protected static TransporterClient client1, client2;
 
     // one-time initialization and clean-up
     @BeforeClass
@@ -26,18 +25,15 @@ public abstract class AbstractIntegrationTest {
         String uddiURL = "http://localhost:9090";
         String wsName1 = "UpaTransporter1";
         String wsName2 = "UpaTransporter2";
-        String wsName3 = "UpaTransporter3";
 
         client1 = new TransporterClient(uddiURL,wsName1);
         client2 = new TransporterClient(uddiURL,wsName2);
-        client3 = new TransporterClient(uddiURL,wsName3);
     }
 
     @AfterClass
     public static void oneTimeTearDown() {
         client1 = null;
         client2 = null;
-        client3 = null;
     }
 
     // members
