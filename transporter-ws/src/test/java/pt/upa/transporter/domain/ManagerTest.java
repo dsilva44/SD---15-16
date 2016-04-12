@@ -49,8 +49,6 @@ public class ManagerTest {
     private String centroLocation1 = "Lisboa";
     private String centroLocation2 = "Leiria";
     private String unknownLocation = "BATATA";
-    private String oddLocation = "Faro";
-    private String evenLocation = "Braga";
 
     // initialization and clean-up for each test
     @Before
@@ -180,20 +178,7 @@ public class ManagerTest {
         assertEquals("confirmation job did not work correctly", job.getJobState(), JobStateView.REJECTED) ;
     }
 
-    // -------------------------decideResponse(String origin, String destination, int price)----------------------------
-
-    @Test
-    public void getNextIdShouldReturnDifferentValues() {
-        manager.init("UpaTransporter1");
-
-        String id1 = manager.getNextJobID();
-        String id2 = manager.getNextJobID();
-        String id3 = manager.getNextJobID();
-
-        assertNotEquals("ids are equals", id1, id2);
-        assertNotEquals("ids are equals", id1, id3);
-        assertNotEquals("ids are equals", id2, id3);
-    }
+    // ----------------------validateRequestedJob(String origin, String destination, int price)-------------------------
 
     @Test(expected = BadLocationFault_Exception.class)
     public void unknownOriginShouldThewException() throws BadLocationFault_Exception, BadPriceFault_Exception {
@@ -219,11 +204,27 @@ public class ManagerTest {
         manager.validateRequestedJob(centroLocation1, centroLocation2, referencePrice);
     }
 
+    // -------------------------decideResponse(String origin, String destination, int price)----------------------------
+
+    @Test
+    public void getNextIdShouldReturnDifferentValues() {
+        manager.init("UpaTransporter1");
+
+        String id1 = manager.getNextJobID();
+        String id2 = manager.getNextJobID();
+        String id3 = manager.getNextJobID();
+
+        assertNotEquals("ids are equals", id1, id2);
+        assertNotEquals("ids are equals", id1, id3);
+        assertNotEquals("ids are equals", id2, id3);
+    }
+
     @Test
     public void shouldReturnNullOnOriginThatDontWork() throws BadLocationFault_Exception, BadPriceFault_Exception  {
         int referencePrice = 50;
         manager.init("UpaTransporter1");
 
+        String evenLocation = "Braga";
         Job returnDecideResponse = manager.decideResponse(evenLocation, centroLocation1, referencePrice);
 
         assertNull("not return null", returnDecideResponse);
@@ -234,6 +235,7 @@ public class ManagerTest {
         int referencePrice = 50;
         manager.init("UpaTransporter2");
 
+        String oddLocation = "Faro";
         Job returnDecideResponse = manager.decideResponse(centroLocation1, oddLocation, referencePrice);
 
         assertNull("not return null", returnDecideResponse);

@@ -11,6 +11,6 @@ public class JobStatusIT extends AbstractIntegrationTest {
     @Test
     public void successJobStatusShouldReturnJobViewOrNull() {
         //FIXME What is This ???
-    	assertTrue(client.jobStatus("id") == null || client.jobStatus("id") instanceof JobView);
+    	assertTrue(client1.jobStatus("id") == null || client1.jobStatus("id") instanceof JobView);
     }
 }

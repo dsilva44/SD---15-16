@@ -75,7 +75,7 @@ public class EndpointManager {
     }
 
     public boolean awaitConnections() {
-        return isAwaitConnection = isStarted & endpoint.isPublished();
+        return isAwaitConnection = isStarted;
     }
 
     public void stop() {
