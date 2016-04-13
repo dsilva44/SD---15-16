@@ -5,6 +5,7 @@ import javax.jws.WebService;
 import pt.upa.transporter.domain.Job;
 import pt.upa.transporter.domain.Manager;
 
+import java.util.ArrayList;
 import java.util.List;
 @WebService(
         endpointInterface = "pt.upa.transporter.ws.TransporterPortType",
@@ -15,7 +16,7 @@ import java.util.List;
 )
 public class TransporterPort implements TransporterPortType {
 	
-	private Manager m = Manager.getInstance();
+	private Manager manager = Manager.getInstance();
 
     @Override
     public String ping(String name) {
@@ -23,8 +24,13 @@ public class TransporterPort implements TransporterPortType {
     }
 
     @Override
-    public JobView requestJob(String origin, String destination, int price) throws BadLocationFault_Exception, BadPriceFault_Exception {
-        //TODO requestJob
+    public JobView requestJob(String origin, String destination, int price)
+            throws BadLocationFault_Exception, BadPriceFault_Exception {
+        manager.validateRequestedJob(origin, destination, price);
+        Job offerJob = manager.decideResponse(origin, destination, price);
+
+        if (offerJob != null) return offerJob.toJobView();
+
         return null;
     }
 
@@ -33,7 +39,7 @@ public class TransporterPort implements TransporterPortType {
         Job job;
 
         try{
-            job = m.confirmationJobs(id, accept);
+            job = manager.confirmationJobs(id, accept);
         }catch(Exception d){
 
             BadJobFault fault = new BadJobFault();
@@ -47,23 +53,38 @@ public class TransporterPort implements TransporterPortType {
 
     @Override
     public JobView jobStatus(String id) {
-    	Job job = m.getJobById(id);		//cannot change PortType prototype to throw exceptions
-    	
-    	if (job == null){
-    		job = new Job();
+    	Job job = manager.getJobById(id);
+
+    	if (job==null){
+    		return null;
     	}
-    	return job.toJobView();
+    	else{
+    		return job.toJobView();
+    	}
     }
 
     @Override
     public List<JobView> listJobs() {
-        //TODO listJobs
+        ArrayList<Job> jobs = manager.getJobs();
 
-        return null;
+        return jobListToJobViewList(jobs);
     }
 
     @Override
     public void clearJobs(){
-    	m.setJobs(null);
+    	manager.setJobs(null);
+    }
+
+    private List<JobView> jobListToJobViewList(ArrayList<Job> jobs) {
+        ArrayList<JobView> newList = null;
+
+        if (jobs != null) {
+            newList = new ArrayList<>();
+            for(Job job : jobs) {
+                newList.add(job.toJobView());
+            }
+        }
+
+        return newList;
     }
 }

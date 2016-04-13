@@ -49,8 +49,6 @@ public class ManagerTest {
     private String centroLocation1 = "Lisboa";
     private String centroLocation2 = "Leiria";
     private String unknownLocation = "BATATA";
-    private String oddLocation = "Faro";
-    private String evenLocation = "Braga";
 
     // initialization and clean-up for each test
     @Before
@@ -107,7 +105,7 @@ public class ManagerTest {
 
         manager.init(validTransporterName);
 
-        assertEquals("wrong parity", "ODD", manager.getParity());
+        assertEquals("wrong parity", "ODD", manager.getTransporterParity());
         assertEquals("wrong work cities", workCitiesODD, manager.getWorkCities());
     }
 
@@ -121,7 +119,7 @@ public class ManagerTest {
 
         manager.init(validTransporterName);
 
-        assertEquals("wrong parity", "EVEN", manager.getParity());
+        assertEquals("wrong parity", "EVEN", manager.getTransporterParity());
         assertEquals("wrong work cities", workCitiesEVEN, manager.getWorkCities());
     }
 
@@ -146,7 +144,8 @@ public class ManagerTest {
 	public void successGetJobViewNonExisting(){
 		assertNull(manager.getJobById("id"));
 	}
-
+	
+	//----------------------------------------------------------------------
 
     // ----------------------------------------confirmationJob(String id)--------------------------------------------------
 
@@ -181,54 +180,71 @@ public class ManagerTest {
         assertEquals("confirmation job did not work correctly", job.getJobState(), JobStateView.REJECTED) ;
     }
 
-    // -------------------------decideResponse(String origin, String destination, int price)----------------------------
+    // ----------------------validateRequestedJob(String origin, String destination, int price)-------------------------
 
     @Test(expected = BadLocationFault_Exception.class)
-    public void unknownOriginShouldThewException() {
+    public void unknownOriginShouldThewException() throws BadLocationFault_Exception, BadPriceFault_Exception {
         int referencePrice = 50;
         manager.init("UpaTransporter1");
 
-        manager.decideResponse(unknownLocation, centroLocation1, referencePrice);
+        manager.validateRequestedJob(unknownLocation, centroLocation1, referencePrice);
     }
 
     @Test(expected = BadLocationFault_Exception.class)
-    public void unknownDestinationShouldThewException() {
+    public void unknownDestinationShouldThewException() throws BadLocationFault_Exception, BadPriceFault_Exception  {
         int referencePrice = 50;
         manager.init("UpaTransporter2");
 
-        manager.decideResponse(centroLocation1, unknownLocation, referencePrice);
+        manager.validateRequestedJob(centroLocation1, unknownLocation, referencePrice);
     }
 
     @Test(expected = BadPriceFault_Exception.class)
-    public void negativePriceShouldThewException() {
+    public void negativePriceShouldThewException() throws BadLocationFault_Exception, BadPriceFault_Exception  {
         int referencePrice = -100;
         manager.init("UpaTransporter3");
 
-        manager.decideResponse(centroLocation1, centroLocation2, referencePrice);
+        manager.validateRequestedJob(centroLocation1, centroLocation2, referencePrice);
+    }
+
+    // -------------------------decideResponse(String origin, String destination, int price)----------------------------
+
+    @Test
+    public void getNextIdShouldReturnDifferentValues() {
+        manager.init("UpaTransporter1");
+
+        String id1 = manager.getNextJobID();
+        String id2 = manager.getNextJobID();
+        String id3 = manager.getNextJobID();
+
+        assertNotEquals("ids are equals", id1, id2);
+        assertNotEquals("ids are equals", id1, id3);
+        assertNotEquals("ids are equals", id2, id3);
     }
 
     @Test
-    public void shouldReturnNullOnOriginThatDontWork() {
+    public void shouldReturnNullOnInvalidWorkZoneOrigin() throws BadLocationFault_Exception, BadPriceFault_Exception  {
         int referencePrice = 50;
         manager.init("UpaTransporter1");
 
+        String evenLocation = "Braga";
         Job returnDecideResponse = manager.decideResponse(evenLocation, centroLocation1, referencePrice);
 
         assertNull("not return null", returnDecideResponse);
     }
 
     @Test
-    public void shouldReturnNullOnInvalidDestination() {
+    public void shouldReturnNullOnInvalidWorkZoneDestination() throws BadLocationFault_Exception, BadPriceFault_Exception  {
         int referencePrice = 50;
         manager.init("UpaTransporter2");
 
+        String oddLocation = "Faro";
         Job returnDecideResponse = manager.decideResponse(centroLocation1, oddLocation, referencePrice);
 
         assertNull("not return null", returnDecideResponse);
     }
 
     @Test
-    public void shouldReturnNullOnPriceGreaterThan100() {
+    public void shouldReturnNullOnPriceGreaterThan100() throws BadLocationFault_Exception, BadPriceFault_Exception  {
         int referencePrice = 101;
         manager.init("UpaTransporter1");
 
@@ -238,7 +254,8 @@ public class ManagerTest {
     }
 
     @Test
-    public void priceReferenceEqualTo10shouldReturnPriceLessThen10AndGreaterThan0() {
+    public void priceEqualTo10shouldReturnPriceLessThen10AndGreaterThan0()
+            throws BadLocationFault_Exception , BadPriceFault_Exception {
         int referencePrice = 10;
         manager.init("UpaTransporter1");
 
@@ -247,11 +264,13 @@ public class ManagerTest {
         assertNotNull("job is null", returnDecideResponse);
         assertTrue("price is not less then 10", (returnDecideResponse.getJobPrice() > 0) &
                                                     (returnDecideResponse.getJobPrice() < 10));
+        assertTrue("Job not saved", manager.getJobs().contains(returnDecideResponse));
 
     }
 
     @Test
-    public void priceReferenceLessThen10shouldReturnPriceLessThen10AndGreaterThan0() {
+    public void priceLessThen10shouldReturnPriceLessThen10AndGreaterThan0()
+            throws BadLocationFault_Exception, BadPriceFault_Exception  {
         int referencePrice = 5;
         manager.init("UpaTransporter1");
 
@@ -260,10 +279,12 @@ public class ManagerTest {
         assertNotNull("job is null", returnDecideResponse);
         assertTrue("price is not less then 10", returnDecideResponse.getJobPrice() > 0 &
                                                     (returnDecideResponse.getJobPrice() < 10));
+        assertTrue("Job not saved", manager.getJobs().contains(returnDecideResponse));
     }
 
     @Test
-    public void priceReferenceEqualTo0shouldReturnNull() {
+    public void priceEqualTo0shouldReturnNull()
+            throws BadLocationFault_Exception, BadPriceFault_Exception  {
         manager.init("UpaTransporter1");
 
         Job returnDecideResponse = manager.decideResponse(centroLocation1, centroLocation2, 0);
@@ -272,7 +293,8 @@ public class ManagerTest {
     }
 
     @Test
-    public void oddPriceReferenceGreaterThan10LessOrEqualTo100AndOddTransporterShouldReturnPriceBelowReference() {
+    public void oddPriceGreaterThan10LessOrEqualTo100AndOddTransporterShouldReturnPriceBelowReference()
+            throws BadLocationFault_Exception, BadPriceFault_Exception {
         int referencePrice = 99;
         manager.init("UpaTransporter1");
 
@@ -281,10 +303,12 @@ public class ManagerTest {
         assertNotNull("job is null", returnDecideResponse);
         assertTrue("price is not less then reference price", returnDecideResponse.getJobPrice() > 0 &
                 (returnDecideResponse.getJobPrice() < referencePrice));
+        assertTrue("Job not saved", manager.getJobs().contains(returnDecideResponse));
     }
 
     @Test
-    public void evenPriceReferenceGreaterThan10LessOrEqualTo100AndEvenTransporterShouldReturnPriceBelowReference() {
+    public void evenPriceGreaterThan10LessOrEqualTo100AndEvenTransporterShouldReturnPriceBelowReference()
+            throws BadLocationFault_Exception, BadPriceFault_Exception {
         int referencePrice = 100;
         manager.init("UpaTransporter2");
 
@@ -293,30 +317,35 @@ public class ManagerTest {
         assertNotNull("job is null", returnDecideResponse);
         assertTrue("price is not less then reference price", returnDecideResponse.getJobPrice() > 0 &
                 (returnDecideResponse.getJobPrice() < referencePrice));
+        assertTrue("Job not saved", manager.getJobs().contains(returnDecideResponse));
     }
 
     @Test
-    public void oddPriceReferenceGreaterThan10LessOrEqualTo100AndEvenTransporterShouldReturnPriceAboveReference() {
+    public void oddPriceGreaterThan10LessOrEqualTo100AndEvenTransporterShouldReturnPriceAboveReference()
+            throws BadLocationFault_Exception, BadPriceFault_Exception {
         int referencePrice = 11;
-        manager.init("UpaTransporter1");
-
-        Job returnDecideResponse = manager.decideResponse(centroLocation1, centroLocation2, referencePrice);
-
-        assertNotNull("job is null", returnDecideResponse);
-        assertTrue("price is not less then reference price", returnDecideResponse.getJobPrice() > 0 &
-                (returnDecideResponse.getJobPrice() > referencePrice));
-    }
-
-    @Test
-    public void evenPriceReferenceGreaterThan10LessOrEqualTo100AndOddTransporterShouldReturnPriceAboveReference() {
-        int referencePrice = 15;
         manager.init("UpaTransporter2");
 
         Job returnDecideResponse = manager.decideResponse(centroLocation1, centroLocation2, referencePrice);
 
         assertNotNull("job is null", returnDecideResponse);
-        assertTrue("price is not less then reference price", returnDecideResponse.getJobPrice() > 0 &
+        assertTrue("price is not above reference price", returnDecideResponse.getJobPrice() > 0 &
                 (returnDecideResponse.getJobPrice() > referencePrice));
+        assertTrue("Job not saved", manager.getJobs().contains(returnDecideResponse));
+    }
+
+    @Test
+    public void evenPriceGreaterThan10LessOrEqualTo100AndOddTransporterShouldReturnPriceAboveReference()
+            throws BadLocationFault_Exception, BadPriceFault_Exception {
+        int referencePrice = 16;
+        manager.init("UpaTransporter1");
+
+        Job returnDecideResponse = manager.decideResponse(centroLocation1, centroLocation2, referencePrice);
+
+        assertNotNull("job is null", returnDecideResponse);
+        assertTrue("price is not greater reference price", returnDecideResponse.getJobPrice() > 0 &
+                (returnDecideResponse.getJobPrice() > referencePrice));
+        assertTrue("Job not saved", manager.getJobs().contains(returnDecideResponse));
     }
 
 }

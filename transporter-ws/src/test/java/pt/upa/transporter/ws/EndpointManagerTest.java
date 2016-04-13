@@ -36,11 +36,8 @@ public class EndpointManagerTest {
 
     // members
     private String validUddiURL = "http://localhost:9090";
-    private String invalidUddiURL = "POTATO";
     private String validWsName = "UpaTransporter1";
-    private String invalidWsName = "UpaTransporterPOTATO";
     private String validWsURL = "http://localhost:8081/transporter-ws/endpoint";
-    private String invalidWsURL = "POTATO";
 
     // initialization and clean-up for each test
     @Before
@@ -49,6 +46,7 @@ public class EndpointManagerTest {
 
     @After
     public void tearDown() {
+
     }
 
 
@@ -66,29 +64,25 @@ public class EndpointManagerTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void invalidUddiURL() {
+        String invalidUddiURL = "POTATO";
         new EndpointManager(invalidUddiURL, validWsName, validWsURL);
     }
 
     @Test(expected = InvalidTransporterNameException.class)
     public void invalidWsName() {
+        String invalidWsName = "UpaTransporterPOTATO";
         new EndpointManager(validUddiURL, invalidWsName, validWsURL);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void invalidWsURL() {
+        String invalidWsURL = "POTATO";
         new EndpointManager(validUddiURL, validWsName, invalidWsURL);
     }
 
     @Test
     public void successStart() {
         EndpointManager endpointManager = new EndpointManager(validUddiURL, validWsName, validWsURL);
-
-        Endpoint endpointMock = new MockUp<Endpoint>(){
-            @Mock
-            void publish(String wsURL) {
-                assertEquals("endpoint: wsURL not pass correctly", wsURL, endpointManager.getWsURL());
-            }
-        }.getMockInstance();
 
         UDDINaming  uddiNamingMock = new MockUp<UDDINaming>() {
             @Mock
@@ -98,13 +92,12 @@ public class EndpointManagerTest {
             }
         }.getMockInstance();
 
-        endpointManager.setEndpoint(endpointMock);
         endpointManager.setUddiNaming(uddiNamingMock);
 
         endpointManager.start();
 
-        assertTrue("fail to set started status", endpointManager.isStarted());
-        assertTrue("must set started status", endpointManager.isStarted());
+        assertTrue("endpoint is not publish", endpointManager.getEndpoint().isPublished());
+        assertTrue("started status is not set to true", endpointManager.isStarted());
     }
 
     @Test(expected = TransporterEndpointExeption.class)
@@ -143,60 +136,26 @@ public class EndpointManagerTest {
 
 
     @Test
-    public void successAwaitConnection(@Mocked Endpoint endpointMock) {
+    public void successAwaitConnection() {
         EndpointManager endpointManager = new EndpointManager(validUddiURL, validWsName, validWsURL);
 
-        new Expectations() {{
-            endpointMock.isPublished(); result = true;
-        }};
-        endpointManager.setEndpoint(endpointMock);
         endpointManager.setStarted(true);
 
         boolean awaitConnectionReturn = endpointManager.awaitConnections();
-
-        new Verifications() {{
-            endpointMock.isPublished(); maxTimes = 1;
-        }};
 
         assertTrue("fail to set await status", endpointManager.isAwaitConnection());
         assertTrue("must return true", awaitConnectionReturn );
     }
 
     @Test
-    public void shouldNotAwaitConnectionsWhenWsIsNotStarted(@Mocked Endpoint endpointMock) {
+    public void shouldNotAwaitConnectionsWhenWsIsNotStarted() {
         EndpointManager endpointManager = new EndpointManager(validUddiURL, validWsName, validWsURL);
 
-        new Expectations() {{
-            endpointMock.isPublished(); result = true;
-        }};
         endpointManager.setStarted(false);
 
         boolean awaitConnectionReturn = endpointManager.awaitConnections();
 
-        new Verifications() {{
-            endpointMock.isPublished(); maxTimes = 1;
-        }};
-
-        assertFalse("wrong set of await connection status", endpointManager.isAwaitConnection());
-        assertFalse("must return false", awaitConnectionReturn );
-    }
-
-    @Test
-    public void shouldNotAwaitConnectionsWhenWsURLIsNotPublish(@Mocked Endpoint endpointMock) {
-        EndpointManager endpointManager = new EndpointManager(validUddiURL, validWsName, validWsURL);
-
-        new Expectations() {{
-            endpointMock.isPublished(); result = false;
-        }};
-
-        boolean awaitConnectionReturn = endpointManager.awaitConnections();
-
-        new Verifications() {{
-            endpointMock.isPublished(); maxTimes = 1;
-        }};
-        endpointManager.setStarted(true);
-
-        assertFalse("wrong set of await connection status", endpointManager.isAwaitConnection());
+        assertFalse("fail to set await status", endpointManager.isAwaitConnection());
         assertFalse("must return false", awaitConnectionReturn );
     }
 
@@ -219,7 +178,7 @@ public class EndpointManagerTest {
         endpointManager.stop();
 
         assertFalse("started status not changed", endpointManager.isStarted());
-        assertFalse("await status not changed", endpointManager.isStarted());
+        assertFalse("await status not changed", endpointManager.isAwaitConnection());
     }
 
     @Test
@@ -240,7 +199,7 @@ public class EndpointManagerTest {
         endpointManager.stop();
 
         assertFalse("started status not changed", endpointManager.isStarted());
-        assertFalse("await status not changed", endpointManager.isStarted());
+        assertFalse("await status not changed", endpointManager.isAwaitConnection());
     }
 
     @Test
@@ -253,7 +212,7 @@ public class EndpointManagerTest {
         endpointManager.stop();
 
         assertFalse("started status not changed", endpointManager.isStarted());
-        assertFalse("await status not changed", endpointManager.isStarted());
+        assertFalse("await status not changed", endpointManager.isAwaitConnection());
     }
 
     @Test
@@ -269,7 +228,7 @@ public class EndpointManagerTest {
         endpointManager.stop();
 
         assertFalse("started status not changed", endpointManager.isStarted());
-        assertFalse("await status not changed", endpointManager.isStarted());
+        assertFalse("await status not changed", endpointManager.isAwaitConnection());
     }
 
     @Test (expected = TransporterEndpointExeption.class)
