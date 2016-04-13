@@ -132,7 +132,7 @@ public class ManagerTest {
     // -----------------------------------------------------------------------------------------------------------------
 
     @Test
-	public void successGetJobViewExisting() {
+	public void successGetJobExisting() {
 		Job job1 = new Job();
 		job1.setJobIdentifier("id1");
 		manager.addJob(job1);
@@ -141,7 +141,7 @@ public class ManagerTest {
 	}
 
 	@Test
-	public void successGetJobViewNonExisting(){
+	public void successGetJobNonExisting(){
 		assertNull(manager.getJobById("id"));
 	}
 	
