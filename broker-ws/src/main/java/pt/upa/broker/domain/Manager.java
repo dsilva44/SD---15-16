@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
+import pt.upa.broker.Exception.CannotUpdateTransportersClientsException;
+import pt.upa.transporter.ws.cli.TransporterClient;
 
 import javax.xml.registry.JAXRException;
 
@@ -12,14 +14,16 @@ public class Manager {
 	static private final Logger log = LogManager.getRootLogger();
     private static Manager manager = new Manager();
 
+    private String uddiURL = "http://localhost:9090";
     private UDDINaming uddiNaming;
 
-    private ArrayList<String> availTransporters;
+    private String query = "UpaTransporter%";
+    private ArrayList<TransporterClient> transporterClients;
     private ArrayList<Transport> bookedTransports;
 
 
     private Manager() {
-        availTransporters = new ArrayList<>();
+        transporterClients = new ArrayList<>();
         bookedTransports = new ArrayList<>();
     }
 
@@ -33,18 +37,42 @@ public class Manager {
     
     public static Manager getInstance() { return manager; }
 
-    public ArrayList<String> getAvailTransporters() { return availTransporters; }
+    ArrayList<TransporterClient> getTransporterClients() { return transporterClients; }
 
     void setUddiNaming(UDDINaming uddiNaming) { this.uddiNaming = uddiNaming; }
 
     public boolean updateTransportersList() {
-        //TODO
-        return false;
+        ArrayList<TransporterClient> rollBack = transporterClients;
+        transporterClients.clear();
+        try {
+            ArrayList<String> endpoints = (ArrayList<String>) uddiNaming.list(query);
+            for (String endpoint : endpoints) {
+                TransporterClient client = new TransporterClient(uddiURL, endpoint);
+                transporterClients.add(client);
+            }
+            return !transporterClients.isEmpty();
+
+        } catch (Exception e) {
+            log.error("something goes wrong while updating transporters clients", e);
+            transporterClients = rollBack;
+            throw new CannotUpdateTransportersClientsException();
+        }
     }
 
     public int pingTransporters() {
-        //TODO
-        return 0;
+        int count = 0;
+        if (updateTransportersList()) {
+            for (TransporterClient client : transporterClients) {
+                try {
+                    client.ping(Integer.toString(count));
+                    count++;
+                } catch (Exception e) {
+                    log.error("something goes wrong while contacting transporter client", e);
+                }
+            }
+        }
+
+        return count;
     }
     
 }
