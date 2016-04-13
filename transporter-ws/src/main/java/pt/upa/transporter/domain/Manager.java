@@ -72,7 +72,7 @@ public class Manager {
 
     ArrayList<String> getWorkCities() { return workCities; }
 
-    ArrayList<Job> getJobs() {
+    public ArrayList<Job> getJobs() {
         return jobs;
     }
 

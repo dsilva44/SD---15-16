@@ -5,6 +5,7 @@ import javax.jws.WebService;
 import pt.upa.transporter.domain.Job;
 import pt.upa.transporter.domain.Manager;
 
+import java.util.ArrayList;
 import java.util.List;
 @WebService(
         endpointInterface = "pt.upa.transporter.ws.TransporterPortType",
@@ -64,13 +65,26 @@ public class TransporterPort implements TransporterPortType {
 
     @Override
     public List<JobView> listJobs() {
-        //TODO listJobs
+        ArrayList<Job> jobs = manager.getJobs();
 
-        return null;
+        return jobListToJobViewList(jobs);
     }
 
     @Override
     public void clearJobs(){
     	manager.setJobs(null);
+    }
+
+    private List<JobView> jobListToJobViewList(ArrayList<Job> jobs) {
+        ArrayList<JobView> newList = null;
+
+        if (jobs != null) {
+            newList = new ArrayList<>();
+            for(Job job : jobs) {
+                newList.add(job.toJobView());
+            }
+        }
+
+        return newList;
     }
 }
