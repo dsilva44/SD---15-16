@@ -148,6 +148,8 @@ public class ManagerTest {
 	}
 
 
+    // ----------------------------------------confirmationJob(String id)--------------------------------------------------
+
     @Test(expected=JobDoesNotExistException.class)
     public void ConfirmJobWithInvalidIDTest() throws Exception{
 

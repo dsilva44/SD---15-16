@@ -54,13 +54,14 @@ public class Manager {
                 workCities.addAll(sul);
                 break;
         }
+
     }
 
     String getParity() { return parity; }
 
     ArrayList<String> getWorkCities() { return workCities; }
 
-    ArrayList<Job> getJobs() {
+    public ArrayList<Job> getJobs() {
         return jobs;
     }
 
