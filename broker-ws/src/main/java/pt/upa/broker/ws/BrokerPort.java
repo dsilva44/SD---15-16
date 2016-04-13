@@ -26,9 +26,13 @@ public class BrokerPort implements BrokerPortType{
 
 	@Override
 	public TransportView viewTransport(String id) throws UnknownTransportFault_Exception {
-		// TODO Auto-generated method stub
+		Transport t = manager.getTransportById(id);
+		if (t != null){
+			return t.toTransportView();
+		}
 		return null;
 	}
+	
 
 	@Override
 	public List<TransportView> listTransports() {

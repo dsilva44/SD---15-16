@@ -80,4 +80,17 @@ public class Manager {
     	return bookedTransports;
     }
     
+    public Transport getTransportById(String id){
+    	for (Transport t : bookedTransports){
+    		if (t.getId().equals(id)){
+    			return t;
+    		}
+    	}
+    	return null;
+    }
+    
+    public void addTransport(Transport t){
+    	bookedTransports.add(t);
+    }
+    
 }
