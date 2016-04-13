@@ -1,8 +1,11 @@
 package pt.upa.broker.ws;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import pt.upa.broker.domain.Manager;
+import pt.upa.broker.domain.Transport;
+import pt.upa.transporter.domain.Job;
 
 public class BrokerPort implements BrokerPortType{
 
@@ -30,14 +33,9 @@ public class BrokerPort implements BrokerPortType{
 
 	@Override
 	public List<TransportView> listTransports() {
-		/*List<Transport> transports = manager.listTransports();
-		List <TransportView> transportViews = new List<TransportView>();
+		ArrayList<Transport> transports = manager.getBookedTransports();
 		
-		for (Transport t : transports){
-			transportViews.add(t.toTransportView());
-		}
-		return transportViews;*/
-		return null;
+		return transportListToTransportViewList(transports);
 	}
 
 	@Override
@@ -46,5 +44,16 @@ public class BrokerPort implements BrokerPortType{
 	}
 
 	// TODO
-
+	private List<TransportView> transportListToTransportViewList(ArrayList<Transport> transports){
+		ArrayList<TransportView> views = null;
+		
+		if (transports != null) {
+            views = new ArrayList<>();
+            for(Transport transport : transports) {
+                views.add(transport.toTransportView());
+            }
+        }
+		return views;
+	}
+	
 }
