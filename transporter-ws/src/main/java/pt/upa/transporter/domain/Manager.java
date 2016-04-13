@@ -2,8 +2,6 @@ package pt.upa.transporter.domain;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import pt.upa.transporter.exception.JobDoesNotExistException;
-import pt.upa.transporter.exception.WrongStateToConfirmException;
 import pt.upa.transporter.ws.*;
 
 import java.util.ArrayList;
@@ -125,15 +123,20 @@ public class Manager {
         // TODO
     }
 
-    public Job confirmationJobs(String id, boolean bool) {
+    public Job confirmationJobs(String id, boolean bool) throws BadJobFault_Exception{
 
         Job job = getJobById(id);
         if(job == null){
-            throw new JobDoesNotExistException(id);
+            BadJobFault fault = new BadJobFault();
+            fault.setId(id);
+            throw new BadJobFault_Exception("not existing id", fault);
         }
 
-        if (job.getJobState() != JobStateView.PROPOSED) throw new WrongStateToConfirmException();
-
+        if (job.getJobState() != JobStateView.PROPOSED){
+            BadJobFault fault = new BadJobFault();
+            fault.setId(id);
+            throw new BadJobFault_Exception("invalid job state to confirm", fault);
+        }
         if (bool){
             job.setJobState(JobStateView.ACCEPTED);
         }

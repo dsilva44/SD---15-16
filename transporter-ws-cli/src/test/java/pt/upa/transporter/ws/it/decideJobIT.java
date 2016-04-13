@@ -1,6 +1,8 @@
 package pt.upa.transporter.ws.it;
 
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import pt.upa.transporter.ws.BadJobFault;
 import pt.upa.transporter.ws.BadJobFault_Exception;
@@ -10,21 +12,21 @@ import java.util.List;
 
 import static org.junit.Assert.assertTrue;
 
-
-/**
- * Created by david on 11-04-2016.
- */
 public class decideJobIT extends AbstractIntegrationTest{
 
-    @Test
-    public void validJobdecideJobReturnList() throws BadJobFault_Exception{
-        JobView jv = client.decideJob("validjobtest", true);
-        assertTrue("decideJob not returning a List", jv instanceof JobView);
+    // initialization and clean-up for each test
+    @Before
+    public void setUp() throws Exception{
+        client1.requestJob("Lisboa", "Leiria", 50);
     }
 
-   @Test(expected = BadJobFault_Exception.class)
-    public void invalidJobdecideJobReturnList() throws BadJobFault_Exception{
-        JobView jv = client.decideJob("invalidjobtest", true);
-        assertTrue("decideJob not returning a List", jv instanceof JobView);
+    @After
+    public void tearDown() {
+        client1.clearJobs();
+    }
+
+    @Test(expected=BadJobFault_Exception.class)
+    public void decideJobWithInvalidIDTest() throws Exception{
+        client1.decideJob("bananas", true);
     }
 }
