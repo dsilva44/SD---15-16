@@ -1,14 +1,12 @@
 package pt.upa.transporter.domain;
 
-import pt.upa.transporter.exception.WrongStateToConfirmException;
-import pt.upa.transporter.exception.JobDoesNotExistException;
-
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import pt.upa.transporter.ws.BadJobFault_Exception;
 import pt.upa.transporter.ws.BadLocationFault_Exception;
 import pt.upa.transporter.ws.BadPriceFault_Exception;
 import pt.upa.transporter.ws.JobStateView;
@@ -149,13 +147,13 @@ public class ManagerTest {
 
     // ----------------------------------------confirmationJob(String id)--------------------------------------------------
 
-    @Test(expected=JobDoesNotExistException.class)
+    @Test(expected=BadJobFault_Exception.class)
     public void ConfirmJobWithInvalidIDTest() throws Exception{
 
         manager.confirmationJobs("bananas", true);
     }
 
-    @Test(expected=WrongStateToConfirmException.class)
+    @Test(expected=BadJobFault_Exception.class)
     public void trueConfirmJobWithWrongStateTest() throws Exception {
 
        manager.confirmationJobs("invalidjobtest", true);
@@ -168,7 +166,7 @@ public class ManagerTest {
         assertEquals("confirmation job did not work correctly", job.getJobState(), JobStateView.ACCEPTED);
     }
 
-    @Test(expected = WrongStateToConfirmException.class)
+    @Test(expected = BadJobFault_Exception.class)
     public void falseConfirmWithWrongStateJobTest() throws Exception{
         manager.confirmationJobs("invalidjobtest", false);
     }

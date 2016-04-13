@@ -41,7 +41,7 @@ public abstract class AbstractIntegrationTest {
 
     // initialization and clean-up for each test
     @Before
-    public void setUp() {
+    public void setUp() throws Exception{
     }
 
     @After
