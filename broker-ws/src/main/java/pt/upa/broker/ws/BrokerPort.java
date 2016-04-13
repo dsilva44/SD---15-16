@@ -5,7 +5,6 @@ import java.util.List;
 
 import pt.upa.broker.domain.Manager;
 import pt.upa.broker.domain.Transport;
-import pt.upa.transporter.domain.Job;
 
 public class BrokerPort implements BrokerPortType{
 
