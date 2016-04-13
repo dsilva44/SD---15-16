@@ -4,8 +4,6 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-import pt.upa.transporter.exception.WrongStateToConfirmException;
-import pt.upa.transporter.exception.JobDoesNotExistException;
 
 import org.junit.After;
 import org.junit.AfterClass;

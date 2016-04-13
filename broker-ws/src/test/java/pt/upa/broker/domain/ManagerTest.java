@@ -3,6 +3,8 @@ package pt.upa.broker.domain;
 import mockit.*;
 import org.junit.*;
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
+import pt.upa.broker.Exception.CannotUpdateTransportersClientsException;
+import pt.upa.broker.domain.Transport;
 import pt.upa.transporter.ws.cli.TransporterClient;
 
 import javax.xml.registry.JAXRException;
@@ -141,4 +143,22 @@ public class ManagerTest {
         assertTrue("must return 1", result == 1);
         assertTrue("broken client  array", manager.getTransporterClients().size() == 1);
     }
+
+    //--------------------------------------------------------------getTransportByID-------------
+
+    @Test
+	public void successGetTransportNonExisting(){
+		assertNull(manager.getTransportById("invalidID"));
+	}
+
+    @Test
+	public void successGetTransportExisting() {
+		Transport t1 = new Transport();
+		t1.setId("id1");
+		manager.addTransport(t1);
+
+		assertEquals(t1, manager.getTransportById("id1"));
+	}
+
+
 }

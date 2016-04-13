@@ -36,19 +36,8 @@ public class TransporterPort implements TransporterPortType {
 
     @Override
     public JobView decideJob(String id, boolean accept) throws BadJobFault_Exception {
-        Job job;
-
-        try{
-            job = manager.confirmationJobs(id, accept);
-        }catch(Exception d){
-
-            BadJobFault fault = new BadJobFault();
-            fault.setId(id);
-            throw new BadJobFault_Exception("not existing id or wrong state", fault);
-        }
-
+        Job job = manager.confirmationJobs(id, accept);
         return job.toJobView();
-
     }
 
     @Override
@@ -66,7 +55,6 @@ public class TransporterPort implements TransporterPortType {
     @Override
     public List<JobView> listJobs() {
         ArrayList<Job> jobs = manager.getJobs();
-
         return jobListToJobViewList(jobs);
     }
 
