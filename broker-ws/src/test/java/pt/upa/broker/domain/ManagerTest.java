@@ -3,7 +3,6 @@ package pt.upa.broker.domain;
 import mockit.*;
 import org.junit.*;
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
-import pt.upa.broker.Exception.CannotUpdateTransportersClientsException;
 import pt.upa.transporter.ws.cli.TransporterClient;
 
 import javax.xml.registry.JAXRException;
@@ -35,7 +34,7 @@ public class ManagerTest {
     private String transporterQuery = "UpaTransporter%";
     private String wsURL1 = "http://localhost:8081/transporter-ws/endpoint";
     private String wsURL2 = "http://localhost:8082/transporter-ws/endpoint";
-    private Collection<String> transEndpoints = new ArrayList<>(Arrays.asList(wsURL1, wsURL2));
+    private Collection<String> endpointsList = new ArrayList<>(Arrays.asList(wsURL1, wsURL2));
     private ArrayList<String> emptyList = new ArrayList<>();
 
     // initialization and clean-up for each test
@@ -49,10 +48,10 @@ public class ManagerTest {
 
     // --------------------------------------- updateTransporters ------------------------------------------------------
     @Test
-    public void successUpdateTransportersList(@Mocked UDDINaming uddiNamingMock, @Mocked TransporterClient transporterClientMock)
+    public void successUpdateTransportersList(@Mocked UDDINaming uddiNamingMock)
             throws JAXRException {
         new Expectations() {{
-            uddiNamingMock.list(transporterQuery); result = transEndpoints;
+            uddiNamingMock.list(transporterQuery); result = endpointsList;
         }};
         manager.setUddiNaming(uddiNamingMock);
 
@@ -66,18 +65,8 @@ public class ManagerTest {
         assertTrue("must return true", result);
     }
 
-    @Test(expected = CannotUpdateTransportersClientsException.class)
-    public void shouldTrowExceptionWhenSomethingGoesWrong(@Mocked UDDINaming uddiNamingMock) throws JAXRException {
-        new Expectations() {{
-            uddiNamingMock.list(transporterQuery); result = new JAXRException();
-        }};
-        manager.setUddiNaming(uddiNamingMock);
-
-        manager.updateTransportersList();
-    }
-
     @Test
-    public void cannotFindTransportersShouldReturnFalse(@Mocked UDDINaming uddiNamingMock) throws JAXRException {
+    public void uddiReturnEmptyListShouldReturnFalse(@Mocked UDDINaming uddiNamingMock) throws JAXRException {
         new Expectations() {{
             uddiNamingMock.list(transporterQuery); result = emptyList;
         }};
@@ -98,7 +87,7 @@ public class ManagerTest {
     public void successPingAllTransporters(@Mocked UDDINaming uddiNamingMock, @Mocked TransporterClient transporterClientMock)
             throws JAXRException {
         new Expectations() {{
-            uddiNamingMock.list(transporterQuery); result = transEndpoints;
+            uddiNamingMock.list(transporterQuery); result = endpointsList;
             transporterClientMock.ping("0"); result = "Pong 0!";
             transporterClientMock.ping("1"); result = "Pong 1!";
         }};
@@ -132,10 +121,10 @@ public class ManagerTest {
     }
 
     @Test
-    public void successPingSomeTransporters(@Mocked UDDINaming uddiNamingMock, @Mocked TransporterClient transporterClientMock)
-            throws JAXRException {
+    public void successPingSomeTransportersAndDeleteBrokenReferences(
+            @Mocked UDDINaming uddiNamingMock, @Mocked TransporterClient transporterClientMock) throws JAXRException {
         new Expectations() {{
-            uddiNamingMock.list(transporterQuery); result = transEndpoints;
+            uddiNamingMock.list(transporterQuery); result = endpointsList;
             transporterClientMock.ping("0"); result = "Pong 0!";
             transporterClientMock.ping("1"); result = new JAXRException();
         }};
@@ -150,5 +139,6 @@ public class ManagerTest {
         }};
 
         assertTrue("must return 1", result == 1);
+        assertTrue("broken client  array", manager.getTransporterClients().size() == 1);
     }
 }

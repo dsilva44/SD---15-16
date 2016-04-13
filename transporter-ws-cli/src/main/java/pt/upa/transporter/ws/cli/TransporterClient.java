@@ -5,6 +5,7 @@ import org.apache.logging.log4j.Logger;
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
 import pt.upa.transporter.ws.*;
 
+import javax.xml.registry.JAXRException;
 import javax.xml.ws.BindingProvider;
 import java.util.List;
 import java.util.Map;
@@ -15,8 +16,9 @@ public class TransporterClient implements TransporterPortType {
 	static private final Logger log = LogManager.getRootLogger();
 
 	private TransporterPortType port;
+	private String wsURL;
 
-	public TransporterClient(String uddiURL, String wsName) throws Exception {
+	public TransporterClient(String uddiURL, String wsName) throws JAXRException {
 		log.info("Contacting UDDI at " + uddiURL);
 		UDDINaming uddiNaming = new UDDINaming(uddiURL);
 
@@ -28,6 +30,7 @@ public class TransporterClient implements TransporterPortType {
 			return;
 		} else {
 			log.info("Found " + endpointAddress);
+			this.wsURL = endpointAddress;
 		}
 
 		log.info("Creating stub ...");
@@ -40,7 +43,8 @@ public class TransporterClient implements TransporterPortType {
 		requestContext.put(ENDPOINT_ADDRESS_PROPERTY, endpointAddress);
 	}
 
-	public TransporterClient(String wsURL) throws Exception {
+	public TransporterClient(String wsURL) {
+		this.wsURL = wsURL;
 		log.info("Creating stub ...");
 		TransporterService service = new TransporterService();
 		port = service.getTransporterPort();
@@ -50,6 +54,8 @@ public class TransporterClient implements TransporterPortType {
 		Map<String, Object> requestContext = bindingProvider.getRequestContext();
 		requestContext.put(ENDPOINT_ADDRESS_PROPERTY, wsURL);
 	}
+
+	public String getWsURL() { return wsURL; }
 
 	@Override
 	public String ping(String name) {

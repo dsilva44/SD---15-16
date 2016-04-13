@@ -1,4 +1,4 @@
-package pt.upa.broker.Exception;
+package pt.upa.broker.exception;
 
 
 public abstract class BrokerException extends RuntimeException {
