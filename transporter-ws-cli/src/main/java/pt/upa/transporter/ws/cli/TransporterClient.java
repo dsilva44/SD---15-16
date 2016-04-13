@@ -40,6 +40,17 @@ public class TransporterClient implements TransporterPortType {
 		requestContext.put(ENDPOINT_ADDRESS_PROPERTY, endpointAddress);
 	}
 
+	public TransporterClient(String wsURL) throws Exception {
+		log.info("Creating stub ...");
+		TransporterService service = new TransporterService();
+		port = service.getTransporterPort();
+
+		log.info("Setting endpoint address ...");
+		BindingProvider bindingProvider = (BindingProvider) port;
+		Map<String, Object> requestContext = bindingProvider.getRequestContext();
+		requestContext.put(ENDPOINT_ADDRESS_PROPERTY, wsURL);
+	}
+
 	@Override
 	public String ping(String name) {
 		return port.ping(name);
