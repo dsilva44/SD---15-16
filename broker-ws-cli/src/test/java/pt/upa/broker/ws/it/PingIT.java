@@ -11,6 +11,7 @@ public class PingIT extends AbstractIntegrationTest {
         String result = brokerClient.ping("friend");
 
         assertNotNull("ping return null", result);
+        log.info(result);
     }
 
     @Test

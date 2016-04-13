@@ -3,8 +3,6 @@ package pt.upa.broker.domain;
 import mockit.*;
 import org.junit.*;
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
-import pt.upa.broker.Exception.CannotUpdateTransportersClientsException;
-import pt.upa.broker.domain.Transport;
 import pt.upa.transporter.ws.cli.TransporterClient;
 
 import javax.xml.registry.JAXRException;
