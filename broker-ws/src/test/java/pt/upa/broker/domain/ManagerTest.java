@@ -9,6 +9,11 @@ import pt.upa.broker.Exception.BrokerUddiNamingException;
 
 import javax.xml.registry.JAXRException;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+
 import static org.junit.Assert.*;
 
 
@@ -29,9 +34,11 @@ public class ManagerTest {
 
     //Members
     private Manager manager = Manager.getInstance();
-    private String wsName = "UpaTransporter1";
+    private String wsName = "UpaTransporter%";
     private String wsURL1 = "http://localhost:8081/transporter-ws/endpoint";
     private String wsURL2 = "http://localhost:8082/transporter-ws/endpoint";
+    private Collection<String> transEndpoints = new ArrayList<>(Arrays.asList(wsURL1, wsURL2));
+    private ArrayList<String> emptyList = new ArrayList<>();
 
     // initialization and clean-up for each test
     @Before
@@ -46,14 +53,14 @@ public class ManagerTest {
     @Test
     public void successUpdateTransportersList(@Mocked UDDINaming uddiNamingMock) throws JAXRException {
         new Expectations() {{
-            uddiNamingMock.lookup(wsName); result = wsURL1; result = wsURL2;
+            uddiNamingMock.list(wsName); result = transEndpoints;
         }};
         manager.setUddiNaming(uddiNamingMock);
 
         boolean result = manager.updateTransportersList();
 
         new Verifications() {{
-            uddiNamingMock.lookup(wsName); maxTimes = 2;
+            uddiNamingMock.list(wsName); maxTimes = 1;
         }};
 
         assertFalse("transporters list is empty", manager.getAvailTransporters().isEmpty());
@@ -63,7 +70,7 @@ public class ManagerTest {
     @Test(expected = BrokerUddiNamingException.class)
     public void shouldTrowExceptionWhenJuddIsDown(@Mocked UDDINaming uddiNamingMock) throws JAXRException {
         new Expectations() {{
-            uddiNamingMock.lookup("BATATA"); result = new JAXRException();
+            uddiNamingMock.list(wsName); result = new JAXRException();
         }};
         manager.setUddiNaming(uddiNamingMock);
 
@@ -73,14 +80,14 @@ public class ManagerTest {
     @Test
     public void cannotFindTransportersShouldReturnFalse(@Mocked UDDINaming uddiNamingMock) throws JAXRException {
         new Expectations() {{
-            uddiNamingMock.lookup(wsName); result = null;
+            uddiNamingMock.list(wsName); result = emptyList;
         }};
         manager.setUddiNaming(uddiNamingMock);
 
         boolean result = manager.updateTransportersList();
 
         new Verifications() {{
-            uddiNamingMock.lookup(wsName); maxTimes = 1;
+            uddiNamingMock.list(wsName); maxTimes = 1;
         }};
 
         assertTrue("transporters list is not empty", manager.getAvailTransporters().isEmpty());
@@ -91,14 +98,14 @@ public class ManagerTest {
     @Test
     public void successPingAllTransporters(@Mocked UDDINaming uddiNamingMock) throws JAXRException {
         new Expectations() {{
-            uddiNamingMock.lookup("BATATA"); result = wsURL1; result = wsURL2;
+            uddiNamingMock.list(wsName); result = transEndpoints;
         }};
         manager.setUddiNaming(uddiNamingMock);
 
         int result = manager.pingTransporters();
 
         new Verifications() {{
-            uddiNamingMock.lookup(wsName); maxTimes = 2;
+            uddiNamingMock.list(wsName); maxTimes = 2;
         }};
 
         assertTrue("must return 2", result == 2);
@@ -107,14 +114,14 @@ public class ManagerTest {
     @Test
     public void failToPingTransporters(@Mocked UDDINaming uddiNamingMock) throws JAXRException {
         new Expectations() {{
-            uddiNamingMock.lookup("BATATA"); result = null;
+            uddiNamingMock.list(wsName); result = emptyList;
         }};
         manager.setUddiNaming(uddiNamingMock);
 
         int result = manager.pingTransporters();
 
         new Verifications() {{
-            uddiNamingMock.lookup(wsName); maxTimes = 1;
+            uddiNamingMock.list(wsName); maxTimes = 1;
         }};
 
         assertTrue("must return 0", result == 0);
