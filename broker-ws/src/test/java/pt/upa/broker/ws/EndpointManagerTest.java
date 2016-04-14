@@ -73,7 +73,7 @@ public class EndpointManagerTest {
     }
 
     @Test
-    public void successStart() {
+    public void successStart(@Mocked Endpoint endpointMock) {
         EndpointManager endpointManager = new EndpointManager(validUddiURL, validWsURL);
 
         UDDINaming  uddiNamingMock = new MockUp<UDDINaming>() {
@@ -85,10 +85,10 @@ public class EndpointManagerTest {
         }.getMockInstance();
 
         endpointManager.setUddiNaming(uddiNamingMock);
+        endpointManager.setEndpoint(endpointMock);
 
         endpointManager.start();
 
-        assertTrue("endpoint is not publish", endpointManager.getEndpoint().isPublished());
         assertTrue("started status is not set to true", endpointManager.isStarted());
     }
 

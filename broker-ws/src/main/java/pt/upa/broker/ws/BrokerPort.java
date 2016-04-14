@@ -7,7 +7,6 @@ import java.util.List;
 import pt.upa.broker.domain.Manager;
 import pt.upa.broker.domain.Transport;
 import pt.upa.broker.domain.TransportOffers;
-import pt.upa.transporter.ws.BadJobFault_Exception;
 import pt.upa.transporter.ws.BadLocationFault_Exception;
 import pt.upa.transporter.ws.BadPriceFault_Exception;
 

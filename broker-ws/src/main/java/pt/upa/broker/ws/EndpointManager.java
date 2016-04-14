@@ -54,8 +54,8 @@ public class EndpointManager {
             log.info("Starting: " + wsURL);
             endpoint.publish(wsURL);
         } catch (Exception e) {
-            log.error("Error publish endpoint", e);
-            throw new BrokerEndpointException("Error publish endpoint");
+            log.error("Error publish endpoint: " + wsURL, e);
+            throw new BrokerEndpointException("Error publish endpoint: " + wsURL);
         }
 
         try {
