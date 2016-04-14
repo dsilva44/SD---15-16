@@ -312,7 +312,7 @@ public class ManagerTest {
         assertEquals("wrong STATE", state2, TransportStateView.BOOKED);
     }
 
-    @Test(expected = UnavailableTransportFault_Exception.class)
+    @Test(expected = UnavailableTransportPriceFault_Exception.class)
     public void allOffersAboveReferencePrice(
             @Mocked TransporterClient transporterClientMock) throws  Exception {
         int referencePrice = 15;
@@ -331,13 +331,13 @@ public class ManagerTest {
         try {
             manager.decideOffers();
 
-        } catch (UnavailableTransportFault_Exception e) {
+        } catch (UnavailableTransportPriceFault_Exception e) {
             assertTrue("transporter offer not saved", manager.getTransportOffers().size() == 1);
             TransportStateView state = manager.getTransportById("1").getState();
 
             assertEquals("wrong SATE", state, TransportStateView.FAILED);
 
-            throw new UnavailableTransportFault_Exception(null, null);
+            throw new UnavailableTransportPriceFault_Exception(null, null);
         }
     }
 

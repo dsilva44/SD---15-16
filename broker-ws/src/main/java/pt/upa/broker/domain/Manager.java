@@ -6,13 +6,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
 import pt.upa.broker.ws.*;
-import pt.upa.transporter.ws.BadJobFault_Exception;
-import pt.upa.transporter.ws.BadLocationFault_Exception;
-import pt.upa.transporter.ws.BadPriceFault_Exception;
-import pt.upa.transporter.ws.JobView;
+import pt.upa.transporter.ws.*;
 import pt.upa.transporter.ws.cli.TransporterClient;
 
 import javax.xml.registry.JAXRException;
+
+import pt.upa.broker.exception.BrokerBadJobException;
 
 public class Manager {
 	static private final Logger log = LogManager.getRootLogger();
@@ -106,9 +105,7 @@ public class Manager {
             private void throwException(String location) throws UnknownLocationFault_Exception {
                 UnknownLocationFault faultInfo = new UnknownLocationFault();
                 faultInfo.setLocation(location);
-
                 log.warn(location + " is a unknown location");
-
                 throw new UnknownLocationFault_Exception(location + " is a unknown location", faultInfo);
             }
         }
@@ -149,46 +146,51 @@ public class Manager {
 
         if (count == 0) {
             transport.setState(TransportStateView.FAILED);
-            throwUnavailableTransportPriceFault_Exception (origin, destination);
+            UnavailableTransportFault faultInfo = new UnavailableTransportFault();
+            faultInfo.setOrigin(origin);
+            faultInfo.setDestination(destination);
+            log.warn("There is no available transport from " + origin + "to " + destination);
+            throw new UnavailableTransportFault_Exception(
+                    "There is no available transport from " + origin + "to " + destination, faultInfo);
         }
     }
 
-    void decideOffers() throws BadJobFault_Exception, UnavailableTransportFault_Exception {
+    public String decideOffers() throws UnavailableTransportPriceFault_Exception {
 
+        String bestJobID = null;
         for (TransportOffers t : transportOffers) {
             TransporterClient client = t.getTransporterClient();
             Transport transport = t.getTransport();
             transport.setState(TransportStateView.FAILED);
 
-            int bestPrice = t.getReferencePrice();
-            String bestJobID = null;
-            for (JobView offer : t.getOffers() ) {
-                int offerPrice = offer.getJobPrice();
+            try {
+                int bestPrice = t.getReferencePrice();
+                for (JobView offer : t.getOffers() ) {
+                    int offerPrice = offer.getJobPrice();
 
-                if (offerPrice < bestPrice) {
-                    bestJobID = offer.getJobIdentifier();
-                    bestPrice = offerPrice;
-                } else client.decideJob(offer.getJobIdentifier(), false);
-            }
+                    if (offerPrice < bestPrice) {
+                        bestJobID = offer.getJobIdentifier();
+                        bestPrice = offerPrice;
+                    } else client.decideJob(offer.getJobIdentifier(), false);
+                }
 
-            if (bestPrice < t.getReferencePrice()) {
-                transport.setState(TransportStateView.BOOKED);
-                client.decideJob(bestJobID, true);
-            } else  {
-                client.decideJob(bestJobID, false);
-                throwUnavailableTransportPriceFault_Exception (transport.getOrigin(), transport.getDestination());
+                if (bestPrice < t.getReferencePrice()) {
+                    transport.setState(TransportStateView.BOOKED);
+                    client.decideJob(bestJobID, true);
+                } else  {
+                    client.decideJob(bestJobID, false);
+                    UnavailableTransportPriceFault faultInfo = new UnavailableTransportPriceFault();
+                    faultInfo.setBestPriceFound(bestPrice);
+                    log.warn("the best price for transportation is " + bestPrice);
+                    throw new UnavailableTransportPriceFault_Exception(
+                            "the best price for transportation is " + bestPrice, faultInfo);
+                }
+            } catch (BadJobFault_Exception e) {
+                throw new BrokerBadJobException(
+                        "Something went wrong while trying to decideJob on id: " + e.getFaultInfo().getId());
             }
         }
-    }
-
-    private void throwUnavailableTransportPriceFault_Exception (String origin, String destination)
-            throws UnavailableTransportFault_Exception {
-        UnavailableTransportFault faultInfo = new UnavailableTransportFault();
-        faultInfo.setOrigin(origin);
-        faultInfo.setDestination(destination);
-        throw new UnavailableTransportFault_Exception(
-                "There is no available source of transportation to the destination", faultInfo);
-
+        return bestJobID;
     }
 
     private boolean containsCaseInsensitive(String s, List<String> l) {
