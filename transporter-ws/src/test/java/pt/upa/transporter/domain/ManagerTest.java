@@ -345,5 +345,16 @@ public class ManagerTest {
                 (returnDecideResponse.getJobPrice() > referencePrice));
         assertTrue("Job not saved", manager.getJobs().contains(returnDecideResponse));
     }
+    
+    //-----------------------------------------------------------------------TRANSPORTIMULATION
+    /*
+    @Test
+    public void stateShouldBeAccepted(){
+	    Job job2 = new Job();
+		job2.setJobState(JobStateView.ACCEPTED);
+		manager.addJob(job2);
+    }
+    */
+    
 
 }

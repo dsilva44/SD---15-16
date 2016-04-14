@@ -4,12 +4,17 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import pt.upa.transporter.ws.*;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Pattern;
 
-public class Manager {
+import javax.swing.Timer;
+
+public class Manager {//implements ActionListener {
     static private final Logger log = LogManager.getRootLogger();
     private static Manager manager = new Manager();
 
@@ -27,6 +32,13 @@ public class Manager {
     private final ArrayList<String> sul = new ArrayList<>(Arrays.asList("Setúbal", "Évora", "Portalegre", "Beja",
             "Faro"));
 
+   
+    /*
+    private Random randomTime = new Random();
+    private int delay = (int)randomTime.nextFloat()*5;
+    private Timer timerRunAction = new Timer(delay,this);
+    */
+    
     private Manager() {
         knowCities = new ArrayList<>();
         workCities = new ArrayList<>();
@@ -35,6 +47,8 @@ public class Manager {
         knowCities.addAll(centro);
         knowCities.addAll(norte);
         knowCities.addAll(sul);
+        //timerRunAction.start();
+        
     }
 
     public static Manager getInstance() { return manager; }
@@ -60,6 +74,7 @@ public class Manager {
                 workCities.addAll(sul);
                 break;
         }
+        
 
     }
 
@@ -119,8 +134,43 @@ public class Manager {
         }
     }
 
+    /*
+    @Override
+	public void actionPerformed(ActionEvent e) {
+		this.TransportSimulation();
+		this.updateTimer();
+		
+	}
+    
+    public void updateTimer(){
+    	
+    	if (timerRunAction.isRunning()){
+    		timerRunAction.stop();
+	    	
+	        this.delay = (int)randomTime.nextFloat()*5;
+	        timerRunAction.setDelay(delay);
+	        timerRunAction.restart();
+	    }
+    }
+    */
+    
     public void TransportSimulation() {
-        // TODO
+    	if(!jobs.isEmpty()){
+	    	for(Job j : jobs){
+	    		switch (j.getJobState()){
+		    		case ACCEPTED: j.setJobState(JobStateView.HEADING);
+		    						break;
+		    			
+		    		case HEADING: j.setJobState(JobStateView.ONGOING);
+		    						break;
+		    		
+		    		case ONGOING: j.setJobState(JobStateView.COMPLETED);
+		    						break;
+		    		
+	    		}
+	    	}
+    	}
+    	
     }
 
     public Job confirmationJobs(String id, boolean bool) throws BadJobFault_Exception{
@@ -173,4 +223,6 @@ public class Manager {
         }
         return null;
     }
+
+	
 }
