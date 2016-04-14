@@ -1,4 +1,4 @@
-package pt.upa.broker.Exception;
+package pt.upa.broker.exception;
 
 public class BrokerUddiNamingException extends BrokerException {
     private static final long serialVersionUID = 1L;

@@ -6,14 +6,25 @@ import java.util.List;
 import pt.upa.broker.domain.Manager;
 import pt.upa.broker.domain.Transport;
 
+import javax.jws.WebService;
+
+
+@WebService(
+		endpointInterface = "pt.upa.broker.ws.BrokerPortType",
+		wsdlLocation = "broker.1_0.wsdl",
+		portName = "BrokerPort",
+		targetNamespace = "http://ws.broker.upa.pt/",
+		serviceName = "BrokerService"
+)
 public class BrokerPort implements BrokerPortType{
 
 	private Manager manager = Manager.getInstance();
 	
 	@Override
 	public String ping(String name) {
-		//TODO
-		return null;
+		int numResponses = manager.pingTransporters();
+
+		return numResponses + " transporters available";
 	}
 
 	@Override
