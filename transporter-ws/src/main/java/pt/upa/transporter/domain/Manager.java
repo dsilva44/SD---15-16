@@ -6,6 +6,7 @@ import pt.upa.transporter.ws.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Pattern;
 
@@ -109,8 +110,8 @@ public class Manager {
             }
         }
 
-        if (!knowCities.contains(origin)) new BadFaultLocation().throwException(origin);
-        if (!knowCities.contains(destination)) new BadFaultLocation().throwException(destination);
+        if (!containsCaseInsensitive(origin, knowCities)) new BadFaultLocation().throwException(origin);
+        if (!containsCaseInsensitive(destination, knowCities)) new BadFaultLocation().throwException(destination);
         if (price < 0) {
             BadPriceFault faultInfo = new BadPriceFault();
             faultInfo.setPrice(price);
@@ -172,5 +173,14 @@ public class Manager {
             }
         }
         return null;
+    }
+
+    private boolean containsCaseInsensitive(String s, List<String> l) {
+        for (String string : l){
+            if (string.equalsIgnoreCase(s)){
+                return true;
+            }
+        }
+        return false;
     }
 }
