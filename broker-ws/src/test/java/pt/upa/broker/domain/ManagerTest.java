@@ -45,23 +45,24 @@ public class ManagerTest {
     private String centroCity2 = "LeIRia";
 
     private JobView offer1, offer2, offer3, offer4;
-    private Transport transport1, transport2;
+    private Transport transport;
 
     // initialization and clean-up for each test
     @Before
     public void setUp() {
-        offer1 = new JobView(); offer1.setJobIdentifier("1");
-        offer2 = new JobView(); offer2.setJobIdentifier("2");
-        offer3 = new JobView(); offer3.setJobIdentifier("3");
-        offer4 = new JobView(); offer4.setJobIdentifier("4");
+        offer1 = new JobView(); offer1.setJobIdentifier("1"); offer1.setCompanyName("UpaTransporter1");
+        offer2 = new JobView(); offer2.setJobIdentifier("2"); offer2.setCompanyName("UpaTransporter2");
+        offer3 = new JobView(); offer3.setJobIdentifier("3"); offer3.setCompanyName("UpaTransporter3");
+        offer4 = new JobView(); offer4.setJobIdentifier("4"); offer4.setCompanyName("UpaTransporter4");
 
-        transport1 = new Transport(); transport1.setId("1"); transport1.setState(TransportStateView.BUDGETED);
-        transport2 = new Transport(); transport2.setId("2"); transport2.setState(TransportStateView.BUDGETED);
+        transport = new Transport();
+        transport.setId("1");
+        transport.setState(TransportStateView.REQUESTED);
     }
 
     @After
     public void tearDown() {
-        manager.getTransportOffers().clear();
+        manager.getAllTransports().clear();
     }
 
     // --------------------------------------- updateTransporters ------------------------------------------------------
@@ -171,8 +172,7 @@ public class ManagerTest {
 	public void successGetTransportExisting() {
 		Transport t1 = new Transport();
 		t1.setId("id1");
-        TransportOffers transportOffers = new TransportOffers(t1, 0);
-		manager.addTransportOffer(transportOffers);
+		manager.addTransport(t1);
 
 		assertEquals(t1, manager.getTransportById("id1"));
 	}
@@ -236,12 +236,11 @@ public class ManagerTest {
             transporterClientMock.requestJob(centroCity1, centroCity2, referencePrice); maxTimes = 2;
         }};
 
-        assertEquals("transporter offer not saved, different size", 1, manager.getTransportOffers().size());
-        TransportOffers transportOffers = manager.getTransportOffers().get(0);
-        Transport transport = transportOffers.getTransport();
-        TransporterClient transporterClient = transportOffers.getTransporterClient();
+        assertEquals("transporter offer not saved, different size", 1, manager.getAllTransports().size());
+        Transport transport = manager.getAllTransports().get(0);
+
         assertEquals("state don't changed", transport.getState(), TransportStateView.BUDGETED);
-        assertNotNull("client not associated", transporterClient);
+        assertNotNull("transport id not set", transport.getId());
     }
 
     @Test(expected = UnavailableTransportFault_Exception.class)
@@ -261,81 +260,81 @@ public class ManagerTest {
             manager.requestTransport(centroCity1, centroCity2, referencePrice);
         } catch (UnavailableTransportFault_Exception e) {
 
-            assertTrue("transporter offer not saved", manager.getTransportOffers().size() == 1);
+            assertTrue("transporter offer not saved", manager.getAllTransports().size() == 1);
 
-            for (TransportOffers t : manager.getTransportOffers()) {
-                TransportStateView state = t.getTransport().getState();
+            for (Transport t : manager.getAllTransports()) {
+                TransportStateView state = t.getState();
                 assertEquals("wrong state", state, TransportStateView.FAILED);
-                assertNull("wrong client associated", t.getTransporterClient());
+                assertNotNull("transport id not set", t.getId());
+                assertNull("transport company is wrong set", transport.getTransporterCompany());
             }
 
             throw new UnavailableTransportFault_Exception(null, null);
 
         }
     }
-    //-------------------------------------------decideOffers()----------------------------------------------------------
+    //-------------------------------------------decideBestOffer()----------------------------------------------------------
     @Test
     public void someOffersBelowReferencePrice(
             @Mocked TransporterClient transporterClientMock) throws  Exception {
-        int referencePrice = 10;
+        transport.setPrice(15);
         offer1.setJobPrice(9); offer2.setJobPrice(10); offer3.setJobPrice(15); offer4.setJobPrice(5);
-        TransportOffers transportOffers1 = new TransportOffers(transport1, referencePrice);
-        TransportOffers transportOffers2 = new TransportOffers(transport2, referencePrice);
-        transportOffers1.addOffer(offer1); transportOffers1.addOffer(offer2);
-        transportOffers2.addOffer(offer3); transportOffers2.addOffer(offer4);
-        transportOffers1.setTransporterClient(transporterClientMock);
-        transportOffers2.setTransporterClient(transporterClientMock);
-
-        manager.addTransportOffer(transportOffers1); manager.addTransportOffer(transportOffers2);
+        transport.addOffer(offer1); transport.addOffer(offer2);
+        transport.addOffer(offer3); transport.addOffer(offer4);
 
         new Expectations() {{
-            transporterClientMock.decideJob("1", true); result = new JobView();
+            transporterClientMock.decideJob("1", false); result = new JobView();
             transporterClientMock.decideJob("2", false); result = new JobView();
             transporterClientMock.decideJob("3", false); result = new JobView();
             transporterClientMock.decideJob("4", true); result = new JobView();
         }};
 
-        manager.decideOffers();
+        manager.decideBestOffer(transport);
 
         new Verifications() {{
-            transporterClientMock.decideJob("1", true); maxTimes = 1;
+            transporterClientMock.decideJob("1", false); maxTimes = 1;
             transporterClientMock.decideJob("2", false); maxTimes = 1;
             transporterClientMock.decideJob("3", false); maxTimes = 1;
             transporterClientMock.decideJob("4", true); maxTimes = 1;
         }};
 
-        assertTrue("transporter offer not saved", manager.getTransportOffers().size() == 2);
-        TransportStateView state1 = manager.getTransportById("1").getState();
-        TransportStateView state2 = manager.getTransportById("2").getState();
-
-        assertEquals("wrong STATE", state1, TransportStateView.BOOKED);
-        assertEquals("wrong STATE", state2, TransportStateView.BOOKED);
+        assertEquals("wrong STATE", transport.getState(), TransportStateView.BOOKED);
+        assertNotNull("transport company name not set", transport.getTransporterCompany());
+        assertNotNull("chosen offer id is not set", transport.getChosenOfferID());
+        assertEquals("not choose best offer", offer4.getJobIdentifier(), transport.getChosenOfferID());
     }
 
     @Test(expected = UnavailableTransportPriceFault_Exception.class)
     public void allOffersAboveReferencePrice(
             @Mocked TransporterClient transporterClientMock) throws  Exception {
-        int referencePrice = 15;
-        offer1.setJobPrice(15); offer2.setJobPrice(16);
-        TransportOffers transportOffers = new TransportOffers(transport1, referencePrice);
-        transportOffers.addOffer(offer1);
-        transportOffers.addOffer(offer2);
-        transportOffers.setTransporterClient(transporterClientMock);
-        manager.addTransportOffer(transportOffers);
+        transport.setPrice(15);
+        offer1.setJobPrice(15); offer2.setJobPrice(20); offer3.setJobPrice(16); offer4.setJobPrice(100);
+        transport.addOffer(offer1); transport.addOffer(offer2);
+        transport.addOffer(offer3); transport.addOffer(offer4);
 
         new Expectations() {{
             transporterClientMock.decideJob("1", false); result = new JobView();
             transporterClientMock.decideJob("2", false); result = new JobView();
+            transporterClientMock.decideJob("3", false); result = new JobView();
+            transporterClientMock.decideJob("4", false); result = new JobView();
+        }};
+
+        manager.decideBestOffer(transport);
+
+        new Verifications() {{
+            transporterClientMock.decideJob("1", false); maxTimes = 1;
+            transporterClientMock.decideJob("2", false); maxTimes = 1;
+            transporterClientMock.decideJob("3", false); maxTimes = 1;
+            transporterClientMock.decideJob("4", false); maxTimes = 1;
         }};
 
         try {
-            manager.decideOffers();
+            manager.decideBestOffer(transport);
 
         } catch (UnavailableTransportPriceFault_Exception e) {
-            assertTrue("transporter offer not saved", manager.getTransportOffers().size() == 1);
-            TransportStateView state = manager.getTransportById("1").getState();
-
-            assertEquals("wrong SATE", state, TransportStateView.FAILED);
+            assertEquals("wrong SATE", transport.getState(), TransportStateView.FAILED);
+            assertNotNull("transport company name not set", transport.getTransporterCompany());
+            assertNotNull("chosen offer id is not set", transport.getChosenOfferID());
 
             throw new UnavailableTransportPriceFault_Exception(null, null);
         }
@@ -344,29 +343,30 @@ public class ManagerTest {
     @Test
     public void offersSamePriceBelowReferencePrice(
             @Mocked TransporterClient transporterClientMock) throws  Exception {
-        int referencePrice = 15;
-        offer1.setJobPrice(14); offer2.setJobPrice(14);
-        TransportOffers transportOffers = new TransportOffers(transport1, referencePrice);
-        transportOffers.addOffer(offer1); transportOffers.addOffer(offer2);
-        transportOffers.setTransporterClient(transporterClientMock);
-        manager.addTransportOffer(transportOffers);
+        transport.setPrice(15);
+        offer1.setJobPrice(14); offer2.setJobPrice(14); offer3.setJobPrice(14); offer4.setJobPrice(14);
+        transport.addOffer(offer1); transport.addOffer(offer2);
+        transport.addOffer(offer3); transport.addOffer(offer4);
 
         new Expectations() {{
             transporterClientMock.decideJob("1", true); result = new JobView();
             transporterClientMock.decideJob("2", false); result = new JobView();
+            transporterClientMock.decideJob("3", false); result = new JobView();
+            transporterClientMock.decideJob("4", false); result = new JobView();
         }};
 
-        manager.decideOffers();
+        manager.decideBestOffer(transport);
 
         new Verifications() {{
             transporterClientMock.decideJob("1", true); maxTimes = 1;
-            transporterClientMock.decideJob("2", false); maxTimes = 2;
+            transporterClientMock.decideJob("2", false); maxTimes = 1;
+            transporterClientMock.decideJob("3", false); maxTimes = 1;
+            transporterClientMock.decideJob("4", false); maxTimes = 1;
         }};
 
-        assertTrue("transporter offer not saved", manager.getTransportOffers().size() == 1);
-        TransportStateView state = manager.getTransportById("1").getState();
-
-        assertEquals("wrong SATE", state, TransportStateView.BOOKED);
+        assertEquals("wrong SATE", transport.getState(), TransportStateView.BOOKED);
+        assertNotNull("transport company name not set", transport.getTransporterCompany());
+        assertNotNull("chosen offer id is not set", transport.getChosenOfferID());
     }
 
 }

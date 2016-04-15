@@ -2,6 +2,10 @@ package pt.upa.broker.domain;
 
 import pt.upa.broker.ws.TransportStateView;
 import pt.upa.broker.ws.TransportView;
+import pt.upa.transporter.ws.JobView;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Transport {
 	
@@ -11,6 +15,9 @@ public class Transport {
     private int price;
     private String transporterCompany;
     private TransportStateView state;
+
+	private List<JobView> offers = new ArrayList<>();
+	private String chosenOfferID = null;
 	 
 	public Transport () {
 	
@@ -73,16 +80,32 @@ public class Transport {
 	public void setState(TransportStateView state) {
 		this.state = state;
 	}
+
+	public List<JobView> getOffers() {
+		return offers;
+	}
+
+	public void addOffer(JobView offer) {
+		offers.add(offer);
+	}
+
+	public String getChosenOfferID() {
+		return chosenOfferID;
+	}
+
+	public void setChosenOfferID(String chosenOfferID) {
+		this.chosenOfferID = chosenOfferID;
+	}
 	
 	public TransportView toTransportView() {
 	    TransportView transportView = new TransportView();
 	
 	    transportView.setId(id);
 	    transportView.setOrigin(origin);
-	    transportView.setDestination(destination);;
-	    transportView.setPrice(price);;
-	    transportView.setTransporterCompany(transporterCompany);;
-	    transportView.setState(state);;
+	    transportView.setDestination(destination);
+	    transportView.setPrice(price);
+	    transportView.setTransporterCompany(transporterCompany);
+	    transportView.setState(state);
 	
 	    return transportView;
 	}

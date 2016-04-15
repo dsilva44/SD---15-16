@@ -1,12 +1,10 @@
 package pt.upa.broker.ws;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 import pt.upa.broker.domain.Manager;
 import pt.upa.broker.domain.Transport;
-import pt.upa.broker.domain.TransportOffers;
 import pt.upa.transporter.ws.BadLocationFault_Exception;
 import pt.upa.transporter.ws.BadPriceFault_Exception;
 
@@ -37,8 +35,10 @@ public class BrokerPort implements BrokerPortType{
 			UnavailableTransportPriceFault_Exception, UnknownLocationFault_Exception {
 
 		try {
-			manager.requestTransport(origin, destination, price);
-			return manager.decideOffers();
+			Transport transport = manager.requestTransport(origin, destination, price);
+			manager.decideBestOffer(transport);
+
+			return transport.getId();
 
 		} catch (BadLocationFault_Exception e) {
 			UnknownLocationFault faultInfo = new UnknownLocationFault();
@@ -63,7 +63,7 @@ public class BrokerPort implements BrokerPortType{
 
 	@Override
 	public List<TransportView> listTransports() {
-		LinkedList<TransportOffers> transports = manager.getTransportOffers();
+		ArrayList<Transport> transports = (ArrayList<Transport>) manager.getAllTransports();
 		
 		return transportListToTransportViewList(transports);
 	}
@@ -74,13 +74,13 @@ public class BrokerPort implements BrokerPortType{
 	}
 
 	// TODO
-	private List<TransportView> transportListToTransportViewList(LinkedList<TransportOffers> transports){
+	private List<TransportView> transportListToTransportViewList(ArrayList<Transport> transports){
 		ArrayList<TransportView> views = null;
 		
 		if (transports != null) {
             views = new ArrayList<>();
-            for(TransportOffers transport : transports) {
-                views.add(transport.getTransport().toTransportView());
+            for(Transport transport : transports) {
+                views.add(transport.toTransportView());
             }
         }
 		return views;
