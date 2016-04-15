@@ -27,9 +27,9 @@ Linux
 
 [1] Iniciar servidores de apoio
 
-JUDDI: cd juddi-3.3.2_tomcat-7.0.64_9090/bin
+JUDDI: 
+```cd juddi-3.3.2_tomcat-7.0.64_9090/bin
         ./startup.sh
-```
 ...
 
 ```
