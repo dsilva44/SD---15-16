@@ -38,8 +38,8 @@ cd juddi-3.3.2_tomcat-7.0.64_9090/bin
 [2] Criar pasta temporária
 
 ```
-cd ...
-mkdir ...
+mkdir proj
+cd proj
 ```
 
 
