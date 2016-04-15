@@ -106,7 +106,14 @@ public class Manager {
     	try {
             TransporterClient client = new TransporterClient(uddiURL, t.getTransporterCompany());
 
-            JobView job = client.jobStatus(t.getId());
+            JobView job = client.jobStatus(t.getChosenOfferID());
+
+            if (job == null) {
+                UnknownTransportFault faultInfo = new UnknownTransportFault();
+                faultInfo.setId(id);
+                throw new UnknownTransportFault_Exception("Id unknown", faultInfo);
+            }
+
             String STATE = job.getJobState().value();
 
             switch(STATE) {

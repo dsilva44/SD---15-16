@@ -29,7 +29,7 @@ public abstract class AbstractIntegrationTest {
 
     @AfterClass
     public static void oneTimeTearDown() {
-
+        brokerClient.clearTransports();
         brokerClient = null;
     }
 

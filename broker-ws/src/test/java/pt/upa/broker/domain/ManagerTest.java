@@ -378,6 +378,7 @@ public class ManagerTest {
         Transport t1 = new Transport(); t1.setId("1"); t1.setState(TransportStateView.REQUESTED);
         JobView jobView = new JobView(); jobView.setJobState(JobStateView.PROPOSED);
         manager.addTransport(t1);
+        t1.setChosenOfferID("1");
         manager.setUddiNaming(uddiNamingMock);
 
         new Expectations() {{
@@ -402,6 +403,7 @@ public class ManagerTest {
     public void successUpdateBudgetTransport(@Mocked TransporterClient transporterClientMock) throws UnknownTransportFault_Exception {
         Transport t1 = new Transport(); t1.setId("1"); t1.setState(TransportStateView.BUDGETED);
         JobView jobView = new JobView(); jobView.setJobState(JobStateView.ACCEPTED);
+        t1.setChosenOfferID("1");
         manager.addTransport(t1);
 
         new Expectations() {{
@@ -421,6 +423,7 @@ public class ManagerTest {
     public void successUpdateRejectedBudgetTransport(@Mocked TransporterClient transporterClientMock) throws UnknownTransportFault_Exception {
         Transport t1 = new Transport(); t1.setId("1"); t1.setState(TransportStateView.BUDGETED);
         JobView jobView = new JobView(); jobView.setJobState(JobStateView.REJECTED);
+        t1.setChosenOfferID("1");
         manager.addTransport(t1);
 
         new Expectations() {{
@@ -440,6 +443,7 @@ public class ManagerTest {
     public void successUpdateBookedTransport(@Mocked TransporterClient transporterClientMock) throws UnknownTransportFault_Exception {
         Transport t1 = new Transport(); t1.setId("1"); t1.setState(TransportStateView.BOOKED);
         JobView jobView = new JobView(); jobView.setJobState(JobStateView.HEADING);
+        t1.setChosenOfferID("1");
         manager.addTransport(t1);
 
         new Expectations() {{
@@ -459,6 +463,7 @@ public class ManagerTest {
     public void successUpdateBookedToCompletedTransport(@Mocked TransporterClient transporterClientMock) throws UnknownTransportFault_Exception {
         Transport t1 = new Transport(); t1.setId("1"); t1.setState(TransportStateView.BOOKED);
         JobView jobView = new JobView(); jobView.setJobState(JobStateView.COMPLETED);
+        t1.setChosenOfferID("1");
         manager.addTransport(t1);
 
         new Expectations() {{
@@ -478,6 +483,7 @@ public class ManagerTest {
     public void successUpdateCompletedTransport(@Mocked TransporterClient transporterClientMock) throws UnknownTransportFault_Exception {
         Transport t1 = new Transport(); t1.setId("1"); t1.setState(TransportStateView.COMPLETED);
         JobView jobView = new JobView(); jobView.setJobState(JobStateView.COMPLETED);
+        t1.setChosenOfferID("1");
         manager.addTransport(t1);
 
         new Expectations() {{
@@ -497,6 +503,7 @@ public class ManagerTest {
     public void successUpdateFailedTransport(@Mocked TransporterClient transporterClientMock) throws UnknownTransportFault_Exception {
         Transport t1 = new Transport(); t1.setId("1"); t1.setState(TransportStateView.FAILED);
         JobView jobView = new JobView(); jobView.setJobState(JobStateView.COMPLETED);
+        t1.setChosenOfferID("1");
         manager.addTransport(t1);
 
         new Expectations() {{

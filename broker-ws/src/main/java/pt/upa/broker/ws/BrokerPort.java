@@ -84,7 +84,6 @@ public class BrokerPort implements BrokerPortType{
 		manager.clearTransportersClients();
 	}
 
-	// TODO
 	private List<TransportView> transportListToTransportViewList(ArrayList<Transport> transports){
 		ArrayList<TransportView> views = null;
 		
