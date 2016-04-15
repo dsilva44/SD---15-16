@@ -13,6 +13,7 @@ import pt.upa.transporter.ws.JobStateView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 
 import static org.junit.Assert.*;
 
@@ -351,5 +352,26 @@ public class ManagerTest {
         String jobID = returnDecideResponse.getJobIdentifier();
         assertNotNull("Job not saved", manager.getJobById(jobID));
     }
+    
+    //-----------------------------------------------------------------------TRANSPORTIMULATION
+    
+    @Test
+    public void stateShouldBeAccepted() throws BadJobFault_Exception{
+	    Job job2 = new Job();
+	    job2.setJobIdentifier("id2");
+		job2.setJobState(JobStateView.PROPOSED);
+		
+		manager.addJob(job2);
+		manager.confirmationJobs("id2",true);
+		Date init = new Date();
+	
+		
+		while(!(manager.getJobById("id2").getJobState()).equals(JobStateView.COMPLETED)){
+		}
+		Date after = new Date();
+		assertTrue(init.getTime() + 16000 > after.getTime());
+    }
+    
+    
 
 }

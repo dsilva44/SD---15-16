@@ -95,7 +95,37 @@ public class Manager {
     public List<Transport> getAllTransports() {
     	return allTransports;
     }
+    
+    public  Transport updateTransportState(String id){
+    	Transport t = getTransportById(id);
+    	try {
+    		
+            String name = t.getTransporterCompany();
+            String endpoint =  uddiNaming.lookup(name);
+            
+            TransporterClient client = new TransporterClient(endpoint);
+            JobView job = client.jobStatus(t.getId());
+            
+    	
+            JobStateView newState = job.getJobState();
+            String str = newState.toString();
+            
+            
+            
+            switch(str){
+            case "HEADING": t.setState(TransportStateView.HEADING);break;
+            case "ONGOING": t.setState(TransportStateView.ONGOING);break;
+            case "COMPLETED": t.setState(TransportStateView.COMPLETED);break;
+            }
+            
+    	} catch (JAXRException e) {
+            log.error("something goes wrong whit uddiNaming", e);
+        }
+        
+		return t;
+    }
 
+    
     public Transport getTransportById(String id){
     	for (Transport t : allTransports){
     		if (t.getId().equals(id)){

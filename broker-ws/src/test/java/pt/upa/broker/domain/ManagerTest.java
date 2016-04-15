@@ -6,6 +6,7 @@ import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
 import pt.upa.broker.ws.*;
 import pt.upa.transporter.ws.BadLocationFault_Exception;
 import pt.upa.transporter.ws.BadPriceFault_Exception;
+import pt.upa.transporter.ws.JobStateView;
 import pt.upa.transporter.ws.JobView;
 import pt.upa.transporter.ws.cli.TransporterClient;
 
@@ -14,6 +15,7 @@ import javax.xml.registry.JAXRException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 
 import static org.junit.Assert.*;
 
@@ -368,5 +370,28 @@ public class ManagerTest {
         assertNotNull("transport company name not set", transport.getTransporterCompany());
         assertNotNull("chosen offer id is not set", transport.getChosenOfferID());
     }
-
+    
+    //------------------------------------------------updateTransportState()
+    /*
+    @Test 
+    public void sucessUpdatingTransport(@Mocked TransporterClient transporterClientMock) throws Exception{
+    	
+    	
+    	
+    	new Expectations() {{
+            transporterClientMock.decideJob("1", true); result = new JobView();
+        }};
+        new Verifications() {{
+            transporterClientMock.decideJob("1", true); maxTimes = 1;
+        }};
+    	
+        
+    	Date init = new Date();
+		while (init.getTime() + 16000 > new Date().getTime());
+		Transport t1 = manager.updateTransportState("1");
+		
+		assertEquals(t1.getState(), TransportStateView.COMPLETED);	
+    
+    }
+    */
 }

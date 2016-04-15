@@ -6,11 +6,15 @@ import pt.upa.transporter.ws.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Random;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Pattern;
 
-public class Manager {
+import java.util.Timer;
+import java.util.TimerTask;
+
+public class Manager  {
     static private final Logger log = LogManager.getRootLogger();
     private static Manager manager = new Manager();
 
@@ -28,6 +32,9 @@ public class Manager {
     private final ArrayList<String> sul = new ArrayList<>(Arrays.asList("Setúbal", "Évora", "Portalegre", "Beja",
             "Faro"));
 
+    
+    
+    
     private Manager() {
         knowCities = new ArrayList<>();
         workCities = new ArrayList<>();
@@ -36,6 +43,7 @@ public class Manager {
         knowCities.addAll(centro);
         knowCities.addAll(norte);
         knowCities.addAll(sul);
+        
     }
 
     public static Manager getInstance() { return manager; }
@@ -61,6 +69,7 @@ public class Manager {
                 workCities.addAll(sul);
                 break;
         }
+        
 
     }
 
@@ -127,9 +136,39 @@ public class Manager {
             throw new BadPriceFault_Exception(price + " is not a valid price", faultInfo);
         }
     }
+    
+    private int generateRandomTime(){
+    	Random randomTime = new Random();
+        int delay = (int)(randomTime.nextFloat()*5000);
+        return delay;
+    }
+    
+    public void TransportSimulation(Job j) {
 
-    public void TransportSimulation() {
-        // TODO
+        Timer timer = new Timer();
+        timer.scheduleAtFixedRate(new TimerTask(){
+    		@Override
+        	public void run(){
+
+			    		if (j.getJobState().equals(JobStateView.ACCEPTED)){
+			    			//System.out.println("ACCEPTED");
+				    		j.setJobState(JobStateView.HEADING);
+			    		}
+			    		else if (j.getJobState().equals(JobStateView.HEADING)){
+			    			//System.out.println("HEADING");
+				    		j.setJobState(JobStateView.ONGOING);
+			    		}
+
+			    		else if (j.getJobState().equals(JobStateView.ONGOING)){
+			    			//System.out.println("ONGOING");
+				    		j.setJobState(JobStateView.COMPLETED);
+			    		}
+			    		else{
+			    			this.cancel();
+			    		}
+		     	
+    		}
+    	}, generateRandomTime(), generateRandomTime());
     }
 
     public Job confirmationJobs(String id, boolean bool) throws BadJobFault_Exception {
@@ -140,7 +179,7 @@ public class Manager {
             fault.setId(id);
             throw new BadJobFault_Exception("not existing id", fault);
         }
-
+        
         if (job.getJobState() != JobStateView.PROPOSED){
             BadJobFault fault = new BadJobFault();
             fault.setId(id);
@@ -148,6 +187,7 @@ public class Manager {
         }
         if (bool){
             job.setJobState(JobStateView.ACCEPTED);
+            TransportSimulation(job);
         }
         else{
             job.setJobState(JobStateView.REJECTED);
