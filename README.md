@@ -46,8 +46,9 @@ cd proj
 [3] Obter código fonte do projeto (versão entregue)
 
 ```
-git clone https://github.com/tecnico-distsys/T_27-project.git
+git clone ... 
 ```
+*(colocar aqui comandos git para obter a versão entregue a partir da tag e depois apagar esta linha)*
 
 
 [4] Instalar módulos de bibliotecas auxiliares
@@ -68,8 +69,8 @@ mvn clean install
 
 ```
 cd transporter-ws
-mvn clean install
-mvn exec:java
+mvn clean install -Dws.i=1 exec:java
+mvn -Dws.i=2 exec:java
 ```
 
 [2] Construir **cliente** e executar testes
