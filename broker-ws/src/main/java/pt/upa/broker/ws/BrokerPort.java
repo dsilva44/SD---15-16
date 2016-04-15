@@ -53,7 +53,8 @@ public class BrokerPort implements BrokerPortType{
 
 	@Override
 	public TransportView viewTransport(String id) throws UnknownTransportFault_Exception {
-		Transport t = manager.getTransportById(id);
+		Transport t = manager.updateTransportState(id);
+		
 		if (t != null){
 			return t.toTransportView();
 		}
