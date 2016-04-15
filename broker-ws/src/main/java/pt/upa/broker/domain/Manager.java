@@ -22,7 +22,7 @@ public class Manager {
     private String uddURL;
     private int transportID = 0;
     private ArrayList<TransporterClient> transporterClients;
-    private LinkedList<Transport> allTransports;
+    private ArrayList<Transport> allTransports;
 
     private final ArrayList<String> knowCities = new ArrayList<>(Arrays.asList("Lisboa", "Leiria", "Santarém",
             "Castelo Branco", "Coimbra", "Aveiro", "Viseu", "Guarda","Porto", "Braga", "Viana do Castelo",
@@ -31,7 +31,7 @@ public class Manager {
 
     private Manager() {
         transporterClients = new ArrayList<>();
-        allTransports = new LinkedList<>();
+        allTransports = new ArrayList<>();
     }
 
     public void init(String uddiURL) {
@@ -258,6 +258,7 @@ public class Manager {
         for (TransporterClient tp : transporterClients){
             tp.clearJobs();
         }
+        transporterClients.clear();
     }
 
 }

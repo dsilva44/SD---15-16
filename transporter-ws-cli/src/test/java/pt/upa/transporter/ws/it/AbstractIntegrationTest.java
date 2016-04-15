@@ -32,8 +32,8 @@ public abstract class AbstractIntegrationTest {
 
     @AfterClass
     public static void oneTimeTearDown() {
-        client1 = null;
-        client2 = null;
+        client1.clearJobs();
+        client2.clearJobs();
     }
 
     // members
