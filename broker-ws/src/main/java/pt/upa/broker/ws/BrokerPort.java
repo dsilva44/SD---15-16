@@ -1,10 +1,14 @@
 package pt.upa.broker.ws;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import pt.upa.broker.domain.Manager;
 import pt.upa.broker.domain.Transport;
+import pt.upa.broker.domain.TransportOffers;
+import pt.upa.transporter.ws.BadLocationFault_Exception;
+import pt.upa.transporter.ws.BadPriceFault_Exception;
 
 import javax.jws.WebService;
 
@@ -31,8 +35,20 @@ public class BrokerPort implements BrokerPortType{
 	public String requestTransport(String origin, String destination, int price)
 			throws InvalidPriceFault_Exception, UnavailableTransportFault_Exception,
 			UnavailableTransportPriceFault_Exception, UnknownLocationFault_Exception {
-		// TODO Auto-generated method stub
-		return null;
+
+		try {
+			manager.requestTransport(origin, destination, price);
+			return manager.decideOffers();
+
+		} catch (BadLocationFault_Exception e) {
+			UnknownLocationFault faultInfo = new UnknownLocationFault();
+			faultInfo.setLocation(e.getFaultInfo().getLocation());
+			throw new UnknownLocationFault_Exception(e.getMessage(), faultInfo);
+		} catch (BadPriceFault_Exception e) {
+			InvalidPriceFault faultInfo = new InvalidPriceFault();
+			faultInfo.setPrice(e.getFaultInfo().getPrice());
+			throw new InvalidPriceFault_Exception(e.getMessage(), faultInfo);
+		}
 	}
 
 	@Override
@@ -47,7 +63,7 @@ public class BrokerPort implements BrokerPortType{
 
 	@Override
 	public List<TransportView> listTransports() {
-		ArrayList<Transport> transports = manager.getBookedTransports();
+		LinkedList<TransportOffers> transports = manager.getTransportOffers();
 		
 		return transportListToTransportViewList(transports);
 	}
@@ -58,13 +74,13 @@ public class BrokerPort implements BrokerPortType{
 	}
 
 	// TODO
-	private List<TransportView> transportListToTransportViewList(ArrayList<Transport> transports){
+	private List<TransportView> transportListToTransportViewList(LinkedList<TransportOffers> transports){
 		ArrayList<TransportView> views = null;
 		
 		if (transports != null) {
             views = new ArrayList<>();
-            for(Transport transport : transports) {
-                views.add(transport.toTransportView());
+            for(TransportOffers transport : transports) {
+                views.add(transport.getTransport().toTransportView());
             }
         }
 		return views;

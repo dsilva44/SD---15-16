@@ -1,15 +1,17 @@
 package pt.upa.broker.domain;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
+import pt.upa.broker.ws.*;
+import pt.upa.transporter.ws.*;
 import pt.upa.transporter.ws.cli.TransporterClient;
 
 import javax.xml.registry.JAXRException;
+
+import pt.upa.broker.exception.BrokerBadJobException;
 
 public class Manager {
 	static private final Logger log = LogManager.getRootLogger();
@@ -17,16 +19,27 @@ public class Manager {
 
     private UDDINaming uddiNaming;
 
+    private int transportID = 0;
     private ArrayList<TransporterClient> transporterClients;
-    private ArrayList<Transport> bookedTransports;
+    private LinkedList<TransportOffers> transportOffers;
+
+    private final ArrayList<String> knowCities = new ArrayList<>(Arrays.asList("Lisboa", "Leiria", "Santarém",
+            "Castelo Branco", "Coimbra", "Aveiro", "Viseu", "Guarda","Porto", "Braga", "Viana do Castelo",
+            "Vila Real", "Bragança","Setúbal", "Évora", "Portalegre", "Beja","Faro"));
 
 
     private Manager() {
         transporterClients = new ArrayList<>();
-        bookedTransports = new ArrayList<>();
+        transportOffers = new LinkedList<>();
     }
     
     public static Manager getInstance() { return manager; }
+
+    String getNextTransporterID() {
+        String id = Integer.toString(transportID);
+        transportID++;
+        return id;
+    }
 
     ArrayList<TransporterClient> getTransporterClients() { return transporterClients; }
 
@@ -58,7 +71,6 @@ public class Manager {
                 try {
                     client = iterator.next();
                     client.ping(Integer.toString(count));
-
                     count++;
                 } catch (Exception e) {
                     log.error(client.getWsURL() + " is not available");
@@ -68,22 +80,126 @@ public class Manager {
         }
         return count;
     }
-    
-    public ArrayList<Transport> getBookedTransports(){
-    	return bookedTransports;
+
+
+    public LinkedList<TransportOffers> getTransportOffers() {
+    	return transportOffers;
     }
 
     public Transport getTransportById(String id){
-    	for (Transport t : bookedTransports){
-    		if (t.getId().equals(id)){
-    			return t;
+    	for (TransportOffers t : transportOffers){
+    		if (t.getTransport().getId().equals(id)){
+    			return t.getTransport();
     		}
     	}
     	return null;
     }
 
-    public void addTransport(Transport t){
-    	bookedTransports.add(t);
+    public void addTransportOffer(TransportOffers t){
+    	transportOffers.add(t);
+    }
+
+    public void validateTransport(String origin, String destination, int price)
+            throws UnknownLocationFault_Exception, InvalidPriceFault_Exception {
+        class UnknownLocation {
+            private void throwException(String location) throws UnknownLocationFault_Exception {
+                UnknownLocationFault faultInfo = new UnknownLocationFault();
+                faultInfo.setLocation(location);
+                log.warn(location + " is a unknown location");
+                throw new UnknownLocationFault_Exception(location + " is a unknown location", faultInfo);
+            }
+        }
+
+        if (!containsCaseInsensitive(origin, knowCities)) new UnknownLocation().throwException(origin);
+        if (!containsCaseInsensitive(destination, knowCities)) new UnknownLocation().throwException(destination);
+        if (price < 0) {
+            InvalidPriceFault faultInfo = new InvalidPriceFault();
+            faultInfo.setPrice(price);
+            log.warn(price + " is not valid");
+            throw new InvalidPriceFault_Exception(price + " is not a valid price", faultInfo);
+        }
+    }
+
+    public void requestTransport(String origin, String destination, int price)
+            throws BadLocationFault_Exception, BadPriceFault_Exception, UnknownLocationFault_Exception,
+            InvalidPriceFault_Exception, UnavailableTransportFault_Exception {
+
+        validateTransport(origin, destination, price);
+        pingTransporters();
+
+        Transport transport = new Transport(
+                getNextTransporterID(), origin, destination, price, null, TransportStateView.REQUESTED);
+        TransportOffers transportOffer = new TransportOffers(transport, price);
+
+        int count = 0;
+        for (TransporterClient client : transporterClients) {
+            JobView jobView = client.requestJob(origin, destination, price);
+            if (jobView != null) {
+                count++;
+                transport.setState(TransportStateView.BUDGETED);
+                transportOffer.addOffer(jobView);
+                transportOffer.setTransporterClient(client);
+            }
+        }
+
+        transportOffers.push(transportOffer);
+
+        if (count == 0) {
+            transport.setState(TransportStateView.FAILED);
+            UnavailableTransportFault faultInfo = new UnavailableTransportFault();
+            faultInfo.setOrigin(origin);
+            faultInfo.setDestination(destination);
+            log.warn("There is no available transport from " + origin + "to " + destination);
+            throw new UnavailableTransportFault_Exception(
+                    "There is no available transport from " + origin + "to " + destination, faultInfo);
+        }
+    }
+
+    public String decideOffers() throws UnavailableTransportPriceFault_Exception {
+
+        String bestJobID = null;
+        for (TransportOffers t : transportOffers) {
+            TransporterClient client = t.getTransporterClient();
+            Transport transport = t.getTransport();
+            transport.setState(TransportStateView.FAILED);
+
+            try {
+                int bestPrice = t.getReferencePrice();
+                for (JobView offer : t.getOffers() ) {
+                    int offerPrice = offer.getJobPrice();
+
+                    if (offerPrice < bestPrice) {
+                        bestJobID = offer.getJobIdentifier();
+                        bestPrice = offerPrice;
+                    } else client.decideJob(offer.getJobIdentifier(), false);
+                }
+
+                if (bestPrice < t.getReferencePrice()) {
+                    transport.setState(TransportStateView.BOOKED);
+                    client.decideJob(bestJobID, true);
+                } else  {
+                    client.decideJob(bestJobID, false);
+                    UnavailableTransportPriceFault faultInfo = new UnavailableTransportPriceFault();
+                    faultInfo.setBestPriceFound(bestPrice);
+                    log.warn("the best price for transportation is " + bestPrice);
+                    throw new UnavailableTransportPriceFault_Exception(
+                            "the best price for transportation is " + bestPrice, faultInfo);
+                }
+            } catch (BadJobFault_Exception e) {
+                throw new BrokerBadJobException(
+                        "Something went wrong while trying to decideJob on id: " + e.getFaultInfo().getId());
+            }
+        }
+        return bestJobID;
+    }
+
+    private boolean containsCaseInsensitive(String s, List<String> l) {
+        for (String string : l){
+            if (string.equalsIgnoreCase(s)){
+                return true;
+            }
+        }
+        return false;
     }
 
 }

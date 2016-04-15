@@ -59,8 +59,8 @@ public class EndpointManager {
             log.info("Starting: " + wsURL);
             endpoint.publish(wsURL);
         } catch (Exception e) {
-            log.error("Error publish endpoint", e);
-            throw new TransporterEndpointExeption("Error publish endpoint");
+            log.error("Error publish endpoint: " + wsURL, e);
+            throw new TransporterEndpointExeption("Error publish endpoint: " + wsURL);
         }
 
         try {
