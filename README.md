@@ -54,8 +54,7 @@ git clone ...
 [4] Instalar módulos de bibliotecas auxiliares
 
 ```
-Obter o código da biblioteca UDDINaming:
-http://goo.gl/Xt9yMP
+[Obter o código da biblioteca UDDINaming](http://goo.gl/Xt9yMP)
 cd uddi-naming
 mvn clean install
 ```
