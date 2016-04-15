@@ -16,14 +16,9 @@ public class clearTransportsIT extends AbstractIntegrationTest {
 
         assertFalse("listas no transporter nao actualizada", brokerClient.listTransports().isEmpty());
 
-        TransportView tsv = brokerClient.viewTransport(id);
-
-        assertNotNull("transport view is null!!", tsv);
-
         brokerClient.clearTransports();
 
         assertTrue("lista nao apagada", brokerClient.listTransports().isEmpty());
     }
-
 
 }
