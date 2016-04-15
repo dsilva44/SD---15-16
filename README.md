@@ -46,9 +46,8 @@ cd proj
 [3] Obter código fonte do projeto (versão entregue)
 
 ```
-git clone ... 
+git clone -b R_1 https://github.com/tecnico-distsys/T_27-project.git
 ```
-*(colocar aqui comandos git para obter a versão entregue a partir da tag e depois apagar esta linha)*
 
 
 [4] Instalar módulos de bibliotecas auxiliares
