@@ -13,6 +13,7 @@ import pt.upa.transporter.ws.JobStateView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 
 import static org.junit.Assert.*;
 
@@ -353,16 +354,16 @@ public class ManagerTest {
 	    Job job2 = new Job();
 	    job2.setJobIdentifier("id2");
 		job2.setJobState(JobStateView.PROPOSED);
-		/*
-		Job job1 = new Job();
-	    job1.setJobIdentifier("id1");
-		job1.setJobState(JobStateView.ONGOING);
 		
-		
-		*/
 		manager.addJob(job2);
 		manager.confirmationJobs("id2",true);
+		Date init = new Date();
+	
 		
+		while(!(manager.getJobById("id2").getJobState()).equals(JobStateView.COMPLETED)){
+		}
+		Date after = new Date();
+		assertTrue(init.getTime() + 16000 > after.getTime());
     }
     
     

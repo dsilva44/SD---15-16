@@ -136,25 +136,23 @@ public class Manager  {
     }
     
     public void TransportSimulation(Job j) {
-		System.out.println("SIMULATION");
 
         Timer timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask(){
     		@Override
         	public void run(){
-    			System.out.println("RUNNING");
 
 			    		if (j.getJobState().equals(JobStateView.ACCEPTED)){
-			    			System.out.println("ACCEPTED");
+			    			//System.out.println("ACCEPTED");
 				    		j.setJobState(JobStateView.HEADING);
 			    		}
 			    		else if (j.getJobState().equals(JobStateView.HEADING)){
-			    			System.out.println("HEADING");
+			    			//System.out.println("HEADING");
 				    		j.setJobState(JobStateView.ONGOING);
 			    		}
 
 			    		else if (j.getJobState().equals(JobStateView.ONGOING)){
-			    			System.out.println("ONGOING");
+			    			//System.out.println("ONGOING");
 				    		j.setJobState(JobStateView.COMPLETED);
 			    		}
 			    		else{
@@ -162,7 +160,7 @@ public class Manager  {
 			    		}
 		     	
     		}
-    	}, 0, generateRandomTime());
+    	}, generateRandomTime(), generateRandomTime());
     }
 
     public Job confirmationJobs(String id, boolean bool) throws BadJobFault_Exception{
