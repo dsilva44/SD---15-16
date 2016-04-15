@@ -55,6 +55,7 @@ git clone ...
 
 ```
 [Obter o código da biblioteca UDDINaming](http://goo.gl/Xt9yMP)
+[tecnico-distsys/T_27-project](https://github.com/tecnico-distsys/T_27-project/)
 cd uddi-naming
 mvn clean install
 ```
