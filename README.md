@@ -53,7 +53,7 @@ git clone ...
 
 [4] Instalar módulos de bibliotecas auxiliares
 
-[Obter o código da biblioteca UDDINaming](http://goo.gl/Xt9yMP)
+[Obter o código da biblioteca UDDINaming](http://disciplinas.tecnico.ulisboa.pt/leic-sod/2015-2016/labs/05-ws1/uddi-naming.zip)
 ```
 cd uddi-naming
 mvn clean install
