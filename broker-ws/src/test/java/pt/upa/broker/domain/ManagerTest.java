@@ -371,27 +371,144 @@ public class ManagerTest {
         assertNotNull("chosen offer id is not set", transport.getChosenOfferID());
     }
     
-    //------------------------------------------------updateTransportState()
-    /*
-    @Test 
-    public void sucessUpdatingTransport(@Mocked TransporterClient transporterClientMock) throws Exception{
-    	
-    	
-    	
-    	new Expectations() {{
-            transporterClientMock.decideJob("1", true); result = new JobView();
+    //-----------------------------------------updateTransportState(String id) -----------------------------------------
+    @Test
+    public void successUpdateRequestedTransport(@Mocked TransporterClient transporterClientMock,
+                                                @Mocked UDDINaming uddiNamingMock) throws UnknownTransportFault_Exception {
+        Transport t1 = new Transport(); t1.setId("1"); t1.setState(TransportStateView.REQUESTED);
+        JobView jobView = new JobView(); jobView.setJobState(JobStateView.PROPOSED);
+        manager.addTransport(t1);
+        manager.setUddiNaming(uddiNamingMock);
+
+        new Expectations() {{
+            transporterClientMock.jobStatus("1"); result = jobView;
         }};
+
+        manager.updateTransportState("1");
+
         new Verifications() {{
-            transporterClientMock.decideJob("1", true); maxTimes = 1;
+            transporterClientMock.jobStatus("1"); maxTimes = 1;
         }};
-    	
-        
-    	Date init = new Date();
-		while (init.getTime() + 16000 > new Date().getTime());
-		Transport t1 = manager.updateTransportState("1");
-		
-		assertEquals(t1.getState(), TransportStateView.COMPLETED);	
-    
+
+        assertEquals("not update transport status", TransportStateView.BUDGETED, t1.getState());
     }
-    */
+
+    @Test(expected = UnknownTransportFault_Exception.class)
+    public void returnWrongJobState(@Mocked TransporterClient transporterClientMock) throws UnknownTransportFault_Exception {
+        manager.updateTransportState("1");
+    }
+
+    @Test
+    public void successUpdateBudgetTransport(@Mocked TransporterClient transporterClientMock) throws UnknownTransportFault_Exception {
+        Transport t1 = new Transport(); t1.setId("1"); t1.setState(TransportStateView.BUDGETED);
+        JobView jobView = new JobView(); jobView.setJobState(JobStateView.ACCEPTED);
+        manager.addTransport(t1);
+
+        new Expectations() {{
+            transporterClientMock.jobStatus("1"); result = jobView;
+        }};
+
+        manager.updateTransportState("1");
+
+        new Verifications() {{
+            transporterClientMock.jobStatus("1"); maxTimes = 1;
+        }};
+
+        assertEquals("not update transport status", TransportStateView.BOOKED, t1.getState());
+    }
+
+    @Test
+    public void successUpdateRejectedBudgetTransport(@Mocked TransporterClient transporterClientMock) throws UnknownTransportFault_Exception {
+        Transport t1 = new Transport(); t1.setId("1"); t1.setState(TransportStateView.BUDGETED);
+        JobView jobView = new JobView(); jobView.setJobState(JobStateView.REJECTED);
+        manager.addTransport(t1);
+
+        new Expectations() {{
+            transporterClientMock.jobStatus("1"); result = jobView;
+        }};
+
+        manager.updateTransportState("1");
+
+        new Verifications() {{
+            transporterClientMock.jobStatus("1"); maxTimes = 1;
+        }};
+
+        assertEquals("not update transport status", TransportStateView.FAILED, t1.getState());
+    }
+
+    @Test
+    public void successUpdateBookedTransport(@Mocked TransporterClient transporterClientMock) throws UnknownTransportFault_Exception {
+        Transport t1 = new Transport(); t1.setId("1"); t1.setState(TransportStateView.BOOKED);
+        JobView jobView = new JobView(); jobView.setJobState(JobStateView.HEADING);
+        manager.addTransport(t1);
+
+        new Expectations() {{
+            transporterClientMock.jobStatus("1"); result = jobView;
+        }};
+
+        manager.updateTransportState("1");
+
+        new Verifications() {{
+            transporterClientMock.jobStatus("1"); maxTimes = 1;
+        }};
+
+        assertEquals("not update transport status", TransportStateView.HEADING, t1.getState());
+    }
+
+    @Test
+    public void successUpdateBookedToCompletedTransport(@Mocked TransporterClient transporterClientMock) throws UnknownTransportFault_Exception {
+        Transport t1 = new Transport(); t1.setId("1"); t1.setState(TransportStateView.BOOKED);
+        JobView jobView = new JobView(); jobView.setJobState(JobStateView.COMPLETED);
+        manager.addTransport(t1);
+
+        new Expectations() {{
+            transporterClientMock.jobStatus("1"); result = jobView;
+        }};
+
+        manager.updateTransportState("1");
+
+        new Verifications() {{
+            transporterClientMock.jobStatus("1"); maxTimes = 1;
+        }};
+
+        assertEquals("not update transport status", TransportStateView.COMPLETED, t1.getState());
+    }
+
+    @Test
+    public void successUpdateCompletedTransport(@Mocked TransporterClient transporterClientMock) throws UnknownTransportFault_Exception {
+        Transport t1 = new Transport(); t1.setId("1"); t1.setState(TransportStateView.COMPLETED);
+        JobView jobView = new JobView(); jobView.setJobState(JobStateView.COMPLETED);
+        manager.addTransport(t1);
+
+        new Expectations() {{
+            transporterClientMock.jobStatus("1"); result = jobView;
+        }};
+
+        manager.updateTransportState("1");
+
+        new Verifications() {{
+            transporterClientMock.jobStatus("1"); maxTimes = 1;
+        }};
+
+        assertEquals("not update transport status", TransportStateView.COMPLETED, t1.getState());
+    }
+
+    @Test
+    public void successUpdateFailedTransport(@Mocked TransporterClient transporterClientMock) throws UnknownTransportFault_Exception {
+        Transport t1 = new Transport(); t1.setId("1"); t1.setState(TransportStateView.FAILED);
+        JobView jobView = new JobView(); jobView.setJobState(JobStateView.COMPLETED);
+        manager.addTransport(t1);
+
+        new Expectations() {{
+            transporterClientMock.jobStatus("1"); result = jobView;
+        }};
+
+        manager.updateTransportState("1");
+
+        new Verifications() {{
+            transporterClientMock.jobStatus("1"); maxTimes = 1;
+        }};
+
+        assertEquals("not update transport status", TransportStateView.COMPLETED, t1.getState());
+    }
 }
