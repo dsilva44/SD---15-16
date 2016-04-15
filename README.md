@@ -27,17 +27,19 @@ Linux
 
 [1] Iniciar servidores de apoio
 
-JUDDI:
+JUDDI: 
 ```
-...
+cd juddi-3.3.2_tomcat-7.0.64_9090/bin
+        ./startup.sh
+
 ```
 
 
 [2] Criar pasta temporária
 
 ```
-cd ...
-mkdir ...
+mkdir proj
+cd proj
 ```
 
 
@@ -56,10 +58,6 @@ cd uddi-naming
 mvn clean install
 ```
 
-```
-cd ...
-mvn clean install
-```
 
 
 -------------------------------------------------------------------------------
@@ -69,7 +67,7 @@ mvn clean install
 [1] Construir e executar **servidor**
 
 ```
-cd ...-ws
+cd transporter-ws
 mvn clean install
 mvn exec:java
 ```
@@ -77,7 +75,7 @@ mvn exec:java
 [2] Construir **cliente** e executar testes
 
 ```
-cd ...-ws-cli
+cd transporter-ws-cli
 mvn clean install
 ```
 
@@ -91,7 +89,7 @@ mvn clean install
 [1] Construir e executar **servidor**
 
 ```
-cd ...-ws
+cd broker-ws
 mvn clean install
 mvn exec:java
 ```
@@ -100,7 +98,7 @@ mvn exec:java
 [2] Construir **cliente** e executar testes
 
 ```
-cd ...-ws-cli
+cd broker-ws-cli
 mvn clean install
 ```
 

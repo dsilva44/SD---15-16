@@ -19,7 +19,7 @@ public class Manager {
     private static Manager manager = new Manager();
 
     private UDDINaming uddiNaming;
-    private String uddURL;
+    private String uddiURL;
     private int transportID = 0;
     private ArrayList<TransporterClient> transporterClients;
     private ArrayList<Transport> allTransports;
@@ -35,7 +35,7 @@ public class Manager {
     }
 
     public void init(String uddiURL) {
-        this.uddURL = uddiURL;
+        this.uddiURL = uddiURL;
         try {
             this.uddiNaming = new UDDINaming(uddiURL);
         } catch (JAXRException e) {
@@ -95,26 +95,33 @@ public class Manager {
     	return allTransports;
     }
     
-    public  Transport updateTransportState(String id){
+    public  Transport updateTransportState(String id) throws UnknownTransportFault_Exception {
     	Transport t = getTransportById(id);
+        if (t == null) {
+            UnknownTransportFault faultInfo = new UnknownTransportFault();
+            faultInfo.setId(id);
+            throw new UnknownTransportFault_Exception("Id unknown", faultInfo);
+        }
+
     	try {
-    		
-            String name = t.getTransporterCompany();
-            String endpoint =  uddiNaming.lookup(name);
-            
-            TransporterClient client = new TransporterClient(endpoint);
+            TransporterClient client = new TransporterClient(uddiURL, t.getTransporterCompany());
+
             JobView job = client.jobStatus(t.getId());
-            
-    	
-            JobStateView newState = job.getJobState();
-            String str = newState.toString();
-            
-            
-            
-            switch(str){
-            case "HEADING": t.setState(TransportStateView.HEADING);break;
-            case "ONGOING": t.setState(TransportStateView.ONGOING);break;
-            case "COMPLETED": t.setState(TransportStateView.COMPLETED);break;
+            String STATE = job.getJobState().value();
+
+            switch(STATE) {
+                case "PROPOSED":
+                    t.setState(TransportStateView.BUDGETED); break;
+                case "ACCEPTED":
+                        t.setState(TransportStateView.BOOKED); break;
+                case "REJECTED":
+                        t.setState(TransportStateView.FAILED); break;
+                case "HEADING":
+                    t.setState(TransportStateView.HEADING);break;
+                case "ONGOING":
+                    t.setState(TransportStateView.ONGOING);break;
+                case "COMPLETED":
+                    t.setState(TransportStateView.COMPLETED);break;
             }
             
     	} catch (JAXRException e) {
@@ -213,7 +220,7 @@ public class Manager {
             //Reject offers
             for (JobView offer : transport.getOffers()) {
                 String companyName = offer.getCompanyName();
-                TransporterClient client = new TransporterClient(uddURL, companyName);
+                TransporterClient client = new TransporterClient(uddiURL, companyName);
 
                 if (offer.getJobIdentifier().equals(bestJobID) & bestPrice < transport.getPrice()) {
                     transport.setState(TransportStateView.BOOKED);

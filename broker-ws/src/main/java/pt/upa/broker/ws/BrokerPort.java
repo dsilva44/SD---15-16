@@ -64,7 +64,9 @@ public class BrokerPort implements BrokerPortType{
 			return t.toTransportView();
 		}
 		log.debug("viewTransport return: " + null);
-		return null;
+		UnknownTransportFault faultInfo = new UnknownTransportFault();
+		faultInfo.setId(id);
+		throw new UnknownTransportFault_Exception("Id unknown", faultInfo);
 	}
 	
 
