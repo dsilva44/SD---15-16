@@ -124,7 +124,7 @@ public class Manager {
         // TODO
     }
 
-    public Job confirmationJobs(String id, boolean bool) throws BadJobFault_Exception{
+    public Job confirmationJobs(String id, boolean bool) throws BadJobFault_Exception {
 
         Job job = getJobById(id);
         if(job == null){

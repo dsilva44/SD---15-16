@@ -262,7 +262,8 @@ public class ManagerTest {
         assertNotNull("job is null", returnDecideResponse);
         assertTrue("price is not less then 10", (returnDecideResponse.getJobPrice() > 0) &
                                                     (returnDecideResponse.getJobPrice() < 10));
-        assertTrue("Job not saved", manager.getJobs().contains(returnDecideResponse));
+        String jobID = returnDecideResponse.getJobIdentifier();
+        assertNotNull("Job not saved", manager.getJobById(jobID));
 
     }
 
@@ -277,7 +278,8 @@ public class ManagerTest {
         assertNotNull("job is null", returnDecideResponse);
         assertTrue("price is not less then 10", returnDecideResponse.getJobPrice() > 0 &
                                                     (returnDecideResponse.getJobPrice() < 10));
-        assertTrue("Job not saved", manager.getJobs().contains(returnDecideResponse));
+        String jobID = returnDecideResponse.getJobIdentifier();
+        assertNotNull("Job not saved", manager.getJobById(jobID));
     }
 
     @Test
@@ -301,7 +303,8 @@ public class ManagerTest {
         assertNotNull("job is null", returnDecideResponse);
         assertTrue("price is not less then reference price", returnDecideResponse.getJobPrice() > 0 &
                 (returnDecideResponse.getJobPrice() < referencePrice));
-        assertTrue("Job not saved", manager.getJobs().contains(returnDecideResponse));
+        String jobID = returnDecideResponse.getJobIdentifier();
+        assertNotNull("Job not saved", manager.getJobById(jobID));
     }
 
     @Test
@@ -315,7 +318,8 @@ public class ManagerTest {
         assertNotNull("job is null", returnDecideResponse);
         assertTrue("price is not less then reference price", returnDecideResponse.getJobPrice() > 0 &
                 (returnDecideResponse.getJobPrice() < referencePrice));
-        assertTrue("Job not saved", manager.getJobs().contains(returnDecideResponse));
+        String jobID = returnDecideResponse.getJobIdentifier();
+        assertNotNull("Job not saved", manager.getJobById(jobID));
     }
 
     @Test
@@ -329,7 +333,8 @@ public class ManagerTest {
         assertNotNull("job is null", returnDecideResponse);
         assertTrue("price is not above reference price", returnDecideResponse.getJobPrice() > 0 &
                 (returnDecideResponse.getJobPrice() > referencePrice));
-        assertTrue("Job not saved", manager.getJobs().contains(returnDecideResponse));
+        String jobID = returnDecideResponse.getJobIdentifier();
+        assertNotNull("Job not saved", manager.getJobById(jobID));
     }
 
     @Test
@@ -343,7 +348,8 @@ public class ManagerTest {
         assertNotNull("job is null", returnDecideResponse);
         assertTrue("price is not greater reference price", returnDecideResponse.getJobPrice() > 0 &
                 (returnDecideResponse.getJobPrice() > referencePrice));
-        assertTrue("Job not saved", manager.getJobs().contains(returnDecideResponse));
+        String jobID = returnDecideResponse.getJobIdentifier();
+        assertNotNull("Job not saved", manager.getJobById(jobID));
     }
 
 }

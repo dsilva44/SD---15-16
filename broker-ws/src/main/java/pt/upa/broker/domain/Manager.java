@@ -5,6 +5,7 @@ import java.util.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
+import pt.upa.broker.exception.BrokerUddiNamingException;
 import pt.upa.broker.ws.*;
 import pt.upa.transporter.ws.*;
 import pt.upa.transporter.ws.cli.TransporterClient;
@@ -18,7 +19,7 @@ public class Manager {
     private static Manager manager = new Manager();
 
     private UDDINaming uddiNaming;
-
+    private String uddURL;
     private int transportID = 0;
     private ArrayList<TransporterClient> transporterClients;
     private LinkedList<Transport> allTransports;
@@ -31,6 +32,15 @@ public class Manager {
     private Manager() {
         transporterClients = new ArrayList<>();
         allTransports = new LinkedList<>();
+    }
+
+    public void init(String uddiURL) {
+        this.uddURL = uddiURL;
+        try {
+            this.uddiNaming = new UDDINaming(uddiURL);
+        } catch (JAXRException e) {
+            throw new BrokerUddiNamingException("Cannot Create uddiNaming instance");
+        }
     }
     
     public static Manager getInstance() { return manager; }
@@ -157,15 +167,12 @@ public class Manager {
     public Transport decideBestOffer(Transport transport) throws UnavailableTransportPriceFault_Exception {
         transport.setState(TransportStateView.FAILED);
 
-        String companyName = null;
         String bestJobID = null;
-        TransporterClient client = null;
         int bestPrice = transport.getPrice();
 
         try {
+            // Choose best offer
             for (JobView offer : transport.getOffers() ) {
-                companyName = offer.getCompanyName();
-                client = new TransporterClient(companyName);
                 int offerPrice = offer.getJobPrice();
 
                 if (offerPrice < bestPrice) {
@@ -174,8 +181,10 @@ public class Manager {
                 }
             }
 
-            if (client != null) {
-                for (JobView offer : transport.getOffers())
+            //Reject offers
+            for (JobView offer : transport.getOffers()) {
+                String companyName = offer.getCompanyName();
+                TransporterClient client = new TransporterClient(uddURL, companyName);
 
                 if (offer.getJobIdentifier().equals(bestJobID) & bestPrice < transport.getPrice()) {
                     transport.setState(TransportStateView.BOOKED);
@@ -184,8 +193,8 @@ public class Manager {
                     client.decideJob(bestJobID, true);
                 }
                 else client.decideJob(offer.getJobIdentifier(), false);
-
             }
+
             if (bestJobID == null)  {
                 UnavailableTransportPriceFault faultInfo = new UnavailableTransportPriceFault();
                 faultInfo.setBestPriceFound(bestPrice);
@@ -194,8 +203,9 @@ public class Manager {
                         "the best price for transportation is " + bestPrice, faultInfo);
             }
         } catch (BadJobFault_Exception e) {
-            throw new BrokerBadJobException(
-                    "Something went wrong while trying to decideJob on id: " + e.getFaultInfo().getId());
+            throw new BrokerBadJobException(e.getMessage() + " -- id: " + e.getFaultInfo().getId());
+        } catch (JAXRException e) {
+            log.error("Something went wrong while trying to create transporter stub");
         }
 
         return transport;

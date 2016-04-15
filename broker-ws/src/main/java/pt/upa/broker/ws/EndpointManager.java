@@ -45,7 +45,7 @@ public class EndpointManager {
             throw new BrokerUddiNamingException("Cannot Create uddiNaming instance");
         }
 
-        Manager.getInstance().setUddiNaming(uddiNaming);
+        Manager.getInstance().init(uddiURL);
     }
 
     public void start() {

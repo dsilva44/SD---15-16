@@ -1,5 +1,6 @@
 package pt.upa.broker.ws.it;
 
+import org.apache.juddi.v3.client.transport.Transport;
 import org.junit.Test;
 import pt.upa.broker.ws.*;
 
@@ -39,6 +40,20 @@ public class RequestTransportIT extends AbstractIntegrationTest {
     public void allNullTransportersResponse()
             throws UnavailableTransportPriceFault_Exception, UnavailableTransportFault_Exception,
             UnknownLocationFault_Exception, InvalidPriceFault_Exception {
-        brokerClient.requestTransport(centroCity1, centroCity2, 200);
+        brokerClient.requestTransport(centroCity1, centroCity2, 100);
+    }
+
+    @Test(expected = UnavailableTransportFault_Exception.class)
+    public void referencePrice0ShouldThrowException()
+            throws UnavailableTransportPriceFault_Exception, UnavailableTransportFault_Exception,
+            UnknownLocationFault_Exception, InvalidPriceFault_Exception {
+        brokerClient.requestTransport(centroCity1, centroCity2, 0);
+    }
+
+    @Test
+    public void successEvenPriceRequestTransporter()
+            throws UnavailableTransportPriceFault_Exception, UnavailableTransportFault_Exception,
+            UnknownLocationFault_Exception, InvalidPriceFault_Exception {
+        brokerClient.requestTransport("Lisboa", "Leiria", 15);
     }
 }
