@@ -103,7 +103,11 @@ cd broker-ws-cli
 mvn clean install
 ```
 
-...
+[3] Correr testes de integração
+```
+cd broker-ws-cli
+mvn clean verify
+```
 
 -------------------------------------------------------------------------------
 **FIM**
