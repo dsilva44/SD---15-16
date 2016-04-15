@@ -2,6 +2,8 @@ package pt.upa.transporter.ws;
 
 import javax.jws.WebService;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import pt.upa.transporter.domain.Job;
 import pt.upa.transporter.domain.Manager;
 
@@ -15,20 +17,23 @@ import java.util.List;
         serviceName = "TransporterService"
 )
 public class TransporterPort implements TransporterPortType {
+    static private final Logger log = LogManager.getRootLogger();
 	
 	private Manager manager = Manager.getInstance();
 
     @Override
     public String ping(String name) {
+        log.debug("ping:");
         return "Pong " + name + "!";
     }
 
     @Override
     public JobView requestJob(String origin, String destination, int price)
             throws BadLocationFault_Exception, BadPriceFault_Exception {
-        manager.validateRequestedJob(origin, destination, price);
+
         Job offerJob = manager.decideResponse(origin, destination, price);
 
+        log.debug("requestJob:");
         if (offerJob != null) return offerJob.toJobView();
 
         return null;
@@ -44,10 +49,12 @@ public class TransporterPort implements TransporterPortType {
     public JobView jobStatus(String id) {
     	Job job = manager.getJobById(id);
 
-    	if (job==null){
+    	if (job==null) {
+            log.debug("jobStatus:");
     		return null;
     	}
     	else{
+            log.debug("jobStatus:");
     		return job.toJobView();
     	}
     }
@@ -55,12 +62,16 @@ public class TransporterPort implements TransporterPortType {
     @Override
     public List<JobView> listJobs() {
         ArrayList<Job> jobs = manager.getJobs();
+
+        log.debug("listJobs:");
         return jobListToJobViewList(jobs);
     }
 
     @Override
     public void clearJobs(){
-    	manager.setJobs(null);
+
+        log.debug("clearJobs:");
+        manager.setJobs(null);
     }
 
     private List<JobView> jobListToJobViewList(ArrayList<Job> jobs) {
@@ -73,6 +84,7 @@ public class TransporterPort implements TransporterPortType {
             }
         }
 
+        log.debug("jobListToJobViewList:");
         return newList;
     }
 }

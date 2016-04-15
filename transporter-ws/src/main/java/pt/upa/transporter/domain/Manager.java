@@ -76,14 +76,22 @@ public class Manager {
         return jobs;
     }
 
-    public Job decideResponse(String origin, String destination, int price) {
+    public Job decideResponse(String origin, String destination, int price)
+            throws BadLocationFault_Exception, BadPriceFault_Exception {
+
+        validateRequestedJob(origin, destination, price);
+
         int offerPrice;
         Job offerJob = new Job(transporterName, getNextJobID(), origin, destination, 0, JobStateView.PROPOSED);
 
-        if (!workCities.contains(origin) || !workCities.contains(destination) || price == 0 || price > 100)
+        if (!containsCaseInsensitive(origin, workCities) ||
+                !containsCaseInsensitive(destination, workCities) ||
+                price == 0 || price > 100)
             return null;
-        else if (price <= 10)
-            offerPrice = ThreadLocalRandom.current().nextInt(1, 9);
+        else if (price == 1)
+            offerPrice = price;
+        else if (price <= 10 & price > 1)
+            offerPrice = ThreadLocalRandom.current().nextInt(1, price-1);
         else if ((price % 2 == 0 & transporterParity.equals("EVEN")) ||
                 (price % 2 != 0 & transporterParity.equals("ODD")))
             offerPrice = ThreadLocalRandom.current().nextInt(1, price-1);
@@ -95,7 +103,7 @@ public class Manager {
         return offerJob;
     }
 
-    public void validateRequestedJob(String origin, String destination, int price)
+    void validateRequestedJob(String origin, String destination, int price)
             throws BadLocationFault_Exception, BadPriceFault_Exception {
         class BadFaultLocation {
             private void throwException(String location) throws BadLocationFault_Exception {

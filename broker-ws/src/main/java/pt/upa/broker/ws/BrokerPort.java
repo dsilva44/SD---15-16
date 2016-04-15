@@ -3,6 +3,8 @@ package pt.upa.broker.ws;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import pt.upa.broker.domain.Manager;
 import pt.upa.broker.domain.Transport;
 import pt.upa.transporter.ws.BadLocationFault_Exception;
@@ -19,6 +21,7 @@ import javax.jws.WebService;
 		serviceName = "BrokerService"
 )
 public class BrokerPort implements BrokerPortType{
+	static private final Logger log = LogManager.getRootLogger();
 
 	private Manager manager = Manager.getInstance();
 	
@@ -26,6 +29,7 @@ public class BrokerPort implements BrokerPortType{
 	public String ping(String name) {
 		int numResponses = manager.pingTransporters();
 
+		log.debug("ping: " + numResponses);
 		return numResponses + " transporters available";
 	}
 
@@ -38,6 +42,7 @@ public class BrokerPort implements BrokerPortType{
 			Transport transport = manager.requestTransport(origin, destination, price);
 			manager.decideBestOffer(transport);
 
+			log.debug("requestTransport: " + transport.getId() );
 			return transport.getId();
 
 		} catch (BadLocationFault_Exception e) {
@@ -54,9 +59,11 @@ public class BrokerPort implements BrokerPortType{
 	@Override
 	public TransportView viewTransport(String id) throws UnknownTransportFault_Exception {
 		Transport t = manager.getTransportById(id);
-		if (t != null){
+		if (t != null) {
+			log.debug("viewTransport return:" );
 			return t.toTransportView();
 		}
+		log.debug("viewTransport return: " + null);
 		return null;
 	}
 	
@@ -64,7 +71,8 @@ public class BrokerPort implements BrokerPortType{
 	@Override
 	public List<TransportView> listTransports() {
 		ArrayList<Transport> transports = (ArrayList<Transport>) manager.getAllTransports();
-		
+
+		log.debug("listTransports:");
 		return transportListToTransportViewList(transports);
 	}
 
@@ -83,6 +91,8 @@ public class BrokerPort implements BrokerPortType{
                 views.add(transport.toTransportView());
             }
         }
+
+		log.debug("listTransports:");
 		return views;
 	}
 	

@@ -157,9 +157,9 @@ public class Manager {
             UnavailableTransportFault faultInfo = new UnavailableTransportFault();
             faultInfo.setOrigin(origin);
             faultInfo.setDestination(destination);
-            log.warn("There is no available transport from " + origin + "to " + destination);
+            log.warn("There is no available transport from " + origin + " to " + destination);
             throw new UnavailableTransportFault_Exception(
-                    "There is no available transport from " + origin + "to " + destination, faultInfo);
+                    "There is no available transport from " + origin + " to " + destination, faultInfo);
         }
         return transport;
     }
