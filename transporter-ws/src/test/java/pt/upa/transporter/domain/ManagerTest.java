@@ -347,14 +347,24 @@ public class ManagerTest {
     }
     
     //-----------------------------------------------------------------------TRANSPORTIMULATION
-    /*
+    
     @Test
-    public void stateShouldBeAccepted(){
+    public void stateShouldBeAccepted() throws BadJobFault_Exception{
 	    Job job2 = new Job();
-		job2.setJobState(JobStateView.ACCEPTED);
+	    job2.setJobIdentifier("id2");
+		job2.setJobState(JobStateView.PROPOSED);
+		/*
+		Job job1 = new Job();
+	    job1.setJobIdentifier("id1");
+		job1.setJobState(JobStateView.ONGOING);
+		
+		
+		*/
 		manager.addJob(job2);
+		manager.confirmationJobs("id2",true);
+		
     }
-    */
+    
     
 
 }

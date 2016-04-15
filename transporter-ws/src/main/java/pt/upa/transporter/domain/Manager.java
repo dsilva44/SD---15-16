@@ -4,17 +4,16 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import pt.upa.transporter.ws.*;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Pattern;
 
-import javax.swing.Timer;
+import java.util.Timer;
+import java.util.TimerTask;
 
-public class Manager {//implements ActionListener {
+public class Manager  {
     static private final Logger log = LogManager.getRootLogger();
     private static Manager manager = new Manager();
 
@@ -32,12 +31,8 @@ public class Manager {//implements ActionListener {
     private final ArrayList<String> sul = new ArrayList<>(Arrays.asList("Setúbal", "Évora", "Portalegre", "Beja",
             "Faro"));
 
-   
-    /*
-    private Random randomTime = new Random();
-    private int delay = (int)randomTime.nextFloat()*5;
-    private Timer timerRunAction = new Timer(delay,this);
-    */
+    
+    
     
     private Manager() {
         knowCities = new ArrayList<>();
@@ -47,7 +42,6 @@ public class Manager {//implements ActionListener {
         knowCities.addAll(centro);
         knowCities.addAll(norte);
         knowCities.addAll(sul);
-        //timerRunAction.start();
         
     }
 
@@ -133,44 +127,41 @@ public class Manager {//implements ActionListener {
             throw new BadPriceFault_Exception(price + " is not a valid price", faultInfo);
         }
     }
-
-    /*
-    @Override
-	public void actionPerformed(ActionEvent e) {
-		this.TransportSimulation();
-		this.updateTimer();
-		
-	}
     
-    public void updateTimer(){
-    	
-    	if (timerRunAction.isRunning()){
-    		timerRunAction.stop();
-	    	
-	        this.delay = (int)randomTime.nextFloat()*5;
-	        timerRunAction.setDelay(delay);
-	        timerRunAction.restart();
-	    }
+    private int generateRandomTime(){
+    	Random randomTime = new Random();
+        int delay = (int)(randomTime.nextFloat()*5000);
+        return delay;
     }
-    */
     
-    public void TransportSimulation() {
-    	if(!jobs.isEmpty()){
-	    	for(Job j : jobs){
-	    		switch (j.getJobState()){
-		    		case ACCEPTED: j.setJobState(JobStateView.HEADING);
-		    						break;
-		    			
-		    		case HEADING: j.setJobState(JobStateView.ONGOING);
-		    						break;
-		    		
-		    		case ONGOING: j.setJobState(JobStateView.COMPLETED);
-		    						break;
-		    		
-	    		}
-	    	}
-    	}
-    	
+    public void TransportSimulation(Job j) {
+		System.out.println("SIMULATION");
+
+        Timer timer = new Timer();
+        timer.scheduleAtFixedRate(new TimerTask(){
+    		@Override
+        	public void run(){
+    			System.out.println("RUNNING");
+
+			    		if (j.getJobState().equals(JobStateView.ACCEPTED)){
+			    			System.out.println("ACCEPTED");
+				    		j.setJobState(JobStateView.HEADING);
+			    		}
+			    		else if (j.getJobState().equals(JobStateView.HEADING)){
+			    			System.out.println("HEADING");
+				    		j.setJobState(JobStateView.ONGOING);
+			    		}
+
+			    		else if (j.getJobState().equals(JobStateView.ONGOING)){
+			    			System.out.println("ONGOING");
+				    		j.setJobState(JobStateView.COMPLETED);
+			    		}
+			    		else{
+			    			this.cancel();
+			    		}
+		     	
+    		}
+    	}, 0, generateRandomTime());
     }
 
     public Job confirmationJobs(String id, boolean bool) throws BadJobFault_Exception{
@@ -181,7 +172,7 @@ public class Manager {//implements ActionListener {
             fault.setId(id);
             throw new BadJobFault_Exception("not existing id", fault);
         }
-
+        
         if (job.getJobState() != JobStateView.PROPOSED){
             BadJobFault fault = new BadJobFault();
             fault.setId(id);
@@ -189,6 +180,7 @@ public class Manager {//implements ActionListener {
         }
         if (bool){
             job.setJobState(JobStateView.ACCEPTED);
+            TransportSimulation(job);
         }
         else{
             job.setJobState(JobStateView.REJECTED);
