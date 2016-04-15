@@ -58,7 +58,7 @@ public class BrokerPort implements BrokerPortType{
 
 	@Override
 	public TransportView viewTransport(String id) throws UnknownTransportFault_Exception {
-		Transport t = manager.getTransportById(id);
+		Transport t = manager.updateTransportState(id);
 		if (t != null) {
 			log.debug("viewTransport return:" );
 			return t.toTransportView();
@@ -78,7 +78,8 @@ public class BrokerPort implements BrokerPortType{
 
 	@Override
 	public void clearTransports() {
-		//must remove transports in Transporter also
+		manager.clearTransports();
+		manager.clearTransportersClients();
 	}
 
 	// TODO

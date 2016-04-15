@@ -91,7 +91,6 @@ public class Manager {
         return count;
     }
 
-
     public List<Transport> getAllTransports() {
     	return allTransports;
     }
@@ -248,6 +247,17 @@ public class Manager {
             }
         }
         return false;
+    }
+
+
+    public void clearTransports(){
+        allTransports.clear();
+    }
+
+    public void clearTransportersClients(){
+        for (TransporterClient tp : transporterClients){
+            tp.clearJobs();
+        }
     }
 
 }
