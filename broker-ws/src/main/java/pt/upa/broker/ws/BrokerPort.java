@@ -80,7 +80,8 @@ public class BrokerPort implements BrokerPortType{
 
 	@Override
 	public void clearTransports() {
-		//must remove transports in Transporter also
+		manager.clearTransports();
+		manager.clearTransportersClients();
 	}
 
 	// TODO

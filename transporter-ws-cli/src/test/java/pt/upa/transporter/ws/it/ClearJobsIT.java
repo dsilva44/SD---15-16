@@ -23,4 +23,12 @@ public class ClearJobsIT extends AbstractIntegrationTest {
     	client1.clearJobs();
         assertTrue(client1.listJobs().isEmpty());
     }
+
+    @Test
+    public void successClearJobsEmptyList() throws BadLocationFault_Exception, BadPriceFault_Exception {
+
+        client1.clearJobs();
+        assertTrue(client1.listJobs().isEmpty());
+    }
+
 }

@@ -29,6 +29,7 @@ public abstract class AbstractIntegrationTest {
 
     @AfterClass
     public static void oneTimeTearDown() {
+
         brokerClient = null;
     }
 
