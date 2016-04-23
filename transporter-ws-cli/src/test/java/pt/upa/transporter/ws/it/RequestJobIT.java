@@ -65,35 +65,35 @@ public class RequestJobIT extends AbstractIntegrationTest {
     }
 
     @Test
-    public void priceEqualTo10shouldReturnPriceLessThen10AndGreaterThan0()
+    public void priceEqualTo10shouldReturnPriceLessThen10AndGreaterEqualTo0()
             throws BadLocationFault_Exception , BadPriceFault_Exception {
         int referencePrice = 10;
 
         JobView returnRequestJob = client1.requestJob(centroLocation1, centroLocation2, referencePrice);
 
-        assertTrue("price is not less then 10", (returnRequestJob.getJobPrice() > 0) &
+        assertTrue("price is not less then 10", (returnRequestJob.getJobPrice() >= 0) &
                 (returnRequestJob.getJobPrice() < 10));
 
     }
 
     @Test
-    public void priceLessThen10shouldReturnPriceLessThen10AndGreaterThan0()
+    public void priceLessThen10shouldReturnPriceLessThen10AndGreaterEqualTo0()
             throws BadLocationFault_Exception, BadPriceFault_Exception  {
         int referencePrice = 5;
 
         JobView returnRequestJob = client1.requestJob(centroLocation1, centroLocation2, referencePrice);
 
-        assertTrue("price is not less then 10", returnRequestJob.getJobPrice() > 0 &
+        assertTrue("price is not less then 10", returnRequestJob.getJobPrice() >= 0 &
                 (returnRequestJob.getJobPrice() < 10));
     }
 
     @Test
-    public void priceEqualTo0shouldReturnNull()
+    public void priceEqualTo0shouldReturn0()
             throws BadLocationFault_Exception, BadPriceFault_Exception  {
 
         JobView returnRequestJob = client1.requestJob(centroLocation1, centroLocation2, 0);
 
-        assertNull("job is not null", returnRequestJob);
+        assertTrue("price is not less then 10", returnRequestJob.getJobPrice() == 0);
     }
 
     @Test
@@ -103,7 +103,7 @@ public class RequestJobIT extends AbstractIntegrationTest {
 
         JobView returnRequestJob = client1.requestJob(centroLocation1, centroLocation2, referencePrice);
 
-        assertTrue("price is not less then reference price", returnRequestJob.getJobPrice() > 0 &
+        assertTrue("price is not less then reference price", returnRequestJob.getJobPrice() >= 0 &
                 (returnRequestJob.getJobPrice() < referencePrice));
     }
 
@@ -115,7 +115,7 @@ public class RequestJobIT extends AbstractIntegrationTest {
         JobView returnRequestJob = client2.requestJob(centroLocation1, centroLocation2, referencePrice);
 
         assertNotNull("job is null", returnRequestJob);
-        assertTrue("price is not less then reference price", returnRequestJob.getJobPrice() > 0 &
+        assertTrue("price is not less then reference price", returnRequestJob.getJobPrice() >= 0 &
                 (returnRequestJob.getJobPrice() < referencePrice));
     }
 
@@ -126,7 +126,7 @@ public class RequestJobIT extends AbstractIntegrationTest {
 
         JobView returnDecideResponse = client2.requestJob(centroLocation1, centroLocation2, referencePrice);
 
-        assertTrue("price is not above reference price", returnDecideResponse.getJobPrice() > 0 &
+        assertTrue("price is not above reference price", returnDecideResponse.getJobPrice() >= 0 &
                 (returnDecideResponse.getJobPrice() > referencePrice));
     }
 
@@ -137,7 +137,7 @@ public class RequestJobIT extends AbstractIntegrationTest {
 
         JobView returnDecideResponse = client1.requestJob(centroLocation1, centroLocation2, referencePrice);
 
-        assertTrue("price is not greater reference price", returnDecideResponse.getJobPrice() > 0 &
+        assertTrue("price is not greater reference price", returnDecideResponse.getJobPrice() >= 0 &
                 (returnDecideResponse.getJobPrice() > referencePrice));
     }
 

@@ -37,14 +37,14 @@ public class ManagerTest {
 
     //Members
     private Manager manager = Manager.getInstance();
-    private String transporterQuery = "UpaTransporter%";
-    private String wsURL1 = "http://localhost:8081/transporter-ws/endpoint";
-    private String wsURL2 = "http://localhost:8082/transporter-ws/endpoint";
+    private final String  transporterQuery = "UpaTransporter%";
+    private final String wsURL1 = "http://localhost:8081/transporter-ws/endpoint";
+    private final String wsURL2 = "http://localhost:8082/transporter-ws/endpoint";
     private Collection<String> endpointsList = new ArrayList<>(Arrays.asList(wsURL1, wsURL2));
     private ArrayList<String> emptyList = new ArrayList<>();
 
-    private String centroCity1 = "LisBOA";
-    private String centroCity2 = "LeIRia";
+    private final String centroCity1 = "LisBOA";
+    private final String centroCity2 = "LeIRia";
 
     private JobView offer1, offer2, offer3, offer4;
     private Transport transport;

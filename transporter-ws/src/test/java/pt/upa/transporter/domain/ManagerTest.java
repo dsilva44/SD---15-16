@@ -45,9 +45,9 @@ public class ManagerTest {
     private final ArrayList<String> sul = new ArrayList<>(Arrays.asList("Setúbal", "Évora", "Portalegre", "Beja",
             "Faro"));
 
-    private String centroLocation1 = "Lisboa";
-    private String centroLocation2 = "Leiria";
-    private String unknownLocation = "BATATA";
+    private final String centroLocation1 = "Lisboa";
+    private final String centroLocation2 = "Leiria";
+    private final String unknownLocation = "BATATA";
 
     // initialization and clean-up for each test
     @Before
