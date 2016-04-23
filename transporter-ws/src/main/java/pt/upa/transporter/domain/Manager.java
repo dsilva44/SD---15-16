@@ -32,9 +32,6 @@ public class Manager  {
     private final ArrayList<String> sul = new ArrayList<>(Arrays.asList("Setúbal", "Évora", "Portalegre", "Beja",
             "Faro"));
 
-    
-    
-    
     private Manager() {
         knowCities = new ArrayList<>();
         workCities = new ArrayList<>();
@@ -69,8 +66,6 @@ public class Manager  {
                 workCities.addAll(sul);
                 break;
         }
-        
-
     }
 
     String getNextJobID() {
@@ -93,17 +88,16 @@ public class Manager  {
         int offerPrice;
         Job offerJob = new Job(transporterName, getNextJobID(), origin, destination, 0, JobStateView.PROPOSED);
 
-        if (!containsCaseInsensitive(origin, workCities) ||
-                !containsCaseInsensitive(destination, workCities) ||
-                price == 0 || price > 100)
+        if (!containsCaseInsensitive(origin, workCities) || !containsCaseInsensitive(destination, workCities) ||
+                price > 100)
             return null;
-        else if (price == 1)
+        else if (price == 0)
             offerPrice = price;
-        else if (price <= 10 & price > 1)
-            offerPrice = ThreadLocalRandom.current().nextInt(1, price-1);
+        else if (price <= 10)
+            offerPrice = ThreadLocalRandom.current().nextInt(0, price-1);
         else if ((price % 2 == 0 & transporterParity.equals("EVEN")) ||
                 (price % 2 != 0 & transporterParity.equals("ODD")))
-            offerPrice = ThreadLocalRandom.current().nextInt(1, price-1);
+            offerPrice = ThreadLocalRandom.current().nextInt(0, price-1);
         else
             offerPrice = ThreadLocalRandom.current().nextInt(price+1, 1000);
 
@@ -148,25 +142,20 @@ public class Manager  {
         Timer timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask(){
     		@Override
-        	public void run(){
+        	public void run() {
+                if (j.getJobState().equals(JobStateView.ACCEPTED)) {
+                    j.setJobState(JobStateView.HEADING);
+                }
+                else if (j.getJobState().equals(JobStateView.HEADING)){
+                    j.setJobState(JobStateView.ONGOING);
+                }
 
-			    		if (j.getJobState().equals(JobStateView.ACCEPTED)){
-			    			//System.out.println("ACCEPTED");
-				    		j.setJobState(JobStateView.HEADING);
-			    		}
-			    		else if (j.getJobState().equals(JobStateView.HEADING)){
-			    			//System.out.println("HEADING");
-				    		j.setJobState(JobStateView.ONGOING);
-			    		}
-
-			    		else if (j.getJobState().equals(JobStateView.ONGOING)){
-			    			//System.out.println("ONGOING");
-				    		j.setJobState(JobStateView.COMPLETED);
-			    		}
-			    		else{
-			    			this.cancel();
-			    		}
-		     	
+                else if (j.getJobState().equals(JobStateView.ONGOING)){
+                    j.setJobState(JobStateView.COMPLETED);
+                }
+                else{
+                    this.cancel();
+                }
     		}
     	}, generateRandomTime(), generateRandomTime());
     }

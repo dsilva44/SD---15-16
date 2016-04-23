@@ -284,13 +284,13 @@ public class ManagerTest {
     }
 
     @Test
-    public void priceEqualTo0shouldReturnNull()
+    public void priceEqualTo0shouldReturn0()
             throws BadLocationFault_Exception, BadPriceFault_Exception  {
         manager.init("UpaTransporter1");
 
         Job returnDecideResponse = manager.decideResponse(centroLocation1, centroLocation2, 0);
 
-        assertNull("job is not null", returnDecideResponse);
+        assertEquals("job price is not 0", 0, returnDecideResponse.getJobPrice());
     }
 
     @Test
