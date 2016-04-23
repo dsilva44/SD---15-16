@@ -218,7 +218,7 @@ public class Manager {
             for (JobView offer : transport.getOffers() ) {
                 int offerPrice = offer.getJobPrice();
 
-                if (offerPrice < bestPrice) {
+                if (offerPrice < bestPrice || offerPrice == 0) {
                     bestJobID = offer.getJobIdentifier();
                     bestPrice = offerPrice;
                 }
@@ -229,10 +229,11 @@ public class Manager {
                 String companyName = offer.getCompanyName();
                 TransporterClient client = new TransporterClient(uddiURL, companyName);
 
-                if (offer.getJobIdentifier().equals(bestJobID) & bestPrice < transport.getPrice()) {
+                if (offer.getJobIdentifier().equals(bestJobID) ) {
                     transport.setState(TransportStateView.BOOKED);
                     transport.setTransporterCompany(companyName);
                     transport.setChosenOfferID(bestJobID);
+                    transport.setPrice(bestPrice);
                     client.decideJob(bestJobID, true);
                 }
                 else client.decideJob(offer.getJobIdentifier(), false);

@@ -269,7 +269,7 @@ public class ManagerTest {
     }
 
     @Test
-    public void priceLessThen10shouldReturnPriceLessThen10AndGreaterThan0()
+    public void priceLessThen10shouldReturnPriceLessThen10AndGreaterOrEqualTo0()
             throws BadLocationFault_Exception, BadPriceFault_Exception  {
         int referencePrice = 5;
         manager.init("UpaTransporter1");
@@ -277,7 +277,7 @@ public class ManagerTest {
         Job returnDecideResponse = manager.decideResponse(centroLocation1, centroLocation2, referencePrice);
 
         assertNotNull("job is null", returnDecideResponse);
-        assertTrue("price is not less then 10", returnDecideResponse.getJobPrice() > 0 &
+        assertTrue("price is not less then 10", returnDecideResponse.getJobPrice() >= 0 &
                                                     (returnDecideResponse.getJobPrice() < 10));
         String jobID = returnDecideResponse.getJobIdentifier();
         assertNotNull("Job not saved", manager.getJobById(jobID));

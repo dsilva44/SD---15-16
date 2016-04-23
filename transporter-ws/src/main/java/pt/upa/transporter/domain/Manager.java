@@ -93,11 +93,13 @@ public class Manager  {
             return null;
         else if (price == 0)
             offerPrice = price;
-        else if (price <= 10)
-            offerPrice = ThreadLocalRandom.current().nextInt(0, price-1);
+        else if (price <= 10) {
+            offerPrice = ThreadLocalRandom.current().nextInt(0, price);
+            log.debug("offerPrice: "  + offerPrice);
+        }
         else if ((price % 2 == 0 & transporterParity.equals("EVEN")) ||
                 (price % 2 != 0 & transporterParity.equals("ODD")))
-            offerPrice = ThreadLocalRandom.current().nextInt(0, price-1);
+            offerPrice = ThreadLocalRandom.current().nextInt(0, price);
         else
             offerPrice = ThreadLocalRandom.current().nextInt(price+1, 1000);
 
