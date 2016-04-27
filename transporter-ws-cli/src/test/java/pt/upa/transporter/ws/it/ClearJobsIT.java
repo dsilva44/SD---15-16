@@ -9,10 +9,10 @@ import pt.upa.transporter.ws.BadPriceFault_Exception;
 
 public class ClearJobsIT extends AbstractIntegrationTest {
 	
-	private String validLocation1 = "Lisboa";
-    private String validLocation2 = "Leiria";
-    private int validPrice1 = 20;
-    private int validPrice2 = 50;
+	private final String validLocation1 = "Lisboa";
+    private final String validLocation2 = "Leiria";
+    private final int validPrice1 = 20;
+    private final int validPrice2 = 50;
     
     @Test
     public void successClearJobsShouldEmptyList() throws BadLocationFault_Exception, BadPriceFault_Exception {

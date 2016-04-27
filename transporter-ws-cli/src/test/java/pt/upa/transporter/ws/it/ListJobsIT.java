@@ -12,9 +12,9 @@ import pt.upa.transporter.ws.JobView;
 
 public class ListJobsIT extends AbstractIntegrationTest {
 	
-	private String validLocation1 = "Lisboa";
-    private String validLocation2 = "Leiria";
-    private String invalidLocation = "Paradise";
+	private final String validLocation1 = "Lisboa";
+    private final String validLocation2 = "Leiria";
+    private final String invalidLocation = "Paradise";
     
     private int validPrice1 = 20;
     private int validPrice2 = 50;

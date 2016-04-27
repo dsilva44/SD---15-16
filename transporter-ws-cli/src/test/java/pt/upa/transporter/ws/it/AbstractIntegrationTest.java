@@ -22,9 +22,9 @@ public abstract class AbstractIntegrationTest {
     // one-time initialization and clean-up
     @BeforeClass
     public static void oneTimeSetUp() throws Exception {
-        String uddiURL = "http://localhost:9090";
-        String wsName1 = "UpaTransporter1";
-        String wsName2 = "UpaTransporter2";
+        final String uddiURL = "http://localhost:9090";
+        final String wsName1 = "UpaTransporter1";
+        final String wsName2 = "UpaTransporter2";
 
         client1 = new TransporterClient(uddiURL,wsName1);
         client2 = new TransporterClient(uddiURL,wsName2);

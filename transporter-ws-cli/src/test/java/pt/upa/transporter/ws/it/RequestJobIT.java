@@ -11,9 +11,9 @@ import static org.junit.Assert.assertTrue;
 
 public class RequestJobIT extends AbstractIntegrationTest {
 
-    private String centroLocation1 = "Lisboa";
-    private String centroLocation2 = "Leiria";
-    private String unknownLocation = "BATATA";
+    private final String centroLocation1 = "Lisboa";
+    private final String centroLocation2 = "Leiria";
+    private final String unknownLocation = "BATATA";
 
     @Test(expected = BadLocationFault_Exception.class)
     public void unknownOriginShouldThewException() throws BadLocationFault_Exception, BadPriceFault_Exception {

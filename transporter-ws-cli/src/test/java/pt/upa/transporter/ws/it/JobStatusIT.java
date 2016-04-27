@@ -11,8 +11,8 @@ import pt.upa.transporter.ws.JobView;
 
 public class JobStatusIT extends AbstractIntegrationTest {
 
-	private String validLocation1 = "Lisboa";
-    private String invalidLocation = "Paradise";
+	private final String validLocation1 = "Lisboa";
+    private final String invalidLocation = "Paradise";
     
     private int validPrice1 = 20;
     
