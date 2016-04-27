@@ -3,6 +3,7 @@ package pt.upa.transporter.ws.cli;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
+import pt.upa.transporter.exception.TransporterClientException;
 import pt.upa.transporter.ws.*;
 
 import javax.xml.registry.JAXRException;
@@ -18,16 +19,26 @@ public class TransporterClient implements TransporterPortType {
 	private TransporterPortType port;
 	private String wsURL;
 
-	public TransporterClient(String uddiURL, String wsName) throws JAXRException {
-		log.info("Contacting UDDI at " + uddiURL);
-		UDDINaming uddiNaming = new UDDINaming(uddiURL);
+	public TransporterClient(String uddiURL, String wsName) {
 
-		log.info("Looking for '" + wsName + "'");
-		String endpointAddress = uddiNaming.lookup(wsName);
+		String endpointAddress;
+		try {
+			log.info("Contacting UDDI at " + uddiURL);
+			UDDINaming uddiNaming = new UDDINaming(uddiURL);
+
+			log.info("Looking for '" + wsName + "'");
+			endpointAddress = uddiNaming.lookup(wsName);
+
+		} catch (JAXRException e) {
+			String msg = String.format("Client failed lookup on UDDI at %s!", uddiURL);
+			throw  new TransporterClientException(msg, e);
+
+		}
 
 		if (endpointAddress == null) {
 			log.info("Not found!");
-			return;
+			String msg = String.format("Service with name %s not found on UDDI at %s", wsName, uddiURL);
+			throw  new TransporterClientException(msg);
 		} else {
 			log.info("Found " + endpointAddress);
 			this.wsURL = endpointAddress;
