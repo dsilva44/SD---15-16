@@ -28,6 +28,9 @@ public abstract class AbstractIntegrationTest {
 
         client1 = new TransporterClient(uddiURL,wsName1);
         client2 = new TransporterClient(uddiURL,wsName2);
+
+        client1.clearJobs();
+        client2.clearJobs();
     }
 
     @AfterClass

@@ -91,15 +91,15 @@ public class Manager  {
         if (!containsCaseInsensitive(origin, workCities) || !containsCaseInsensitive(destination, workCities) ||
                 price > 100)
             return null;
-        else if (price == 0)
-            offerPrice = price;
+        else if (price == 0 || price == 1)
+            offerPrice = 0;
         else if (price <= 10) {
-            offerPrice = ThreadLocalRandom.current().nextInt(0, price);
+            offerPrice = ThreadLocalRandom.current().nextInt(1, price);
             log.debug("offerPrice: "  + offerPrice);
         }
         else if ((price % 2 == 0 & transporterParity.equals("EVEN")) ||
                 (price % 2 != 0 & transporterParity.equals("ODD")))
-            offerPrice = ThreadLocalRandom.current().nextInt(0, price);
+            offerPrice = ThreadLocalRandom.current().nextInt(1, price);
         else
             offerPrice = ThreadLocalRandom.current().nextInt(price+1, 1000);
 
