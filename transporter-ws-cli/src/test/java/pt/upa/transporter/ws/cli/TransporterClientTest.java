@@ -54,6 +54,16 @@ public class TransporterClientTest {
 	// tests
 	// assertEquals(expected, actual);
 
+	/**
+	 * Checks if TransporterClient is correctly instantiating UDDINaming and
+	 * looking up services with the given name.
+	 *
+	 * @param uddiNaming
+	 *            the mocked object
+	 * @result TransporterClient should instantiate one UDDDINaming object and
+	 *         call the lookup method once.
+	 * @throws Exception
+	 */
 	@Test
 	public void testMockUddi(@Mocked final UDDINaming uddiNaming) throws Exception {
 
@@ -96,6 +106,15 @@ public class TransporterClientTest {
 		// verification block.
 	}
 
+	/**
+	 * Checks if TransporterClient correctly checks if a service with a given
+	 * name does not exist in UDDI.
+	 *
+	 * @param uddiNaming
+	 *            the mocked object
+	 * @result TransporterClientException is expected with a specific message.
+	 * @throws Exception
+	 */
 	@Test
 	public void testMockUddiNameNotFound(@Mocked final UDDINaming uddiNaming) throws Exception {
 
@@ -140,6 +159,14 @@ public class TransporterClientTest {
 		// verification block.
 	}
 
+	/**
+	 * Checks if TransporterClient correctly checks if UDDI is not available.
+	 *
+	 * @param uddiNaming
+	 *            the mocked object
+	 * @result TransporterClientException is expected with a specific message.
+	 * @throws Exception
+	 */
 	@Test
 	public void testMockUddiServerNotFound(@Mocked final UDDINaming uddiNaming) throws Exception {
 
