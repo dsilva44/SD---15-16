@@ -369,7 +369,4 @@ public class ManagerTest {
 
 		assertEquals(JobStateView.COMPLETED ,manager.getJobById("id2").getJobState());
     }
-    
-    
-
 }
