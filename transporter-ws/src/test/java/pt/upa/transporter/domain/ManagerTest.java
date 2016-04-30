@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 
+import static java.lang.Thread.sleep;
 import static org.junit.Assert.*;
 
 public class ManagerTest {
@@ -164,7 +165,7 @@ public class ManagerTest {
     public void trueConfirmJobWithCorrectStateTest() throws Exception{
         Job job = manager.confirmationJobs("validjobtest", true);
 
-        assertEquals("confirmation job did not work correctly", job.getJobState(), JobStateView.ACCEPTED);
+        assertEquals("confirmation job did not work correctly", JobStateView.ACCEPTED, job.getJobState());
     }
 
     @Test(expected = BadJobFault_Exception.class)
@@ -356,20 +357,17 @@ public class ManagerTest {
     //-----------------------------------------------------------------------TRANSPORTIMULATION
     
     @Test
-    public void stateShouldBeAccepted() throws BadJobFault_Exception{
+    public void stateShouldBeAccepted() throws Exception {
 	    Job job2 = new Job();
 	    job2.setJobIdentifier("id2");
 		job2.setJobState(JobStateView.PROPOSED);
 		
 		manager.addJob(job2);
 		manager.confirmationJobs("id2",true);
-		Date init = new Date();
 	
-		
-		while(!(manager.getJobById("id2").getJobState()).equals(JobStateView.COMPLETED)){
-		}
-		Date after = new Date();
-		assertTrue(init.getTime() + 16000 > after.getTime());
+		sleep(16000);
+
+		assertEquals(JobStateView.COMPLETED ,manager.getJobById("id2").getJobState());
     }
     
     

@@ -40,7 +40,7 @@ public abstract class AbstractIT {
 
     static final String EMPTY_STRING = "";
 
-    static final int DELAY_LOWER = 2000; // = 2 second
+    static final int DELAY_LOWER = 1000; // = 1 second
     static final int DELAY_UPPER = 5000; // = 5 seconds
 
     // one-time initialization and clean-up

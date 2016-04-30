@@ -94,14 +94,14 @@ public class Manager  {
         else if (price == 0 || price == 1)
             offerPrice = 0;
         else if (price <= 10) {
-            offerPrice = ThreadLocalRandom.current().nextInt(1, price);
+            offerPrice = genRandomTime(1, price);
             log.debug("offerPrice: "  + offerPrice);
         }
         else if ((price % 2 == 0 & transporterParity.equals("EVEN")) ||
                 (price % 2 != 0 & transporterParity.equals("ODD")))
-            offerPrice = ThreadLocalRandom.current().nextInt(1, price);
+            offerPrice = genRandomTime(1, price);
         else
-            offerPrice = ThreadLocalRandom.current().nextInt(price+1, 1000);
+            offerPrice = genRandomTime(price+1, 1000);
 
         offerJob.setJobPrice(offerPrice);
         jobs.add(offerJob);
@@ -132,33 +132,21 @@ public class Manager  {
             throw new BadPriceFault_Exception(price + " is not a valid price", faultInfo);
         }
     }
-    
-    private int generateRandomTime(){
-    	Random randomTime = new Random();
-        return (int) (randomTime.nextFloat()*5000);
+
+    private int genRandomTime(int min, int max){
+        return ThreadLocalRandom.current().nextInt(min, max);
     }
-    
-    private void TransportSimulation(Job j) {
+
+    public void transportSimulation(Job j) {
 
         Timer timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask(){
     		@Override
         	public void run() {
-                if (j.getJobState().equals(JobStateView.ACCEPTED)) {
-                    j.setJobState(JobStateView.HEADING);
-                }
-                else if (j.getJobState().equals(JobStateView.HEADING)){
-                    j.setJobState(JobStateView.ONGOING);
-                }
-
-                else if (j.getJobState().equals(JobStateView.ONGOING)){
-                    j.setJobState(JobStateView.COMPLETED);
-                }
-                else{
-                    this.cancel();
-                }
+                if (!j.isCompleted()) j.nextState();
+                else this.cancel();
     		}
-    	}, generateRandomTime(), generateRandomTime());
+    	}, genRandomTime(1000, 5000), genRandomTime(1000, 5000));
     }
 
     public Job confirmationJobs(String id, boolean bool) throws BadJobFault_Exception {
@@ -170,16 +158,16 @@ public class Manager  {
             throw new BadJobFault_Exception("not existing id", fault);
         }
         
-        if (job.getJobState() != JobStateView.PROPOSED){
+        else if (job.getJobState() != JobStateView.PROPOSED) {
             BadJobFault fault = new BadJobFault();
             fault.setId(id);
             throw new BadJobFault_Exception("invalid job state to confirm", fault);
         }
-        if (bool){
+        else if (bool) {
             job.setJobState(JobStateView.ACCEPTED);
-            TransportSimulation(job);
+            transportSimulation(job);
         }
-        else{
+        else {
             job.setJobState(JobStateView.REJECTED);
         }
 

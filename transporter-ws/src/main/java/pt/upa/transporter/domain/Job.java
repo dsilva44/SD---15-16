@@ -84,4 +84,14 @@ public class Job {
 
         return jobView;
     }
+
+    public void nextState() {
+        if (getJobState().equals(JobStateView.ACCEPTED)) setJobState(JobStateView.HEADING);
+        else if (getJobState().equals(JobStateView.HEADING)) setJobState(JobStateView.ONGOING);
+        else if (getJobState().equals(JobStateView.ONGOING)) setJobState(JobStateView.COMPLETED);
+    }
+
+    public boolean isCompleted() {
+        return getJobState().equals(JobStateView.COMPLETED);
+    }
 }
