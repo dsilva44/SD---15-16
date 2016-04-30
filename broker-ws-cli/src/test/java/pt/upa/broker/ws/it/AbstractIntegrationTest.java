@@ -16,15 +16,15 @@ import pt.upa.broker.ws.cli.BrokerClient;
  */
 public abstract class AbstractIntegrationTest {
     // static members
-    protected static final Logger log = LogManager.getRootLogger();
-    protected static BrokerClient brokerClient;
+    static final Logger log = LogManager.getRootLogger();
+    static BrokerClient brokerClient;
 
     // one-time initialization and clean-up
     @BeforeClass
     public static void oneTimeSetUp() throws Exception {
         String uddiURL = "http://localhost:9090";
 
-        brokerClient = new BrokerClient(uddiURL);
+        brokerClient = new BrokerClient(uddiURL, "UpaBroker");
     }
 
     @AfterClass
