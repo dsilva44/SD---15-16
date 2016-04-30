@@ -53,10 +53,10 @@ public class Manager {
 
     ArrayList<TransporterClient> getTransporterClients() { return transporterClients; }
 
-    public void setUddiNaming(UDDINaming uddiNaming) { this.uddiNaming = uddiNaming; }
+    void setUddiNaming(UDDINaming uddiNaming) { this.uddiNaming = uddiNaming; }
 
 
-    public boolean updateTransportersList() {
+    boolean updateTransportersList() {
         try {
             String query = "UpaTransporter%";
             ArrayList<String> endpoints = (ArrayList<String>) uddiNaming.list(query);
@@ -74,7 +74,7 @@ public class Manager {
 
     public int pingTransporters() {
         int count = 0;
-        TransporterClient client = null;
+        TransporterClient client;
         if (updateTransportersList()) {
             Iterator<TransporterClient> iterator = transporterClients.iterator();
             while(iterator.hasNext()) {
@@ -83,7 +83,7 @@ public class Manager {
                     client.ping(Integer.toString(count));
                     count++;
                 } catch (Exception e) {
-                    log.error(client.getWsURL() + " is not available");
+                    log.error("transporter is not available");
                     iterator.remove();
                 }
             }
@@ -103,43 +103,38 @@ public class Manager {
             throw new UnknownTransportFault_Exception("Id unknown", faultInfo);
         }
 
-    	try {
-            TransporterClient client = new TransporterClient(uddiURL, t.getTransporterCompany());
+        TransporterClient client = new TransporterClient(uddiURL, t.getTransporterCompany());
 
-            JobView job = client.jobStatus(t.getChosenOfferID());
+        JobView job = client.jobStatus(t.getChosenOfferID());
 
-            if (job == null) {
-                UnknownTransportFault faultInfo = new UnknownTransportFault();
-                faultInfo.setId(id);
-                throw new UnknownTransportFault_Exception("Id unknown", faultInfo);
-            }
+        if (job == null) {
+            UnknownTransportFault faultInfo = new UnknownTransportFault();
+            faultInfo.setId(id);
+            throw new UnknownTransportFault_Exception("Id unknown", faultInfo);
+        }
 
-            String STATE = job.getJobState().value();
+        String STATE = job.getJobState().value();
 
-            switch(STATE) {
-                case "PROPOSED":
-                    t.setState(TransportStateView.BUDGETED); break;
-                case "ACCEPTED":
-                        t.setState(TransportStateView.BOOKED); break;
-                case "REJECTED":
-                        t.setState(TransportStateView.FAILED); break;
-                case "HEADING":
-                    t.setState(TransportStateView.HEADING);break;
-                case "ONGOING":
-                    t.setState(TransportStateView.ONGOING);break;
-                case "COMPLETED":
-                    t.setState(TransportStateView.COMPLETED);break;
-            }
-            
-    	} catch (JAXRException e) {
-            log.error("something goes wrong whit uddiNaming", e);
+        switch(STATE) {
+            case "PROPOSED":
+                t.setState(TransportStateView.BUDGETED); break;
+            case "ACCEPTED":
+                t.setState(TransportStateView.BOOKED); break;
+            case "REJECTED":
+                t.setState(TransportStateView.FAILED); break;
+            case "HEADING":
+                t.setState(TransportStateView.HEADING);break;
+            case "ONGOING":
+                t.setState(TransportStateView.ONGOING);break;
+            case "COMPLETED":
+                t.setState(TransportStateView.COMPLETED);break;
         }
         
 		return t;
     }
 
     
-    public Transport getTransportById(String id){
+    Transport getTransportById(String id){
     	for (Transport t : allTransports){
     		if (t.getId().equals(id)){
     			return t;
@@ -152,7 +147,7 @@ public class Manager {
     	allTransports.add(t);
     }
 
-    public void validateTransport(String origin, String destination, int price)
+    private void validateTransport(String origin, String destination, int price)
             throws UnknownLocationFault_Exception, InvalidPriceFault_Exception {
         class UnknownLocation {
             private void throwException(String location) throws UnknownLocationFault_Exception {
@@ -248,8 +243,6 @@ public class Manager {
             }
         } catch (BadJobFault_Exception e) {
             throw new BrokerBadJobException(e.getMessage() + " -- id: " + e.getFaultInfo().getId());
-        } catch (JAXRException e) {
-            log.error("Something went wrong while trying to create transporter stub");
         }
 
         return transport;
@@ -270,9 +263,7 @@ public class Manager {
     }
 
     public void clearTransportersClients(){
-        for (TransporterClient tp : transporterClients){
-            tp.clearJobs();
-        }
+        transporterClients.forEach(TransporterClient::clearJobs);
         transporterClients.clear();
     }
 
