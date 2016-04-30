@@ -1,9 +1,11 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>pt.upa.t27</groupId>
-    <artifactId>ca-ws</artifactId>
+    <artifactId>ca-ws-cli</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
@@ -16,26 +18,32 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
 
-        <mainclass>pt.upa.ca.CAApplication</mainclass>
+        <wsdl.directory>src/main/resources</wsdl.directory>
+        <wsdl.filename>broker.1_0.wsdl</wsdl.filename>
 
+        <mainclass>pt.upa.ca.CAClientApplication</mainclass>
+
+        <!-- WSDL is required for client code generation -->
         <ws.url>http://localhost:8079/ca-ws/endpoint</ws.url>
+        <wsdl.url>${ws.url}?WSDL</wsdl.url>
+
         <ws.name>UpaCA</ws.name>
         <uddi.url>http://localhost:9090</uddi.url>
     </properties>
 
     <dependencies>
-        <!-- JUnit -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.12</version>
-            <scope>test</scope>
-        </dependency>
         <!-- JMockit - must appear before JUnit -->
         <dependency>
             <groupId>org.jmockit</groupId>
             <artifactId>jmockit</artifactId>
             <version>1.21</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- JUnit -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
             <scope>test</scope>
         </dependency>
         <!-- UDDINaming -->
@@ -73,6 +81,43 @@
         </testResources>
         <plugins>
             <plugin>
+                <groupId>org.jvnet.jax-ws-commons</groupId>
+                <artifactId>jaxws-maven-plugin</artifactId>
+                <version>2.3</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>wsimport</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <!-- https://jax-ws-commons.java.net/jaxws-maven-plugin/wsimport-mojo.html -->
+                    <wsdlUrls>
+                        <wsdlUrl>${wsdl.url}</wsdlUrl>
+                    </wsdlUrls>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.sun.xml.ws</groupId>
+                        <artifactId>jaxws-tools</artifactId>
+                        <version>2.2.10</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <plugin>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>2.19.1</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>1.4.0</version>
@@ -90,7 +135,6 @@
                     <arguments>
                         <argument>${uddi.url}</argument>
                         <argument>${ws.name}</argument>
-                        <argument>${ws.url}</argument>
                     </arguments>
                 </configuration>
             </plugin>
@@ -117,4 +161,5 @@
             </plugin>
         </plugins>
     </build>
+
 </project>
