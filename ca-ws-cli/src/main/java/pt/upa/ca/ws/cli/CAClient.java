@@ -6,9 +6,9 @@ import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
 import pt.upa.ca.exception.CAClientException;
 import pt.upa.ca.ws.CA;
 import pt.upa.ca.ws.CAImplService;
-import pt.upa.ca.ws.Certificate;
 
 import javax.xml.ws.BindingProvider;
+import java.util.List;
 import java.util.Map;
 
 import static javax.xml.ws.BindingProvider.ENDPOINT_ADDRESS_PROPERTY;
@@ -65,7 +65,7 @@ public class CAClient implements CA {
 
     /*-----------------------------------------------remote invocation methods----------------------------------------*/
     @Override
-    public Certificate getCertificate(String arg0) {
+    public byte[] getCertificate(String arg0) {
         return port.getCertificate(arg0);
     }
 
