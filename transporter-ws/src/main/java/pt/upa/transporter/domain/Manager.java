@@ -135,11 +135,10 @@ public class Manager  {
     
     private int generateRandomTime(){
     	Random randomTime = new Random();
-        int delay = (int)(randomTime.nextFloat()*5000);
-        return delay;
+        return (int) (randomTime.nextFloat()*5000);
     }
     
-    public void TransportSimulation(Job j) {
+    private void TransportSimulation(Job j) {
 
         Timer timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask(){

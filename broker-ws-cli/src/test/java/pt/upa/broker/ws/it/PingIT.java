@@ -4,11 +4,11 @@ import org.junit.Test;
 
 import static junit.framework.TestCase.assertNotNull;
 
-public class PingIT extends AbstractIntegrationTest {
+public class PingIT extends AbstractIT {
 
     @Test
     public void successPingShouldNotReturnNull() {
-        String result = brokerClient.ping("friend");
+        String result = CLIENT.ping("friend");
 
         assertNotNull("ping return null", result);
         log.info(result);
@@ -16,7 +16,7 @@ public class PingIT extends AbstractIntegrationTest {
 
     @Test
     public void inputNullPingShouldNotReturnNull() {
-        String result = brokerClient.ping(null);
+        String result = CLIENT.ping(null);
 
         assertNotNull("ping return null", result);
     }

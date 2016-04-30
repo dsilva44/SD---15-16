@@ -14,23 +14,47 @@ import pt.upa.broker.ws.cli.BrokerClient;
  * Invoked by Maven in the "verify" life-cycle phase
  * Should invoke "live" remote servers
  */
-public abstract class AbstractIntegrationTest {
+public abstract class AbstractIT {
     // static members
     static final Logger log = LogManager.getRootLogger();
-    static BrokerClient brokerClient;
+    static BrokerClient CLIENT;
+
+    static int PRICE_UPPER_LIMIT = 100;
+    static int PRICE_SMALLEST_LIMIT = 10;
+
+    static int INVALID_PRICE = -1;
+    static int ZERO_PRICE = 0;
+    static int UNITARY_PRICE = 1;
+
+    static int ODD_INCREMENT = 1;
+    static int EVEN_INCREMENT = 2;
+
+    static final String SOUTH_1 = "Beja";
+    static final String SOUTH_2 = "Portalegre";
+
+    static final String CENTER_1 = "Lisboa";
+    static final String CENTER_2 = "Coimbra";
+
+    static final String NORTH_1 = "Porto";
+    static final String NORTH_2 = "Braga";
+
+    static final String EMPTY_STRING = "";
+
+    static final int DELAY_LOWER = 2000; // = 2 second
+    static final int DELAY_UPPER = 5000; // = 5 seconds
 
     // one-time initialization and clean-up
     @BeforeClass
     public static void oneTimeSetUp() throws Exception {
         String uddiURL = "http://localhost:9090";
 
-        brokerClient = new BrokerClient(uddiURL, "UpaBroker");
+        CLIENT = new BrokerClient(uddiURL, "UpaBroker");
     }
 
     @AfterClass
     public static void oneTimeTearDown() {
-        brokerClient.clearTransports();
-        brokerClient = null;
+        CLIENT.clearTransports();
+        CLIENT = null;
     }
 
     // members

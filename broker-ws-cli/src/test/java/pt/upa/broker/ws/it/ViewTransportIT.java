@@ -2,49 +2,44 @@ package pt.upa.broker.ws.it;
 
 import org.junit.Test;
 
-import pt.upa.broker.ws.InvalidPriceFault_Exception;
 import pt.upa.broker.ws.TransportStateView;
 import pt.upa.broker.ws.TransportView;
-import pt.upa.broker.ws.UnavailableTransportFault_Exception;
-import pt.upa.broker.ws.UnavailableTransportPriceFault_Exception;
-import pt.upa.broker.ws.UnknownLocationFault_Exception;
 import pt.upa.broker.ws.UnknownTransportFault_Exception;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
 
-public class ViewTransportIT extends AbstractIntegrationTest{
-
-    private String centroCity1 = "Lisboa";
-    private String centroCity2 = "Leiria";
+public class ViewTransportIT extends AbstractIT {
 
     @Test
-    public void CompletedStateAfter15Seconds() throws InvalidPriceFault_Exception, UnavailableTransportFault_Exception,
-            UnavailableTransportPriceFault_Exception, UnknownLocationFault_Exception,
-            UnknownTransportFault_Exception{
+    public void testTransportStateTransition() throws Exception {
+        List<TransportStateView> transportStates = new ArrayList<>();
+        transportStates.add(TransportStateView.BOOKED);
+        transportStates.add(TransportStateView.HEADING);
+        transportStates.add(TransportStateView.ONGOING);
+        transportStates.add(TransportStateView.COMPLETED);
 
-        String id = brokerClient.requestTransport(centroCity1, centroCity2, 20);
-        Date init = new Date();
+        String transportId = CLIENT.requestTransport(CENTER_1, CENTER_2, PRICE_SMALLEST_LIMIT);
+        TransportView transportView;
 
-
-        while (init.getTime() + 17000 > new Date().getTime());
-
-        TransportView tView = brokerClient.viewTransport(id);
-
-        assertEquals("State not completed after 15 seconds",tView.getState(), TransportStateView.COMPLETED);
+        for (int t = DELAY_LOWER; t <= 3 * DELAY_UPPER; t = t + DELAY_LOWER) {
+            Thread.sleep(DELAY_LOWER);
+            transportView = CLIENT.viewTransport(transportId);
+            if (transportStates.contains(transportView.getState()))
+                transportStates.remove(transportView.getState());
+        }
+        assertEquals(0, transportStates.size());
     }
 
-    @Test(expected= UnknownTransportFault_Exception.class)
-    public void failStateAfter15Seconds() throws InvalidPriceFault_Exception, UnavailableTransportFault_Exception,
-            UnavailableTransportPriceFault_Exception, UnknownLocationFault_Exception,
-            UnknownTransportFault_Exception{
+    @Test(expected = UnknownTransportFault_Exception.class)
+    public void testViewInvalidTransport() throws Exception {
+        CLIENT.viewTransport(null);
+    }
 
-        Date init = new Date();
-
-
-        while (init.getTime() + 17000 > new Date().getTime());
-
-        TransportView tView = brokerClient.viewTransport("hello");
+    @Test(expected = UnknownTransportFault_Exception.class)
+    public void testViewNullTransport() throws Exception {
+        CLIENT.viewTransport(EMPTY_STRING);
     }
 }
