@@ -17,7 +17,19 @@ import pt.upa.transporter.ws.cli.TransporterClient;
 public abstract class AbstractIntegrationTest {
     // static members
     protected static final Logger log = LogManager.getRootLogger();
-    protected static TransporterClient client1, client2;
+    static TransporterClient CLIENT1, CLIENT2;
+
+    static final int PRICE_UPPER_LIMIT = 100;
+    static final int PRICE_SMALLEST_LIMIT = 10;
+    static final int UNITARY_PRICE = 1;
+    static final int ZERO_PRICE = 0;
+    static final int INVALID_PRICE = -1;
+    static final String CENTRO_1 = "Lisboa";
+    static final String SUL_1 = "Beja";
+    static final String CENTRO_2 = "Coimbra";
+    static final String SUL_2 = "Portalegre";
+    static final String EMPTY_STRING = "";
+    static final int DELAY_LOWER = 1000; // milliseconds
 
     // one-time initialization and clean-up
     @BeforeClass
@@ -26,17 +38,17 @@ public abstract class AbstractIntegrationTest {
         final String wsName1 = "UpaTransporter1";
         final String wsName2 = "UpaTransporter2";
 
-        client1 = new TransporterClient(uddiURL,wsName1);
-        client2 = new TransporterClient(uddiURL,wsName2);
+        CLIENT1 = new TransporterClient(uddiURL,wsName1);
+        CLIENT2 = new TransporterClient(uddiURL,wsName2);
 
-        client1.clearJobs();
-        client2.clearJobs();
+        CLIENT1.clearJobs();
+        CLIENT2.clearJobs();
     }
 
     @AfterClass
     public static void oneTimeTearDown() {
-        client1.clearJobs();
-        client2.clearJobs();
+        CLIENT1.clearJobs();
+        CLIENT2.clearJobs();
     }
 
     // members

@@ -8,6 +8,6 @@ public class PingIT extends AbstractIntegrationTest {
 
     @Test
     public void successPingShouldNotReturnNull() {
-        assertNotNull("ping return null", client1.ping("friend"));
+        assertNotNull("ping return null", CLIENT1.ping("friend"));
     }
 }

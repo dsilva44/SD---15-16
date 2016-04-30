@@ -2,13 +2,10 @@ package pt.upa.transporter.ws.it;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.List;
-
 import org.junit.Test;
 
 import pt.upa.transporter.ws.BadLocationFault_Exception;
 import pt.upa.transporter.ws.BadPriceFault_Exception;
-import pt.upa.transporter.ws.JobView;
 
 public class ListJobsIT extends AbstractIntegrationTest {
 	
@@ -21,17 +18,17 @@ public class ListJobsIT extends AbstractIntegrationTest {
     
     @Test
     public void successListJobsWithListEmpty() throws BadLocationFault_Exception, BadPriceFault_Exception {    	
-    	assertEquals(0,client1.listJobs().size());
+    	assertEquals(0, CLIENT1.listJobs().size());
     }
     
     @Test
     public void successListJobsWithListNonEmpty() throws BadLocationFault_Exception, BadPriceFault_Exception {
-    	client1.requestJob(validLocation1, validLocation2, validPrice1);
-    	client1.requestJob(validLocation2, validLocation1, validPrice2);
+    	CLIENT1.requestJob(validLocation1, validLocation2, validPrice1);
+    	CLIENT1.requestJob(validLocation2, validLocation1, validPrice2);
 
 
 
-        assertEquals(2,client1.listJobs().size());
+        assertEquals(2, CLIENT1.listJobs().size());
     }
     
 }
