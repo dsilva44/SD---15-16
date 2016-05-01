@@ -4,19 +4,18 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
 import pt.upa.ca.exception.CAClientException;
-import pt.upa.ca.ws.CA;
-import pt.upa.ca.ws.CAImplService;
+import pt.upa.ca.ws.CAPortType;
+import pt.upa.ca.ws.CAService;
 
 import javax.xml.ws.BindingProvider;
-import java.util.List;
 import java.util.Map;
 
 import static javax.xml.ws.BindingProvider.ENDPOINT_ADDRESS_PROPERTY;
 
-public class CAClient implements CA {
+public class CAClient implements CAPortType {
     private static final Logger log = LogManager.getRootLogger();
 
-    private CA port;
+    private CAPortType port;
     private String wsURL;
     private String uddiURL;
     private String wsName;
@@ -52,8 +51,8 @@ public class CAClient implements CA {
     /** Stub creation and configuration */
     private void createStub() {
         log.info("Creating stub ...");
-        CAImplService service = new CAImplService();
-        port = service.getCAImplPort();
+        CAService service = new CAService();
+        port = service.getCAPort();
 
         if (wsURL != null) {
             log.info("Setting endpoint address ...");
@@ -64,10 +63,10 @@ public class CAClient implements CA {
     }
 
     /*-----------------------------------------------remote invocation methods----------------------------------------*/
-    @Override
-    public byte[] getCertificate(String arg0) {
-        return port.getCertificate(arg0);
-    }
 
+    @Override
+    public byte[] getCertificateFile(String subjectName) {
+        return port.getCertificateFile(subjectName);
+    }
 }
 

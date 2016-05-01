@@ -37,7 +37,7 @@ public class EndpointManager {
         this.uddiURL = uddiURL;
         this.wsURL = wsURL;
 
-        endpoint = Endpoint.create(new CAImpl());
+        endpoint = Endpoint.create(new CA());
         try {
             uddiNaming = new UDDINaming(uddiURL);
         } catch (JAXRException e) {
