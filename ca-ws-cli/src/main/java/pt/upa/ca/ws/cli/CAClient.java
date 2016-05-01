@@ -10,10 +10,12 @@ import pt.upa.ca.ws.CAService;
 
 import javax.xml.ws.BindingProvider;
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.util.Map;
 
@@ -26,6 +28,8 @@ public class CAClient implements CAPortType {
     private String wsURL;
     private String uddiURL;
     private String wsName;
+
+    public CAClient()  {}
 
     public CAClient(String uddiURL)  {
         this.uddiURL = uddiURL;
@@ -83,13 +87,13 @@ public class CAClient implements CAPortType {
      * @return The read KeyStore
      * @throws Exception
      */
-    public KeyStore readKeystoreFile(String keyStoreFilePath, char[] keyStorePassword) throws Exception {
+    public KeyStore readKeyStoreFile(String keyStoreFilePath, char[] keyStorePassword) throws Exception {
         FileInputStream fis;
         try {
             fis = new FileInputStream(keyStoreFilePath);
         } catch (FileNotFoundException e) {
             log.warn("Keystore file <" + keyStoreFilePath + "> not fount.");
-            return null;
+            throw new CAClientException("Keystore file <" + keyStoreFilePath + "> not fount.");
         }
         KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
         keystore.load(fis, keyStorePassword);
@@ -103,14 +107,14 @@ public class CAClient implements CAPortType {
      * @return The read Certificate
      * @throws Exception
      */
-    public static Certificate readCertificateFile(String certificateFilePath) throws Exception {
+    public Certificate readCertificateFile(String certificateFilePath) throws Exception {
         FileInputStream fis;
 
         try {
             fis = new FileInputStream(certificateFilePath);
         } catch (FileNotFoundException e) {
             log.warn("Certificate file <" + certificateFilePath + "> not fount.");
-            return null;
+            throw new CAClientException("Certificate file <" + certificateFilePath + "> not fount.");
         }
         BufferedInputStream bis = new BufferedInputStream(fis);
 
@@ -122,7 +126,13 @@ public class CAClient implements CAPortType {
 
         bis.close();
         fis.close();
-        return null;
+        log.warn("Nothing to read");
+        throw new CAClientException("Nothing to read");
+    }
+
+    public Certificate toCertificate(byte[] certBytes) throws CertificateException {
+        CertificateFactory cf = CertificateFactory.getInstance("X.509");
+        return cf.generateCertificate(new ByteArrayInputStream(certBytes));
     }
 }
 

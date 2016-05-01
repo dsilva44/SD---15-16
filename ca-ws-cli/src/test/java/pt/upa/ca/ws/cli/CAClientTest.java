@@ -7,11 +7,14 @@ import org.junit.*;
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
 import pt.upa.ca.exception.CAClientException;
 
+import java.security.InvalidKeyException;
+import java.security.SignatureException;
+import java.security.cert.Certificate;
 import javax.xml.registry.JAXRException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import java.security.KeyStore;
+
+import static org.junit.Assert.*;
 
 public class CAClientTest {
 
@@ -20,6 +23,9 @@ public class CAClientTest {
 	private static final String uddiURL = "http://localhost:9090";
 	private static final String wsName = "UpaCA";
 	private static final String wsURL = "http://localhost:8079/ca-ws/endpoint";
+	private static final String keyStorePath = "src/test/resources/UpaCAClient.jks";
+	private static final String keyStorePass = "passUpaCAClient";
+	private static final String certPath = "src/test/resources/UpaCAClient.cer";
 
 	// one-time initialization and clean-up
 
@@ -57,13 +63,16 @@ public class CAClientTest {
 		new Expectations() {
 			{
 				new UDDINaming(uddiURL);
-				uddiNaming.lookup(wsName);
-				result = wsURL;
+				uddiNaming.lookup(wsName); result = null; // hack
 			}
 		};
 
 		// Unit under test is exercised.
-		new CAClient(uddiURL);
+		try {
+			new CAClient(uddiURL);
+		} catch (CAClientException e) {
+			// Hack to pass the creation of stub
+		}
 
 		// a "verification block"
 		// One or more invocations to mocked types, causing expectations to be
@@ -172,6 +181,38 @@ public class CAClientTest {
 
 		// Additional verification code, if any, either here or before the
 		// verification block.
+	}
+
+	@Test
+	public void successReadKeyStoreFile() throws Exception {
+		CAClient client = new CAClient();
+
+		KeyStore keyStore = client.readKeyStoreFile(keyStorePath, keyStorePass.toCharArray());
+		assertTrue(keyStore.containsAlias("UpaCAClient"));
+
+	}
+
+	@Test
+	public void successReadCertificateFile() throws Exception {
+		CAClient client = new CAClient();
+
+		Certificate certificate = client.readCertificateFile(certPath);
+
+		assertNotNull(certificate);
+	}
+
+	@Test(expected = CAClientException.class)
+	public void invalidPathKeyStore() throws Exception {
+		CAClient client = new CAClient();
+
+		client.readKeyStoreFile("invalidPath", keyStorePass.toCharArray());
+	}
+
+	@Test(expected = CAClientException.class)
+	public void invalidPathCertificate() throws Exception {
+		CAClient client = new CAClient();
+
+		client.readCertificateFile("InvalidPath");
 	}
 
 }

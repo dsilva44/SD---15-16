@@ -29,6 +29,7 @@ public abstract class AbstractIT {
 
     @AfterClass
     public static void oneTimeTearDown() {
+        CLIENT = null;
     }
 
     // members
@@ -41,6 +42,6 @@ public abstract class AbstractIT {
 
     @After
     public void tearDown() {
-        CLIENT = null;
+
     }
 }

@@ -27,6 +27,7 @@ t1_pass=pass${t1_alias}
 t2_pass=pass${t2_alias}
 
 # certificates request
+ca_cli_csr=${ca_cli_alias}.csr
 broker_csr=${broker_alias}.csr
 t1_csr=${t1_alias}.csr
 t2_csr=${t2_alias}.csr
@@ -61,12 +62,18 @@ keytool -genkeypair \
         -keypass ${ca_cli_pass} -validity 90 -storepass ${ca_cli_pass} \
         -keystore ${ca_cli_jks} \
         -dname "CN=$ca_cli_alias, OU=T_27, O=IST, L=Lisbon, S=Lisbon, C=PT"
-# create self sign certificate
-keytool -export \
+# create certificate request
+keytool -certreq \
         -keystore ${ca_cli_jks} \
-        -alias ${ca_cli_alias} \
         -storepass ${ca_cli_pass} \
-        -file ${ca_cli_cer}
+        -alias ${ca_cli_alias} \
+        -file ${ca_cli_csr}
+# import certificate to keyStore
+keytool -importcert \
+        -keystore ${ca_cli_jks} -storepass ${ca_cli_pass} \
+        -file ${ca_cer} \
+        -alias ${ca_alias} \
+        -noprompt
 
 # --- UpaBroker ------------------------------------------------------
 # create key pair and new keystore
@@ -132,6 +139,13 @@ keytool -importcert \
         -noprompt
 
 # --- Sign certificates ----------------------------------------------
+# create CAClient certificate sign by UpaCA
+keytool -gencert \
+        -keystore ${ca_jks} \
+        -storepass ${ca_pass} \
+        -alias ${ca_alias} \
+        -infile ${ca_cli_csr} \
+        -outfile ${ca_cli_cer}
 # create UpaBroker certificate sign by UpaCA
 keytool -gencert \
         -keystore ${ca_jks} \
@@ -155,6 +169,11 @@ keytool -gencert \
         -outfile ${t2_cer}
 
 # --- import Certificate to UpaCA KeyStore ---------------------------
+# CAClient
+keytool -importcert \
+        -keystore ${ca_jks} -storepass ${ca_pass} \
+        -file ${ca_cli_cer} \
+        -alias ${ca_cli_alias}
 # Broker
 keytool -importcert \
         -keystore ${ca_jks} -storepass ${ca_pass} \
@@ -177,6 +196,11 @@ caClientFolder=./ca-ws-cli/src/test/resources/
 brokerFolder=./broker-ws/src/main/resources/
 transporterFolder=./transporter-ws/src/main/resources/
 
+# Deploy CAClient
+mv -f ${ca_cli_jks} ${caClientFolder}/${ca_cli_jks}
+mv -f ${ca_cli_cer} ${caClientFolder}/${ca_cli_cer}
+cp -f ${ca_cer} ${transporterFolder}/${ca_cer}
+
 # Deploy Broker
 mv -f ${broker_jks} ${brokerFolder}/${broker_jks}
 cp -f ${ca_cer} ${brokerFolder}/${ca_cer}
@@ -192,10 +216,6 @@ mv -f ${ca_cer} ${caFolder}/${ca_cer}
 mv -f ${broker_cer} ${caFolder}/${broker_cer}
 mv -f ${t1_cer} ${caFolder}/${t1_cer}
 mv -f ${t2_cer} ${caFolder}/${t2_cer}
-
-# Deploy CAClient
-mv -f ${ca_cli_jks} ${caClientFolder}/${ca_cli_jks}
-mv -f ${ca_cli_cer} ${caClientFolder}/${ca_cli_cer}
 
 # --- Remove leftovers -----------------------------------------------
 rm -rf *.csr
