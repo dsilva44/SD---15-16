@@ -41,7 +41,7 @@ keytool -genkeypair \
         -keyalg RSA -keysize 2048 \
         -keypass ${ca_pass} -validity 90 -storepass ${ca_pass} \
         -keystore ${ca_jks} -ext bc=ca:true \
-        -dname "CN=UpaCA, OU=T_27, O=IST, L=Lisbon, S=Lisbon, C=PT"
+        -dname "CN=$ca_alias, OU=T_27, O=IST, L=Lisbon, S=Lisbon, C=PT"
 # create self sign certificate
 keytool -export \
         -keystore ${ca_jks} \
@@ -56,7 +56,7 @@ keytool -genkeypair \
         -keyalg RSA -keysize 2048 \
         -keypass ${broker_pass} -validity 90 -storepass ${broker_pass} \
         -keystore ${broker_jks} \
-        -dname "CN=UpaBroker, OU=T_27, O=IST, L=Lisbon, S=Lisbon, C=PT"
+        -dname "CN=$broker_alias, OU=T_27, O=IST, L=Lisbon, S=Lisbon, C=PT"
 # create certificate request
 keytool -certreq \
         -keystore ${broker_jks} \
@@ -71,7 +71,7 @@ keytool -genkeypair \
         -keyalg RSA -keysize 2048 \
         -keypass ${t1_pass} -validity 90 -storepass ${t1_pass} \
         -keystore ${t1_jks} \
-        -dname "CN=UpaTransporter1, OU=T_27, O=IST, L=Lisbon, S=Lisbon, C=PT"
+        -dname "CN=$t1_alias, OU=T_27, O=IST, L=Lisbon, S=Lisbon, C=PT"
 # create certificate request
 keytool -certreq \
         -keystore ${t1_jks} \
@@ -86,7 +86,7 @@ keytool -genkeypair \
         -keyalg RSA -keysize 2048 \
         -keypass ${t2_pass} -validity 90 -storepass ${t2_pass} \
         -keystore ${t2_jks} \
-        -dname "CN=UpaTransporter2, OU=T_27, O=IST, L=Lisbon, S=Lisbon, C=PT"
+        -dname "CN=$t2_alias, OU=T_27, O=IST, L=Lisbon, S=Lisbon, C=PT"
 # create certificate request
 keytool -certreq \
         -keystore ${t2_jks} \
