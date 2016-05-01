@@ -7,32 +7,36 @@
 # --- Variables ----------------------------------------------------
 # alias
 ca_alias=UpaCA
+ca_cli_alias=UpaCAClient
 broker_alias=UpaBroker
 t1_alias=UpaTransporter1
 t2_alias=UpaTransporter2
 
 # keystore
-ca_jks=UpaCA.jks
-broker_jks=UpaBroker.jks
-t1_jks=UpaTransporter1.jks
-t2_jks=UpaTransporter2.jks
+ca_jks=${ca_alias}.jks
+ca_cli_jks=${ca_cli_alias}.jks
+broker_jks=${broker_alias}.jks
+t1_jks=${t1_alias}.jks
+t2_jks=${t2_alias}.jks
 
 # keystore password
-ca_pass=passUpaCA
-broker_pass=passUpaBroker
-t1_pass=passUpaTransporter1
-t2_pass=passUpaTransporter2
+ca_pass=pass${ca_alias}
+ca_cli_pass=pass${ca_cli_alias}
+broker_pass=pass${broker_alias}
+t1_pass=pass${t1_alias}
+t2_pass=pass${t2_alias}
 
 # certificates request
-broker_csr=UpaBroker.csr
-t1_csr=UpaTransporter1.csr
-t2_csr=UpaTransporter2.csr
+broker_csr=${broker_alias}.csr
+t1_csr=${t1_alias}.csr
+t2_csr=${t2_alias}.csr
 
 # certificates
-ca_cer=UpaCA.cer
-broker_cer=UpaBroker.cer
-t1_cer=UpaTransporter1.cer
-t2_cer=UpaTransporter2.cer
+ca_cer=${ca_alias}.cer
+ca_cli_cer=${ca_cli_alias}.cer
+broker_cer=${broker_alias}.cer
+t1_cer=${t1_alias}.cer
+t2_cer=${t2_alias}.cer
 
 # --- UpaCA (Trust Root)--------------------------------------------
 # create key pair and new keystore
@@ -48,6 +52,21 @@ keytool -export \
         -alias ${ca_alias} \
         -storepass ${ca_pass} \
         -file ${ca_cer}
+
+# --- UpaCAClient (just for tests)--------------------------------------------
+# create key pair and new keystore
+keytool -genkeypair \
+        -alias ${ca_cli_alias} \
+        -keyalg RSA -keysize 2048 \
+        -keypass ${ca_cli_pass} -validity 90 -storepass ${ca_cli_pass} \
+        -keystore ${ca_cli_jks} \
+        -dname "CN=$ca_cli_alias, OU=T_27, O=IST, L=Lisbon, S=Lisbon, C=PT"
+# create self sign certificate
+keytool -export \
+        -keystore ${ca_cli_jks} \
+        -alias ${ca_cli_alias} \
+        -storepass ${ca_cli_pass} \
+        -file ${ca_cli_cer}
 
 # --- UpaBroker ------------------------------------------------------
 # create key pair and new keystore
@@ -154,6 +173,7 @@ keytool -importcert \
 
 # --- Deploy Certificates --------------------------------------------
 caFolder=./ca-ws/src/main/resources/
+caClientFolder=./ca-ws-cli/src/test/resources/
 brokerFolder=./broker-ws/src/main/resources/
 transporterFolder=./transporter-ws/src/main/resources/
 
@@ -172,6 +192,10 @@ mv -f ${ca_cer} ${caFolder}/${ca_cer}
 mv -f ${broker_cer} ${caFolder}/${broker_cer}
 mv -f ${t1_cer} ${caFolder}/${t1_cer}
 mv -f ${t2_cer} ${caFolder}/${t2_cer}
+
+# Deploy CAClient
+mv -f ${ca_cli_jks} ${caClientFolder}/${ca_cli_jks}
+mv -f ${ca_cli_cer} ${caClientFolder}/${ca_cli_cer}
 
 # --- Remove leftovers -----------------------------------------------
 rm -rf *.csr

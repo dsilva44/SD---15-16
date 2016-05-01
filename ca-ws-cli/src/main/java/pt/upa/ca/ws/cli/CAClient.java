@@ -9,6 +9,12 @@ import pt.upa.ca.ws.CAPortType;
 import pt.upa.ca.ws.CAService;
 
 import javax.xml.ws.BindingProvider;
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.security.KeyStore;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateFactory;
 import java.util.Map;
 
 import static javax.xml.ws.BindingProvider.ENDPOINT_ADDRESS_PROPERTY;
@@ -56,7 +62,7 @@ public class CAClient implements CAPortType {
         port = service.getCAPort();
 
         if (wsURL != null) {
-            log.info("Setting endpoint address ...");
+            log.info("Setting endpoint address ....");
             BindingProvider bindingProvider = (BindingProvider) port;
             Map<String, Object> requestContext = bindingProvider.getRequestContext();
             requestContext.put(ENDPOINT_ADDRESS_PROPERTY, wsURL);
@@ -68,6 +74,55 @@ public class CAClient implements CAPortType {
     @Override
     public byte[] getCertificateFile(String subjectName) throws CAException_Exception {
         return port.getCertificateFile(subjectName);
+    }
+
+    /*-----------------------------------------------additional methods-----------------------------------------------*/
+    /**
+     * Reads a KeyStore from a file
+     *
+     * @return The read KeyStore
+     * @throws Exception
+     */
+    public KeyStore readKeystoreFile(String keyStoreFilePath, char[] keyStorePassword) throws Exception {
+        FileInputStream fis;
+        try {
+            fis = new FileInputStream(keyStoreFilePath);
+        } catch (FileNotFoundException e) {
+            log.warn("Keystore file <" + keyStoreFilePath + "> not fount.");
+            return null;
+        }
+        KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
+        keystore.load(fis, keyStorePassword);
+
+        return keystore;
+    }
+
+    /**
+     * Reads a certificate from a file
+     *
+     * @return The read Certificate
+     * @throws Exception
+     */
+    public static Certificate readCertificateFile(String certificateFilePath) throws Exception {
+        FileInputStream fis;
+
+        try {
+            fis = new FileInputStream(certificateFilePath);
+        } catch (FileNotFoundException e) {
+            log.warn("Certificate file <" + certificateFilePath + "> not fount.");
+            return null;
+        }
+        BufferedInputStream bis = new BufferedInputStream(fis);
+
+        CertificateFactory cf = CertificateFactory.getInstance("X.509");
+
+        if (bis.available() > 0) {
+            return cf.generateCertificate(bis);
+        }
+
+        bis.close();
+        fis.close();
+        return null;
     }
 }
 
