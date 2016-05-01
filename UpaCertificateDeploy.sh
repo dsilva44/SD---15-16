@@ -4,9 +4,6 @@
 #           Generate key pair and public key digital certificate using java keytool
 # ------------------------------------------------------------------
 
-VERSION=0.1.0
-
-
 # --- Variables ----------------------------------------------------
 # alias
 ca_alias=UpaCA
@@ -50,7 +47,7 @@ keytool -export \
         -keystore ${ca_jks} \
         -alias ${ca_alias} \
         -storepass ${ca_pass} \
-        -file UpaCA.cer
+        -file ${ca_cer}
 
 # --- UpaBroker ------------------------------------------------------
 # create key pair and new keystore
@@ -121,10 +118,25 @@ keytool -gencert \
         -outfile ${t2_cer}
 
 # --- Deploy Certificates --------------------------------------------
-#caFolder = ./ca-ws/src/main/resources/
-#brokerFolder = ./broker-ws/src/main/resources/
-#transporterFolder = ./transporter-ws/src/main/resources/
+caFolder=./ca-ws/src/main/resources/
+brokerFolder=./broker-ws/src/main/resources/
+transporterFolder=./transporter-ws/src/main/resources/
 
 # Deploy Broker
-#cp -f $
-#mv -f
+mv -f ${broker_jks} ${brokerFolder}/${broker_jks}
+cp -f ${ca_cer} ${brokerFolder}/${ca_cer}
+
+# Deploy Transporters
+mv -f ${t1_jks} ${transporterFolder}/${t1_jks}
+mv -f ${t2_jks} ${transporterFolder}/${t2_jks}
+cp -f ${ca_cer} ${transporterFolder}/${ca_cer}
+
+# Deploy CA
+mv -f ${ca_jks} ${caFolder}/${ca_jks}
+mv -f ${ca_cer} ${caFolder}/${ca_cer}
+mv -f ${broker_cer} ${caFolder}/${broker_cer}
+mv -f ${t1_cer} ${caFolder}/${t1_cer}
+mv -f ${t2_cer} ${caFolder}/${t2_cer}
+
+# --- Remove leftovers -----------------------------------------------
+rm -rf *.csr
