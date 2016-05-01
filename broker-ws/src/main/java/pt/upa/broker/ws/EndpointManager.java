@@ -44,8 +44,6 @@ public class EndpointManager {
         } catch (JAXRException e) {
             throw new BrokerUddiNamingException("Cannot Create uddiNaming instance");
         }
-
-        Manager.getInstance().init(uddiURL);
     }
 
     public void start() {

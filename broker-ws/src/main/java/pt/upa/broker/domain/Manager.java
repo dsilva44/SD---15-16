@@ -20,6 +20,7 @@ public class Manager {
 
     private UDDINaming uddiNaming;
     private String uddiURL;
+    private String keyStorePath;
     private int transportID = 0;
     private ArrayList<TransporterClient> transporterClients;
     private ArrayList<Transport> allTransports;
@@ -34,8 +35,9 @@ public class Manager {
         allTransports = new ArrayList<>();
     }
 
-    public void init(String uddiURL) {
+    public void init(String uddiURL, String keyStorePath) {
         this.uddiURL = uddiURL;
+        this.keyStorePath = keyStorePath;
         try {
             this.uddiNaming = new UDDINaming(uddiURL);
         } catch (JAXRException e) {

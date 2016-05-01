@@ -19,6 +19,7 @@ public class Manager  {
     private static Manager manager = new Manager();
 
     private String transporterName;
+    private String keyStorePath;
     private String transporterParity;
     private ArrayList<Job> jobs;
     private int jobID = 0;
@@ -44,6 +45,11 @@ public class Manager  {
     }
 
     public static Manager getInstance() { return manager; }
+
+    public void init(String transporterName, String keyStorePath) {
+        this.keyStorePath = keyStorePath;
+        init(transporterName);
+    }
 
     public void init(String transporterName) {
         String upaTransporterNameRegex = "UpaTransporter[1-9][0-9]*";

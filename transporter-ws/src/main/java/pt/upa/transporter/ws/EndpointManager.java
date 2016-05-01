@@ -49,8 +49,6 @@ public class EndpointManager {
         } catch (JAXRException e) {
             throw new TransporterUddiNamingException("Cannot Create uddiNaming instance");
         }
-
-        Manager.getInstance().init(wsName);
     }
 
     public void start() {

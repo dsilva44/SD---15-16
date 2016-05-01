@@ -15,24 +15,27 @@ public class TransporterApplication {
 		// Check arguments
 		if (args.length < 3) {
 			log.error("Argument(s) missing!");
-			log.error("Usage: java "+ TransporterApplication.class.getName() +" + uddiURL wsName wsURL");
+			log.error("Usage: java "+ TransporterApplication.class.getName() +" + uddiURL wsName wsURL keyStorePath");
 			return;
 		}
 
 		String uddiURL = args[0];
 		String wsName = args[1];
 		String wsUrl = args[2];
+		String keyStorePath = args[3];
 
 		EndpointManager endpointManager = new EndpointManager(uddiURL, wsName, wsUrl);
 
 		endpointManager.start();
+
+		Manager.getInstance().init(wsName, keyStorePath);
 
 		if (endpointManager.awaitConnections()) {
 			try {
 				System.out.println("Press enter to shutdown");
 				System.in.read();
 			} catch (IOException e) {
-				log.error("Error: ", e);
+				log.error("Error ", e);
 			}
 		}
 		endpointManager.stop();
