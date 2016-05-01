@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
 import pt.upa.ca.exception.CAClientException;
+import pt.upa.ca.ws.CAException_Exception;
 import pt.upa.ca.ws.CAPortType;
 import pt.upa.ca.ws.CAService;
 
@@ -20,9 +21,9 @@ public class CAClient implements CAPortType {
     private String uddiURL;
     private String wsName;
 
-    public CAClient(String uddiURL, String wsName)  {
+    public CAClient(String uddiURL)  {
         this.uddiURL = uddiURL;
-        this.wsName = wsName;
+        this.wsName = "UpaCA";
         uddiLookup();
         createStub();
     }
@@ -65,7 +66,7 @@ public class CAClient implements CAPortType {
     /*-----------------------------------------------remote invocation methods----------------------------------------*/
 
     @Override
-    public byte[] getCertificateFile(String subjectName) {
+    public byte[] getCertificateFile(String subjectName) throws CAException_Exception {
         return port.getCertificateFile(subjectName);
     }
 }

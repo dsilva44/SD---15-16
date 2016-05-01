@@ -21,6 +21,9 @@
         <ws.url>http://localhost:8079/ca-ws/endpoint</ws.url>
         <ws.name>UpaCA</ws.name>
         <uddi.url>http://localhost:9090</uddi.url>
+
+        <resources.directory>src/main/resources</resources.directory>
+        <resources.keystore>${resources.directory}/${ws.name}.jks</resources.keystore>
     </properties>
 
     <dependencies>
@@ -91,6 +94,7 @@
                         <argument>${uddi.url}</argument>
                         <argument>${ws.name}</argument>
                         <argument>${ws.url}</argument>
+                        <argument>${resources.keystore}</argument>
                     </arguments>
                 </configuration>
             </plugin>

@@ -18,8 +18,8 @@ public class CAClientTest {
 	// static members
 
 	private static final String uddiURL = "http://localhost:9090";
-	private static final String wsName = "BrokerWebService";
-	private static final String wsURL = "http://localhost:8080/broker-ws/endpoint";
+	private static final String wsName = "UpaCA";
+	private static final String wsURL = "http://localhost:8079/ca-ws/endpoint";
 
 	// one-time initialization and clean-up
 
@@ -63,7 +63,7 @@ public class CAClientTest {
 		};
 
 		// Unit under test is exercised.
-		new CAClient(uddiURL, wsName);
+		new CAClient(uddiURL);
 
 		// a "verification block"
 		// One or more invocations to mocked types, causing expectations to be
@@ -107,7 +107,7 @@ public class CAClientTest {
 
 		// Unit under test is exercised.
 		try {
-			new CAClient(uddiURL, wsName);
+			new CAClient(uddiURL);
 			fail();
 
 		} catch (CAClientException e) {
@@ -150,7 +150,7 @@ public class CAClientTest {
 
 		// Unit under test is exercised.
 		try {
-			new CAClient(uddiURL, wsName);
+			new CAClient(uddiURL);
 			fail();
 
 		} catch (CAClientException e) {

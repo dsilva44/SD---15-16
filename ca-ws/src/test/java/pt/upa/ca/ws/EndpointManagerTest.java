@@ -8,10 +8,7 @@ import mockit.integration.junit4.JMockit;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
-import pt.upa.ca.exception.CAEndpointException;
-import pt.upa.ca.exception.CAUddiNamingException;
-
-import javax.xml.registry.JAXRException;
+import pt.upa.ca.exception.CAException;
 import javax.xml.ws.Endpoint;
 
 import static org.junit.Assert.*;
@@ -55,7 +52,7 @@ public class EndpointManagerTest {
 
     // tests
     @Test
-    public void successInitialization() {
+    public void successInitialization() throws CAException {
         EndpointManager endpointManager = new EndpointManager(UDDI_URL, WS_URL);
         assertEquals("uddiURL not properly set", UDDI_URL, endpointManager.getUddiURL());
         assertEquals("wsURL not properly set", WS_URL, endpointManager.getWsURL());
@@ -65,19 +62,19 @@ public class EndpointManagerTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void invalidUddiURL() {
+    public void invalidUddiURL() throws CAException {
         String invalidUddiURL = "POTATO";
         new EndpointManager(invalidUddiURL, WS_URL);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void invalidWsURL() {
+    public void invalidWsURL() throws CAException {
         String invalidWsURL = "POTATO";
         new EndpointManager(UDDI_URL, invalidWsURL);
     }
 
     @Test
-    public void successStart(@Mocked Endpoint endpointMock) {
+    public void successStart(@Mocked Endpoint endpointMock) throws CAException {
         EndpointManager endpointManager = new EndpointManager(UDDI_URL, WS_URL);
 
         UDDINaming  uddiNamingMock = new MockUp<UDDINaming>() {
@@ -96,9 +93,9 @@ public class EndpointManagerTest {
         assertTrue("started status is not set to true", endpointManager.isStarted());
     }
 
-    @Test(expected = CAEndpointException.class)
+    @Test(expected = CAException.class)
     public void startShouldTrowExceptionWhenErrorOccurredOnEndpoint (
-            @Mocked Endpoint endpointMock, @Mocked UDDINaming uddiNamingMock) throws JAXRException {
+            @Mocked Endpoint endpointMock, @Mocked UDDINaming uddiNamingMock) throws Exception {
         EndpointManager endpointManager = new EndpointManager(UDDI_URL, WS_URL);
 
         new Expectations() {{
@@ -113,9 +110,9 @@ public class EndpointManagerTest {
         endpointManager.start();
     }
 
-    @Test(expected = CAUddiNamingException.class)
+    @Test(expected = CAException.class)
     public void startShouldTrowExceptionWhenErrorOccurredOnUddiNaming (
-            @Mocked Endpoint endpointMock, @Mocked UDDINaming uddiNamingMock) throws JAXRException {
+            @Mocked Endpoint endpointMock, @Mocked UDDINaming uddiNamingMock) throws Exception {
         EndpointManager endpointManager = new EndpointManager(UDDI_URL, WS_URL);
 
         new Expectations() {{
@@ -132,7 +129,7 @@ public class EndpointManagerTest {
 
 
     @Test
-    public void successAwaitConnection() {
+    public void successAwaitConnection() throws CAException {
         EndpointManager endpointManager = new EndpointManager(UDDI_URL, WS_URL);
 
         endpointManager.setStarted(true);
@@ -144,7 +141,7 @@ public class EndpointManagerTest {
     }
 
     @Test
-    public void shouldNotAwaitConnectionsWhenWsIsNotStarted() {
+    public void shouldNotAwaitConnectionsWhenWsIsNotStarted() throws CAException {
         EndpointManager endpointManager = new EndpointManager(UDDI_URL, WS_URL);
 
         endpointManager.setStarted(false);
@@ -156,7 +153,7 @@ public class EndpointManagerTest {
     }
 
     @Test
-    public void successStopWhenWsIsStarted(@Mocked Endpoint endpointMock) {
+    public void successStopWhenWsIsStarted(@Mocked Endpoint endpointMock) throws CAException {
         EndpointManager endpointManager = new EndpointManager(UDDI_URL, WS_URL);
 
 
@@ -227,9 +224,9 @@ public class EndpointManagerTest {
         assertFalse("await status not changed", endpointManager.isAwaitConnection());
     }
 
-    @Test (expected = CAEndpointException.class)
+    @Test (expected = CAException.class)
     public void stopShouldTrowExceptionWhenErrorOccurredOnEndpoint (
-            @Mocked Endpoint endpointMock, @Mocked UDDINaming uddiNamingMock) throws JAXRException {
+            @Mocked Endpoint endpointMock, @Mocked UDDINaming uddiNamingMock) throws Exception {
         EndpointManager endpointManager = new EndpointManager(UDDI_URL, WS_URL);
 
         new Expectations() {{
@@ -244,9 +241,9 @@ public class EndpointManagerTest {
         endpointManager.stop();
     }
 
-    @Test (expected = CAUddiNamingException.class)
+    @Test (expected = CAException.class)
     public void stopShouldTrowExceptionWhenErrorOccurredOnUddiNaming (
-            @Mocked Endpoint endpointMock, @Mocked UDDINaming uddiNamingMock) throws JAXRException {
+            @Mocked Endpoint endpointMock, @Mocked UDDINaming uddiNamingMock) throws Exception {
         EndpointManager endpointManager = new EndpointManager(UDDI_URL, WS_URL);
 
         new Expectations() {{

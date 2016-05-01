@@ -63,6 +63,12 @@ keytool -certreq \
         -storepass ${broker_pass} \
         -alias ${broker_alias} \
         -file ${broker_csr}
+# import certificate to keyStore
+keytool -importcert \
+        -keystore ${broker_jks} -storepass ${broker_pass} \
+        -file ${ca_cer} \
+        -alias ${ca_alias} \
+        -noprompt
 
 # --- UpaTransporter1 ------------------------------------------------
 # create key pair and new keystore
@@ -78,6 +84,12 @@ keytool -certreq \
         -storepass ${t1_pass} \
         -alias ${t1_alias} \
         -file ${t1_csr}
+# import certificate to keyStore
+keytool -importcert \
+        -keystore ${t1_jks} -storepass ${t1_pass} \
+        -file ${ca_cer} \
+        -alias ${ca_alias} \
+        -noprompt
 
 # --- UpaTransporter2 ------------------------------------------------
 # create key pair and new keystore
@@ -93,6 +105,12 @@ keytool -certreq \
         -storepass ${t2_pass} \
         -alias ${t2_alias} \
         -file ${t2_csr}
+# import certificate to keyStore
+keytool -importcert \
+        -keystore ${t2_jks} -storepass ${t2_pass} \
+        -file ${ca_cer} \
+        -alias ${ca_alias} \
+        -noprompt
 
 # --- Sign certificates ----------------------------------------------
 # create UpaBroker certificate sign by UpaCA
@@ -116,6 +134,23 @@ keytool -gencert \
         -alias ${ca_alias} \
         -infile ${t2_csr} \
         -outfile ${t2_cer}
+
+# --- import Certificate to UpaCA KeyStore ---------------------------
+# Broker
+keytool -importcert \
+        -keystore ${ca_jks} -storepass ${ca_pass} \
+        -file ${broker_cer} \
+        -alias ${broker_alias}
+# Transporter1
+keytool -importcert \
+        -keystore ${ca_jks} -storepass ${ca_pass} \
+        -file ${t1_cer} \
+        -alias ${t1_alias}
+# Transporter2
+keytool -importcert \
+        -keystore ${ca_jks} -storepass ${ca_pass} \
+        -file ${t2_cer} \
+        -alias ${t2_alias}
 
 # --- Deploy Certificates --------------------------------------------
 caFolder=./ca-ws/src/main/resources/

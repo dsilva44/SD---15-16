@@ -3,8 +3,7 @@ package pt.upa.ca.ws;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
-import pt.upa.ca.exception.CAEndpointException;
-import pt.upa.ca.exception.CAUddiNamingException;
+import pt.upa.ca.exception.CAException;
 
 import javax.xml.registry.JAXRException;
 import javax.xml.ws.Endpoint;
@@ -25,7 +24,7 @@ public class EndpointManager {
 
 
 
-    public EndpointManager(String uddiURL, String wsURL) {
+    public EndpointManager(String uddiURL, String wsURL) throws CAException {
         String urlRegex = "^(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]";
 
         boolean validUddiURL = Pattern.matches(urlRegex, uddiURL);
@@ -41,18 +40,18 @@ public class EndpointManager {
         try {
             uddiNaming = new UDDINaming(uddiURL);
         } catch (JAXRException e) {
-            throw new CAUddiNamingException("Cannot Create uddiNaming instance");
+            throw new CAException("Cannot Create uddiNaming instance", e);
         }
     }
 
-    public void start() {
+    public void start() throws CAException {
         try {
             // publish endpoint
             log.info("Starting: " + wsURL);
             endpoint.publish(wsURL);
         } catch (Exception e) {
             log.error("Error publish endpoint: " + wsURL, e);
-            throw new CAEndpointException("Error publish endpoint: " + wsURL);
+            throw new CAException("Error publish endpoint: " + wsURL, e);
         }
 
         try {
@@ -61,7 +60,7 @@ public class EndpointManager {
             uddiNaming.rebind(wsName, wsURL);
         } catch (Exception e) {
             log.error("Error on uddiNaming rebind", e);
-            throw new CAUddiNamingException("Error on rebind");
+            throw new CAException("Error on rebind", e);
         }
         isStarted = true;
     }
@@ -70,7 +69,7 @@ public class EndpointManager {
         return isAwaitConnection = isStarted;
     }
 
-    public void stop() {
+    public void stop() throws CAException {
         if(isAwaitConnection || isStarted) {
             try {
                 if (endpoint != null) {
@@ -80,7 +79,7 @@ public class EndpointManager {
                 }
             } catch (Exception e) {
                 log.error("Caught exception when stopping", e);
-                throw new CAEndpointException("Fail to stop");
+                throw new CAException("Fail to stop", e);
             }
             try {
                 if (uddiNaming != null) {
@@ -90,7 +89,7 @@ public class EndpointManager {
                 }
             } catch (Exception e) {
                 log.error("Caught exception when deleting", e);
-                throw new CAUddiNamingException("Fail to delete bind");
+                throw new CAException("Fail to delete bind", e);
             }
         }
         isAwaitConnection = false;
