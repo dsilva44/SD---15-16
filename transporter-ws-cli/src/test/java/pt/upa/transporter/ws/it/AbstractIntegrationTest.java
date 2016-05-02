@@ -61,5 +61,7 @@ public abstract class AbstractIntegrationTest {
 
     @After
     public void tearDown() {
+        CLIENT1.clearJobs();
+        CLIENT2.clearJobs();
     }
 }
