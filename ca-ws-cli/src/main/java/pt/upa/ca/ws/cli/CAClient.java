@@ -13,7 +13,7 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.security.KeyStore;
+import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -128,6 +128,17 @@ public class CAClient implements CAPortType {
         fis.close();
         log.warn("Nothing to read");
         throw new CAClientException("Nothing to read");
+    }
+
+    /**
+     * Reads a PrivateKey from a key-store
+     *
+     * @return The PrivateKey
+     * @throws Exception
+     */
+    public PrivateKey getPrivateKeyFromKeyStore(KeyStore keystore,
+                                                String keyAlias, char[] keyPassword) throws Exception {
+        return (PrivateKey) keystore.getKey(keyAlias, keyPassword);
     }
 
     public Certificate toCertificate(byte[] certBytes) throws CertificateException {
