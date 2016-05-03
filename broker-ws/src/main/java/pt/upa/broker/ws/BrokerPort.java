@@ -10,6 +10,7 @@ import pt.upa.broker.domain.Transport;
 import pt.upa.transporter.ws.BadLocationFault_Exception;
 import pt.upa.transporter.ws.BadPriceFault_Exception;
 
+import javax.jws.HandlerChain;
 import javax.jws.WebService;
 
 
@@ -20,6 +21,7 @@ import javax.jws.WebService;
 		targetNamespace = "http://ws.broker.upa.pt/",
 		serviceName = "BrokerService"
 )
+@HandlerChain(file = "/handler-chain.xml")
 public class BrokerPort implements BrokerPortType{
 	static private final Logger log = LogManager.getRootLogger();
 
