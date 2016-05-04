@@ -4,10 +4,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import pt.upa.transporter.ws.BadLocationFault_Exception;
-import pt.upa.transporter.ws.BadPriceFault_Exception;
-
-public class ClearJobsIT extends AbstractIntegrationTest {
+public class ClearJobsIT extends AbstractIT {
     
     @Test
     public void successClearJobsShouldEmptyList() throws Exception {

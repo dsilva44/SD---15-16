@@ -11,7 +11,7 @@ import pt.upa.transporter.ws.JobView;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class decideJobIT extends AbstractIntegrationTest{
+public class decideJobIT extends AbstractIT {
 
     private static JobView jv;
 

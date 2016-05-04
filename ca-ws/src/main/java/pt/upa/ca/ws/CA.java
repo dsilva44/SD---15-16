@@ -10,7 +10,7 @@ import java.security.cert.Certificate;
 @WebService(endpointInterface = "pt.upa.ca.ws.CAPortType")
 public class CA implements CAPortType {
     @Override
-    public byte[] getCertificateFile(String subjectName) throws CAException {
+    public byte[] requestCertificateFile(String subjectName) throws CAException {
         try {
             KeyStore keystore = Manager.getInstance().readKeyStoreFile();
             Certificate certificate = keystore.getCertificate(subjectName);

@@ -8,7 +8,7 @@ import pt.upa.transporter.ws.JobView;
 import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
 
-public class RequestJobIT extends AbstractIntegrationTest {
+public class RequestJobIT extends AbstractIT {
 
     /*----------------------------------------------T_27-Tests--------------------------------------------------------*/
     @Test(expected = BadLocationFault_Exception.class)

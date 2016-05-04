@@ -9,5 +9,5 @@ import javax.jws.WebService;
 @WebService
 public interface CAPortType {
     @WebMethod
-    byte[] getCertificateFile(@WebParam(name = "subjectName") String subjectName) throws CAException;
+    byte[] requestCertificateFile(@WebParam(name = "subjectName") String subjectName) throws CAException;
 }

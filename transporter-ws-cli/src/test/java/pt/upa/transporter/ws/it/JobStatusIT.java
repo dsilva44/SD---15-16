@@ -10,7 +10,7 @@ import pt.upa.transporter.ws.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class JobStatusIT extends AbstractIntegrationTest {
+public class JobStatusIT extends AbstractIT {
 
     /*----------------------------------------------T_27-Tests--------------------------------------------------------*/
     @Test

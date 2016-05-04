@@ -76,8 +76,8 @@ public class CAClient implements CAPortType {
     /*-----------------------------------------------remote invocation methods----------------------------------------*/
 
     @Override
-    public byte[] getCertificateFile(String subjectName) throws CAException_Exception {
-        return port.getCertificateFile(subjectName);
+    public byte[] requestCertificateFile(String subjectName) throws CAException_Exception {
+        return port.requestCertificateFile(subjectName);
     }
 
     /*-----------------------------------------------additional methods-----------------------------------------------*/

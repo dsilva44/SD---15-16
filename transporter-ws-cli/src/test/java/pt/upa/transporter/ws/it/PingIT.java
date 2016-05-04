@@ -4,7 +4,7 @@ import org.junit.Test;
 
 import static junit.framework.TestCase.assertNotNull;
 
-public class PingIT extends AbstractIntegrationTest {
+public class PingIT extends AbstractIT {
 
     @Test
     public void successPingShouldNotReturnNull() {

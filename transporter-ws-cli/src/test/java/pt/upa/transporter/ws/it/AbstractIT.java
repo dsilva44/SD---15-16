@@ -14,7 +14,7 @@ import pt.upa.transporter.ws.cli.TransporterClient;
  * Invoked by Maven in the "verify" life-cycle phase
  * Should invoke "live" remote servers
  */
-public abstract class AbstractIntegrationTest {
+public abstract class AbstractIT {
     // static members
     protected static final Logger log = LogManager.getRootLogger();
     static TransporterClient CLIENT1, CLIENT2;
@@ -40,15 +40,15 @@ public abstract class AbstractIntegrationTest {
 
         CLIENT1 = new TransporterClient(uddiURL,wsName1);
         CLIENT2 = new TransporterClient(uddiURL,wsName2);
-
-        CLIENT1.clearJobs();
-        CLIENT2.clearJobs();
     }
 
     @AfterClass
     public static void oneTimeTearDown() {
         CLIENT1.clearJobs();
+        CLIENT1 = null;
+
         CLIENT2.clearJobs();
+        CLIENT2 = null;
     }
 
     // members
@@ -61,7 +61,5 @@ public abstract class AbstractIntegrationTest {
 
     @After
     public void tearDown() {
-        CLIENT1.clearJobs();
-        CLIENT2.clearJobs();
     }
 }
