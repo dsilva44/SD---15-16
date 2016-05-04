@@ -91,7 +91,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 
 
         String idString = "Broker" + idCounter++; //correct ?
-        String dateTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").format(new Date());
+        String dateTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").format(new Date()); //FIXME: xml date format
 
         //add FRESHNESS header element and respective children
         Name name = se.createName("Freshness", "fresh", "http://freshness");
