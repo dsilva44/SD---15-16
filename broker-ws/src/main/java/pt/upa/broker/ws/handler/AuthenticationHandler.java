@@ -4,6 +4,10 @@ import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.security.MessageDigest;
+import java.sql.Time;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -29,7 +33,7 @@ import javax.xml.ws.handler.soap.SOAPMessageContext;
 
 
 public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
-
+    public static long MaxWaitTime = 10;
     //
     // Handler interface methods
     //
@@ -67,8 +71,8 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 
     public void handleOutboundMessage(SOAPMessageContext smc){}
 
-    public boolean handleInboundMessage(SOAPMessageContext smc) throws Exception{
-
+    public void handleInboundMessage(SOAPMessageContext smc) throws Exception{
+    /*
         SOAPMessage msg = smc.getMessage();
         SOAPPart sp = msg.getSOAPPart();
         SOAPEnvelope se = sp.getEnvelope();
@@ -81,20 +85,40 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         }
         byte[] originalBytes = getSOAPBodyContent(msg);
 
-            /*
+
             header = hash;
             body=m1;
-            */
 
 
-        byte[] hashedBytes = sh.getValue().getBytes();
+        Name name = se.createName("assinatura", "assinatura", "http://demo");
+        Iterator it = sh.getChildElements(name);
+        // check header element
+        if (!it.hasNext()) {
+            System.out.println("Header element not found.");
+            return true;
+        }
+        SOAPElement element = (SOAPElement) it.next();
+        String timeInStringFormat = element.getValue();
+        Time t = new Time(0);
+        t.valueOf(timeInStringFormat);
 
-            /*SOAPHeader sh = se.getHeader();//how to get url?
+        Date minutesAgo = new Date();
+        minutesAgo.setTime(minutesAgo.getTime()-MaxWaitTime);
+        if (t.before(minutesAgo)){
+            return false;
+        }
+
+
+
+            byte[] hashedBytesCyphered = sh.getValue().getBytes();
+
+            SOAPHeader sh = se.getHeader();//how to get url?
             String url = "";
-            Key publicKey = CA.getCertificate(url).getPublicKey();*/
+            Key publicKey = CA.getCertificate(url).getPublicKey();
 
         return true;
-        //return verifyDigitalSignature(hashedBytes,originalBytes,publicKey);
+        //return verifyDigitalSignature(hashedBytesCyphered,originalBytes,publicKey);
+    */
     }
 
     public byte[] getSOAPBodyContent(SOAPMessage sm) throws Exception{
