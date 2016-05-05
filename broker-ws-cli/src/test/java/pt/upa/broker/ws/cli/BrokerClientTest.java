@@ -73,7 +73,6 @@ public class BrokerClientTest {
 		// a "verification block"
 		// One or more invocations to mocked types, causing expectations to be
 		// verified.
-		//noinspection Duplicates
 		new Verifications() {
 			{
 				// Verifies that zero or one invocations occurred, with the

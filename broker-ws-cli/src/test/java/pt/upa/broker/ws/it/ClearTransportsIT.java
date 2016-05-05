@@ -22,6 +22,11 @@ public class ClearTransportsIT extends AbstractIT {
     }
 
     /*----------------------------------------------SD-Tests1---------------------------------------------------------*/
+    // tests
+    // assertEquals(expected, actual);
+
+    // public void clearTransports();
+
     @Test(expected = UnknownTransportFault_Exception.class)
     public void testClearTransports() throws Exception {
         String rt = CLIENT.requestTransport(CENTER_1, SOUTH_1, PRICE_SMALLEST_LIMIT);

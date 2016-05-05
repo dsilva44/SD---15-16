@@ -13,24 +13,28 @@ import java.util.List;
 
 public class ViewTransportIT extends AbstractIT {
 
+    // public TransportView viewTransport(String id)
+    // throws UnknownTransportFault_Exception
+
     @Test
     public void testTransportStateTransition() throws Exception {
-        List<TransportStateView> transportStates = new ArrayList<>();
-        transportStates.add(TransportStateView.BOOKED);
-        transportStates.add(TransportStateView.HEADING);
-        transportStates.add(TransportStateView.ONGOING);
-        transportStates.add(TransportStateView.COMPLETED);
+        List<TransportStateView> tS = new ArrayList<>();
 
-        String transportId = CLIENT.requestTransport(CENTER_1, CENTER_2, PRICE_SMALLEST_LIMIT);
-        TransportView transportView;
+        tS.add(TransportStateView.HEADING);
+        tS.add(TransportStateView.ONGOING);
+        tS.add(TransportStateView.COMPLETED);
 
-        for (int t = DELAY_LOWER; t <= 3 * DELAY_UPPER; t = t + DELAY_LOWER) {
-            Thread.sleep(DELAY_LOWER);
-            transportView = CLIENT.viewTransport(transportId);
-            if (transportStates.contains(transportView.getState()))
-                transportStates.remove(transportView.getState());
+        String rt = CLIENT.requestTransport(CENTER_1, SOUTH_1, PRICE_SMALLEST_LIMIT);
+        TransportView vt = CLIENT.viewTransport(rt);
+        assertEquals(vt.getState(), TransportStateView.BOOKED);
+
+        for (int t = 0; t <= 3 * DELAY_UPPER || !tS.isEmpty(); t += TENTH_OF_SECOND) {
+            Thread.sleep(TENTH_OF_SECOND);
+            vt = CLIENT.viewTransport(rt);
+            if (tS.contains(vt.getState()))
+                tS.remove(vt.getState());
         }
-        assertEquals(0, transportStates.size());
+        assertEquals(0, tS.size());
     }
 
     @Test(expected = UnknownTransportFault_Exception.class)

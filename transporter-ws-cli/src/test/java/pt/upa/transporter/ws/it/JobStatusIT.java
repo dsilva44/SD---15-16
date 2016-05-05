@@ -53,7 +53,7 @@ public class JobStatusIT extends AbstractIT {
      * @result At the end of the test the job rejection should have failed.
      * @throws Exception
      */
-    @Test(expected = BadJobFault_Exception.class)
+    @Test
     public void testJobStatus1() throws Exception {
         JobView jv = CLIENT1.requestJob(CENTRO_1, SUL_1, PRICE_UPPER_LIMIT);
         JobStateView jsv = CLIENT1.jobStatus(jv.getJobIdentifier()).getJobState();
@@ -62,7 +62,11 @@ public class JobStatusIT extends AbstractIT {
         jv = CLIENT1.decideJob(jv.getJobIdentifier(), true);
         assertEquals(JobStateView.ACCEPTED, jv.getJobState());
 
-        CLIENT1.decideJob(jv.getJobIdentifier(), false);
+        try {
+            CLIENT1.decideJob(jv.getJobIdentifier(), false);
+        } catch (BadJobFault_Exception e) {
+            // expected
+        }
     }
 
     /**

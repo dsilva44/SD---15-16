@@ -11,7 +11,7 @@ import pt.upa.transporter.ws.JobView;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class decideJobIT extends AbstractIT {
+public class DecideJobIT extends AbstractIT {
 
     private static JobView jv;
 
@@ -68,6 +68,7 @@ public class decideJobIT extends AbstractIT {
      */
     @Test
     public void testAcceptJob() throws Exception {
+        JobView jv = CLIENT1.requestJob(CENTRO_1, SUL_1, PRICE_UPPER_LIMIT);
         jv = CLIENT1.decideJob(jv.getJobIdentifier(), true);
         assertEquals(JobStateView.ACCEPTED, jv.getJobState());
     }
@@ -82,6 +83,7 @@ public class decideJobIT extends AbstractIT {
      */
     @Test(expected = BadJobFault_Exception.class)
     public void testAcceptDuplicateJob() throws Exception {
+        JobView jv = CLIENT1.requestJob(CENTRO_1, SUL_1, PRICE_UPPER_LIMIT);
         CLIENT1.decideJob(jv.getJobIdentifier(), true);
         CLIENT1.decideJob(jv.getJobIdentifier(), true);
     }

@@ -42,6 +42,7 @@ public abstract class AbstractIT {
 
     static final int DELAY_LOWER = 1000; // = 1 second
     static final int DELAY_UPPER = 5000; // = 5 seconds
+    protected static final int TENTH_OF_SECOND = 100;
 
     // one-time initialization and clean-up
     @BeforeClass
