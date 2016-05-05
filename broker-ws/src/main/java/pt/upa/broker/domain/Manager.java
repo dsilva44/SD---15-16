@@ -44,7 +44,12 @@ public class Manager {
             throw new BrokerUddiNamingException("Cannot Create uddiNaming instance");
         }
     }
-    
+
+    public String getKeyStorePath(){
+        return keyStorePath;
+    }
+
+
     public static Manager getInstance() { return manager; }
 
     String getNextTransporterID() {
