@@ -1,12 +1,16 @@
 package pt.upa.transporter.ws.cli;
 
+import example.ws.handler.AuthenticationHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
 import pt.upa.transporter.exception.TransporterClientException;
 import pt.upa.transporter.ws.*;
 
+import javax.annotation.Resource;
 import javax.xml.ws.BindingProvider;
+import javax.xml.ws.WebServiceContext;
+import javax.xml.ws.handler.MessageContext;
 import java.util.List;
 import java.util.Map;
 
@@ -66,34 +70,50 @@ public class TransporterClient implements TransporterPortType {
 
 	/*-----------------------------------------------remote invocation methods----------------------------------------*/
 
+	@Resource
+	private WebServiceContext webServiceContext;
+	private final String server = "UpaBroker";
+
+	public void setWsContext(WebServiceContext wsContext) {
+		this.webServiceContext = wsContext;
+	}
+
 	@Override
 	public String ping(String name) {
+		MessageContext messageContext = webServiceContext.getMessageContext();
+		messageContext.put(AuthenticationHandler.SERVER, server);
+
 		return port.ping(name);
 	}
 
 	@Override
 	public JobView requestJob(String origin, String destination, int price)
 			throws BadLocationFault_Exception, BadPriceFault_Exception {
+
 		return port.requestJob(origin, destination, price);
 	}
 
 	@Override
 	public JobView decideJob(String id, boolean accept) throws BadJobFault_Exception {
+
 		return port.decideJob(id, accept);
 	}
 
 	@Override
 	public JobView jobStatus(String id) {
+
 		return port.jobStatus(id);
 	}
 
 	@Override
 	public List<JobView> listJobs() {
+
 		return port.listJobs();
 	}
 
 	@Override
 	public void clearJobs() {
+
 		port.clearJobs();
 	}
 }

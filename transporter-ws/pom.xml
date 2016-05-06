@@ -38,6 +38,12 @@
     </properties>
 
     <dependencies>
+        <!-- WS-Handlers -->
+        <dependency>
+            <groupId>example</groupId>
+            <artifactId>ws-handlers</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
         <!-- JAX-WS -->
         <dependency>
             <groupId>com.sun.xml.ws</groupId>

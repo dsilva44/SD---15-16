@@ -1,5 +1,6 @@
 package pt.upa.transporter.ws;
 
+import javax.jws.HandlerChain;
 import javax.jws.WebService;
 
 import org.apache.logging.log4j.LogManager;
@@ -16,6 +17,7 @@ import java.util.List;
         targetNamespace = "http://ws.transporter.upa.pt/",
         serviceName = "TransporterService"
 )
+@HandlerChain(file = "/transporter_handler-chain.xml")
 public class TransporterPort implements TransporterPortType {
     static private final Logger log = LogManager.getRootLogger();
 	
