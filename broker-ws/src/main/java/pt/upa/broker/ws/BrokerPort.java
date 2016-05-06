@@ -39,36 +39,28 @@ public class BrokerPort implements BrokerPortType{
 	public String requestTransport(String origin, String destination, int price)
 			throws InvalidPriceFault_Exception, UnavailableTransportFault_Exception,
 			UnavailableTransportPriceFault_Exception, UnknownLocationFault_Exception {
+		Transport transport;
 
 		try {
-			Transport transport = manager.requestTransport(origin, destination, price);
+			transport = manager.requestTransport(origin, destination, price);
 			manager.decideBestOffer(transport);
-
 			log.debug("requestTransport: " + transport.getId() );
-			return transport.getId();
-
 		} catch (BadLocationFault_Exception e) {
-			UnknownLocationFault faultInfo = new UnknownLocationFault();
-			faultInfo.setLocation(e.getFaultInfo().getLocation());
-			throw new UnknownLocationFault_Exception(e.getMessage(), faultInfo);
+			manager.throwUnknownLocationFault(e.getMessage()); return null;
 		} catch (BadPriceFault_Exception e) {
-			InvalidPriceFault faultInfo = new InvalidPriceFault();
-			faultInfo.setPrice(e.getFaultInfo().getPrice());
-			throw new InvalidPriceFault_Exception(e.getMessage(), faultInfo);
+			manager.throwInvalidPriceFault(e.getFaultInfo().getPrice()); return null;
 		}
+
+		return transport.getId();
 	}
 
 	@Override
 	public TransportView viewTransport(String id) throws UnknownTransportFault_Exception {
 		Transport t = manager.updateTransportState(id);
-		if (t != null) {
-			log.debug("viewTransport return:" );
-			return t.toTransportView();
-		}
-		log.debug("viewTransport return: " + null);
-		UnknownTransportFault faultInfo = new UnknownTransportFault();
-		faultInfo.setId(id);
-		throw new UnknownTransportFault_Exception("Id unknown", faultInfo);
+		if (t == null) manager.throwUnknownTransportFault(id);
+
+		log.debug("viewTransport return:" );
+		return t.toTransportView();
 	}
 	
 

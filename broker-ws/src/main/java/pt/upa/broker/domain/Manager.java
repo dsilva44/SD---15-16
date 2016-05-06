@@ -105,11 +105,7 @@ public class Manager {
     
     public  Transport updateTransportState(String id) throws UnknownTransportFault_Exception {
     	Transport t = getTransportById(id);
-        if (t == null) {
-            UnknownTransportFault faultInfo = new UnknownTransportFault();
-            faultInfo.setId(id);
-            throw new UnknownTransportFault_Exception("Id unknown", faultInfo);
-        }
+        if (t == null) throwUnknownTransportFault(id);
 
         TransporterClient client = new TransporterClient(uddiURL, t.getTransporterCompany());
         JobView jobView = client.jobStatus(t.getChosenOfferID());
@@ -120,23 +116,10 @@ public class Manager {
 
     private void validateTransport(String origin, String destination, int price)
             throws UnknownLocationFault_Exception, InvalidPriceFault_Exception {
-        class UnknownLocation {
-            private void throwException(String location) throws UnknownLocationFault_Exception {
-                UnknownLocationFault faultInfo = new UnknownLocationFault();
-                faultInfo.setLocation(location);
-                log.warn(location + " is a unknown location");
-                throw new UnknownLocationFault_Exception(location + " is a unknown location", faultInfo);
-            }
-        }
 
-        if (!containsCaseInsensitive(origin, knowCities)) new UnknownLocation().throwException(origin);
-        if (!containsCaseInsensitive(destination, knowCities)) new UnknownLocation().throwException(destination);
-        if (price < 0) {
-            InvalidPriceFault faultInfo = new InvalidPriceFault();
-            faultInfo.setPrice(price);
-            log.warn(price + " is not valid");
-            throw new InvalidPriceFault_Exception(price + " is not a valid price", faultInfo);
-        }
+        if (!containsCaseInsensitive(origin, knowCities)) throwUnknownLocationFault(origin);
+        else if (!containsCaseInsensitive(destination, knowCities)) throwUnknownLocationFault(destination);
+        else if (price < 0) throwInvalidPriceFault(price);
     }
 
     public Transport requestTransport(String origin, String destination, int price)
@@ -238,5 +221,24 @@ public class Manager {
         transporterClients.clear();
     }
 
-    // Aux methods
+    //-------------------------------------------create Faults----------------------------------------------------------
+    public void throwUnknownTransportFault(String id) throws UnknownTransportFault_Exception {
+        UnknownTransportFault faultInfo = new UnknownTransportFault();
+        faultInfo.setId(id);
+        throw new UnknownTransportFault_Exception("Id unknown", faultInfo);
+    }
+
+    public void throwUnknownLocationFault(String location) throws UnknownLocationFault_Exception {
+        UnknownLocationFault faultInfo = new UnknownLocationFault();
+        faultInfo.setLocation(location);
+        log.warn(location + " is a unknown location");
+        throw new UnknownLocationFault_Exception(location + " is a unknown location", faultInfo);
+    }
+
+    public void throwInvalidPriceFault(int price) throws InvalidPriceFault_Exception {
+        InvalidPriceFault faultInfo = new InvalidPriceFault();
+        faultInfo.setPrice(price);
+        log.warn(price + " is not valid");
+        throw new InvalidPriceFault_Exception(price + " is not a valid price", faultInfo);
+    }
 }

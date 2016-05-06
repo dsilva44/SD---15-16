@@ -274,7 +274,7 @@ public class ManagerTest {
 
         }
     }
-    //-------------------------------------------decideBestOffer()----------------------------------------------------------
+    //-------------------------------------------decideBestOffer()------------------------------------------------------
     @Test
     public void referencePrice0ShouldReturn0(@Mocked TransporterClient transporterClientMock) throws  Exception {
         transport.setPrice(0);
