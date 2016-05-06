@@ -109,4 +109,21 @@ public class Transport {
 	
 	    return transportView;
 	}
+
+	public void nextState(JobView jobView) {
+		switch(jobView.getJobState().value()) {
+			case "PROPOSED":
+				setState(TransportStateView.BUDGETED); break;
+			case "ACCEPTED":
+				setState(TransportStateView.BOOKED); break;
+			case "REJECTED":
+				setState(TransportStateView.FAILED); break;
+			case "HEADING":
+				setState(TransportStateView.HEADING); break;
+			case "ONGOING":
+				setState(TransportStateView.ONGOING); break;
+			case "COMPLETED":
+				setState(TransportStateView.COMPLETED); break;
+		}
+	}
 }

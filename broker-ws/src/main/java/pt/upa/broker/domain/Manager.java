@@ -64,6 +64,10 @@ public class Manager {
         return id;
     }
 
+    void addTransport(Transport t){
+        transportsList.add(t);
+    }
+
     boolean updateTransportersList(String uddiURL) {
         try {
             String query = "UpaTransporter%";
@@ -108,37 +112,10 @@ public class Manager {
         }
 
         TransporterClient client = new TransporterClient(uddiURL, t.getTransporterCompany());
+        JobView jobView = client.jobStatus(t.getChosenOfferID());
+        t.nextState(jobView);
 
-        JobView job = client.jobStatus(t.getChosenOfferID());
-
-        if (job == null) {
-            UnknownTransportFault faultInfo = new UnknownTransportFault();
-            faultInfo.setId(id);
-            throw new UnknownTransportFault_Exception("Id unknown", faultInfo);
-        }
-
-        String STATE = job.getJobState().value();
-
-        switch(STATE) {
-            case "PROPOSED":
-                t.setState(TransportStateView.BUDGETED); break;
-            case "ACCEPTED":
-                t.setState(TransportStateView.BOOKED); break;
-            case "REJECTED":
-                t.setState(TransportStateView.FAILED); break;
-            case "HEADING":
-                t.setState(TransportStateView.HEADING);break;
-            case "ONGOING":
-                t.setState(TransportStateView.ONGOING);break;
-            case "COMPLETED":
-                t.setState(TransportStateView.COMPLETED);break;
-        }
-        
-		return t;
-    }
-
-    void addTransport(Transport t){
-    	transportsList.add(t);
+        return t;
     }
 
     private void validateTransport(String origin, String destination, int price)
@@ -261,4 +238,5 @@ public class Manager {
         transporterClients.clear();
     }
 
+    // Aux methods
 }
