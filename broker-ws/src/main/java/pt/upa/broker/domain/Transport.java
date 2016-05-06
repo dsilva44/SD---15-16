@@ -126,4 +126,11 @@ public class Transport {
 				setState(TransportStateView.COMPLETED); break;
 		}
 	}
+
+	public void acceptOffer(JobView jobView) {
+		setState(TransportStateView.BOOKED);
+		setTransporterCompany(jobView.getCompanyName());
+		setChosenOfferID(jobView.getJobIdentifier());
+		setPrice(jobView.getJobPrice());
+	}
 }

@@ -144,57 +144,33 @@ public class Manager {
         if (!findT) {
             t.setState(TransportStateView.FAILED);
             throwUnavailableTransportFault(origin, destination); return null;
-
         }
         return t;
     }
 
     public Transport decideBestOffer(Transport transport) throws UnavailableTransportPriceFault_Exception {
         transport.setState(TransportStateView.FAILED);
-
-        String bestJobID = null;
         int bestPrice = transport.getPrice();
 
-        try {
-            // Choose best offer
-            for (JobView offer : transport.getOffers() ) {
-                int offerPrice = offer.getJobPrice();
+        JobView bestOffer = chooseBestOffer(transport);
+        rejectOffersAcceptBest(transport, bestOffer);
 
-                if (offerPrice < bestPrice || offerPrice == 0) {
-                    bestJobID = offer.getJobIdentifier();
-                    bestPrice = offerPrice;
-                }
-            }
-
-            //Reject offers
-            for (JobView offer : transport.getOffers()) {
-                String companyName = offer.getCompanyName();
-                TransporterClient client = new TransporterClient(uddiURL, companyName);
-
-                if (offer.getJobIdentifier().equals(bestJobID) ) {
-                    transport.setState(TransportStateView.BOOKED);
-                    transport.setTransporterCompany(companyName);
-                    transport.setChosenOfferID(bestJobID);
-                    transport.setPrice(bestPrice);
-                    client.decideJob(bestJobID, true);
-                }
-                else client.decideJob(offer.getJobIdentifier(), false);
-            }
-
-            if (bestJobID == null)  {
-                UnavailableTransportPriceFault faultInfo = new UnavailableTransportPriceFault();
-                faultInfo.setBestPriceFound(bestPrice);
-                log.warn("the best price for transportation is " + bestPrice);
-                throw new UnavailableTransportPriceFault_Exception(
-                        "the best price for transportation is " + bestPrice, faultInfo);
-            }
-        } catch (BadJobFault_Exception e) {
-            throw new BrokerBadJobException(e.getMessage() + " -- id: " + e.getFaultInfo().getId());
-        }
+        // nobody respond for reference price
+        if (bestOffer == null) throwUnavailableTransportPriceFault(bestPrice);
 
         return transport;
     }
 
+    public void clearTransports(){
+        transportsList.clear();
+    }
+
+    public void clearTransportersClients(){
+        transporterClients.forEach(TransporterClient::clearJobs);
+        transporterClients.clear();
+    }
+
+    //-------------------------------------------Aux methods------------------------------------------------------------
     private boolean containsCaseInsensitive(String s, List<String> l) {
         for (String string : l){
             if (string.equalsIgnoreCase(s)){
@@ -204,14 +180,35 @@ public class Manager {
         return false;
     }
 
+    private JobView chooseBestOffer(Transport t) {
+        int bestPrice = t.getPrice();
+        JobView bestOffer = null;
 
-    public void clearTransports(){
-        transportsList.clear();
+        for (JobView offer : t.getOffers() ) {
+            int offerPrice = offer.getJobPrice();
+            if (offerPrice < bestPrice || offerPrice == 0) {
+                bestOffer = offer;
+                bestPrice = offerPrice;
+            }
+        }
+        return bestOffer;
     }
 
-    public void clearTransportersClients(){
-        transporterClients.forEach(TransporterClient::clearJobs);
-        transporterClients.clear();
+    private void rejectOffersAcceptBest(Transport t , JobView bestOffer) {
+        for (JobView offer : t.getOffers()) {
+            String companyName = offer.getCompanyName();
+            TransporterClient client = new TransporterClient(uddiURL, companyName);
+
+            try {
+                if (bestOffer != null && offer.getJobIdentifier().equals(bestOffer.getJobIdentifier()) ) {
+                    t.acceptOffer(offer);
+                    client.decideJob(offer.getJobIdentifier(), true);
+                }
+                else client.decideJob(offer.getJobIdentifier(), false);
+            } catch (BadJobFault_Exception e) {
+                throw new BrokerBadJobException(e.getMessage() + " -- id: " + e.getFaultInfo().getId());
+            }
+        }
     }
 
     //-------------------------------------------create Faults----------------------------------------------------------
@@ -241,5 +238,12 @@ public class Manager {
         faultInfo.setDestination(destination);
         throw new UnavailableTransportFault_Exception(
                 "There is no available transport from " + origin + " to " + destination, faultInfo);
+    }
+
+    private void throwUnavailableTransportPriceFault(int price) throws UnavailableTransportPriceFault_Exception {
+        UnavailableTransportPriceFault faultInfo = new UnavailableTransportPriceFault();
+        faultInfo.setBestPriceFound(price);
+        throw new UnavailableTransportPriceFault_Exception(
+                "the best price for transportation is " + price, faultInfo);
     }
 }
