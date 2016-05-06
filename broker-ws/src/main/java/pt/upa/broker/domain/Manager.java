@@ -129,19 +129,19 @@ public class Manager {
         validateTransport(origin, destination, price);
         Transport t = new Transport(nextTransporterID(), origin, destination, price, null, TransportStateView.REQUESTED);
         addTransport(t);
-        if (findTransporters() == 0) return t;
 
-        boolean findTransport = false;
+        findTransporters();
+        boolean findT = false;
         for (TransporterClient client : transporterClients) {
             JobView jobView = client.requestJob(origin, destination, price);
             if (jobView != null) {
                 t.setState(jobView);
                 t.addOffer(jobView);
-                findTransport = true;
+                findT = true;
             }
         }
 
-        if (!findTransport) {
+        if (!findT) {
             t.setState(TransportStateView.FAILED);
             throwUnavailableTransportFault(origin, destination); return null;
 
