@@ -105,11 +105,11 @@ public class Manager {
     
     public  Transport updateTransportState(String id) throws UnknownTransportFault_Exception {
     	Transport t = getTransportById(id);
-        if (t == null) throwUnknownTransportFault(id);
+        if (t == null) { throwUnknownTransportFault(id); return null; }
 
         TransporterClient client = new TransporterClient(uddiURL, t.getTransporterCompany());
         JobView jobView = client.jobStatus(t.getChosenOfferID());
-        t.nextState(jobView);
+        t.setState(jobView);
 
         return t;
     }
@@ -127,33 +127,26 @@ public class Manager {
             InvalidPriceFault_Exception, UnavailableTransportFault_Exception {
 
         validateTransport(origin, destination, price);
-        findTransporters();
+        Transport t = new Transport(nextTransporterID(), origin, destination, price, null, TransportStateView.REQUESTED);
+        addTransport(t);
+        if (findTransporters() == 0) return t;
 
-        Transport transport = new Transport(
-                nextTransporterID(), origin, destination, price, null, TransportStateView.REQUESTED);
-
-        int count = 0;
+        boolean findTransport = false;
         for (TransporterClient client : transporterClients) {
             JobView jobView = client.requestJob(origin, destination, price);
             if (jobView != null) {
-                count++;
-                transport.setState(TransportStateView.BUDGETED);
-                transport.addOffer(jobView);
+                t.setState(jobView);
+                t.addOffer(jobView);
+                findTransport = true;
             }
         }
 
-        addTransport(transport);
+        if (!findTransport) {
+            t.setState(TransportStateView.FAILED);
+            throwUnavailableTransportFault(origin, destination); return null;
 
-        if (count == 0) {
-            transport.setState(TransportStateView.FAILED);
-            UnavailableTransportFault faultInfo = new UnavailableTransportFault();
-            faultInfo.setOrigin(origin);
-            faultInfo.setDestination(destination);
-            log.warn("There is no available transport from " + origin + " to " + destination);
-            throw new UnavailableTransportFault_Exception(
-                    "There is no available transport from " + origin + " to " + destination, faultInfo);
         }
-        return transport;
+        return t;
     }
 
     public Transport decideBestOffer(Transport transport) throws UnavailableTransportPriceFault_Exception {
@@ -240,5 +233,13 @@ public class Manager {
         faultInfo.setPrice(price);
         log.warn(price + " is not valid");
         throw new InvalidPriceFault_Exception(price + " is not a valid price", faultInfo);
+    }
+
+    private void throwUnavailableTransportFault(String origin, String destination) throws UnavailableTransportFault_Exception {
+        UnavailableTransportFault faultInfo = new UnavailableTransportFault();
+        faultInfo.setOrigin(origin);
+        faultInfo.setDestination(destination);
+        throw new UnavailableTransportFault_Exception(
+                "There is no available transport from " + origin + " to " + destination, faultInfo);
     }
 }

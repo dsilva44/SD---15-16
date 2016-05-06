@@ -110,7 +110,7 @@ public class Transport {
 	    return transportView;
 	}
 
-	public void nextState(JobView jobView) {
+	public void setState(JobView jobView) {
 		switch(jobView.getJobState().value()) {
 			case "PROPOSED":
 				setState(TransportStateView.BUDGETED); break;

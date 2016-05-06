@@ -221,13 +221,14 @@ public class ManagerTest {
             @Mocked UDDINaming uddiNamingMock, @Mocked TransporterClient transporterClientMock)
             throws  Exception {
         int referencePrice = 50;
+        offer1.setJobState(JobStateView.PROPOSED);
 
         new Expectations() {{
             uddiNamingMock.list(transporterQuery); result = endpointsList;
             transporterClientMock.requestJob(centroCity1, centroCity2, referencePrice);
             result = null;
             transporterClientMock.requestJob(centroCity1, centroCity2, referencePrice);
-            result = new JobView();
+            result = offer1;
         }};
 
         manager.requestTransport(centroCity1, centroCity2, referencePrice);
