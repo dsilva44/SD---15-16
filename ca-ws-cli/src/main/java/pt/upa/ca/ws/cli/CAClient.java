@@ -80,6 +80,11 @@ public class CAClient implements CAPortType {
         return port.requestCertificateFile(subjectName);
     }
 
+    @Override
+    public String ping(String name) {
+        return port.ping(name);
+    }
+
     /*-----------------------------------------------additional methods-----------------------------------------------*/
     /**
      * Reads a KeyStore from a file

@@ -10,4 +10,7 @@ import javax.jws.WebService;
 public interface CAPortType {
     @WebMethod
     byte[] requestCertificateFile(@WebParam(name = "subjectName") String subjectName) throws CAException;
+
+    @WebMethod
+    String ping(@WebParam(name = "name") String name);
 }
