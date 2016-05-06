@@ -22,7 +22,7 @@ public class Manager {
     private String keyStorePath;
     private int transportID = 0;
     private ArrayList<TransporterClient> transporterClients;
-    private ArrayList<Transport> allTransports;
+    private ArrayList<Transport> transportsList;
 
     private final ArrayList<String> knowCities = new ArrayList<>(Arrays.asList("Lisboa", "Leiria", "Santarém",
             "Castelo Branco", "Coimbra", "Aveiro", "Viseu", "Guarda","Porto", "Braga", "Viana do Castelo",
@@ -32,9 +32,10 @@ public class Manager {
     //Singleton
     private Manager() {
         transporterClients = new ArrayList<>();
-        allTransports = new ArrayList<>();
+        transportsList = new ArrayList<>();
     }
 
+    //Singleton init
     public void init(String uddiURL, String keyStorePath) {
         this.uddiURL = uddiURL;
         this.keyStorePath = keyStorePath;
@@ -46,6 +47,16 @@ public class Manager {
     }
     public static Manager getInstance() { return manager; }
     ArrayList<TransporterClient> getTransporterClients() { return transporterClients; }
+    public List<Transport> getTransportsList() {
+        return transportsList;
+    }
+
+    Transport getTransportById(String id) {
+        for (Transport t : transportsList)
+            if (t.getId().equals(id))
+                return t;
+        return null;
+    }
 
     String nextTransporterID() {
         String id = Integer.toString(transportID);
@@ -57,20 +68,19 @@ public class Manager {
         try {
             String query = "UpaTransporter%";
             UDDINaming uddiNaming = new UDDINaming(uddiURL);
-            ArrayList<String> endpoints = (ArrayList<String>) uddiNaming.list(query);
+            ArrayList<String> transporterURLS = (ArrayList<String>) uddiNaming.list(query);
             transporterClients.clear();
-            for (String endpoint : endpoints) {
-                TransporterClient client = new TransporterClient(endpoint);
+            for (String url : transporterURLS) {
+                TransporterClient client = new TransporterClient(url);
                 transporterClients.add(client);
             }
-
         } catch (JAXRException e) {
             log.error("something goes wrong whit uddiNaming", e);
         }
         return !transporterClients.isEmpty();
     }
 
-    public int pingTransporters() {
+    public int findTransporters() {
         int count = 0;
         TransporterClient client;
         if (updateTransportersList(uddiURL)) {
@@ -87,10 +97,6 @@ public class Manager {
             }
         }
         return count;
-    }
-
-    public List<Transport> getAllTransports() {
-    	return allTransports;
     }
     
     public  Transport updateTransportState(String id) throws UnknownTransportFault_Exception {
@@ -131,18 +137,8 @@ public class Manager {
 		return t;
     }
 
-    
-    Transport getTransportById(String id){
-    	for (Transport t : allTransports){
-    		if (t.getId().equals(id)){
-    			return t;
-    		}
-    	}
-    	return null;
-    }
-
     void addTransport(Transport t){
-    	allTransports.add(t);
+    	transportsList.add(t);
     }
 
     private void validateTransport(String origin, String destination, int price)
@@ -171,7 +167,7 @@ public class Manager {
             InvalidPriceFault_Exception, UnavailableTransportFault_Exception {
 
         validateTransport(origin, destination, price);
-        pingTransporters();
+        findTransporters();
 
         Transport transport = new Transport(
                 nextTransporterID(), origin, destination, price, null, TransportStateView.REQUESTED);
@@ -257,7 +253,7 @@ public class Manager {
 
 
     public void clearTransports(){
-        allTransports.clear();
+        transportsList.clear();
     }
 
     public void clearTransportersClients(){

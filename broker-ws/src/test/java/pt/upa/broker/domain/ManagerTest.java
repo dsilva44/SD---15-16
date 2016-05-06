@@ -64,7 +64,7 @@ public class ManagerTest {
 
     @After
     public void tearDown() {
-        manager.getAllTransports().clear();
+        manager.getTransportsList().clear();
     }
 
     // --------------------------------------- updateTransporters ------------------------------------------------------
@@ -102,7 +102,7 @@ public class ManagerTest {
         assertTrue("transporters list is not empty", manager.getTransporterClients().isEmpty());
         assertFalse("must return false", result);
     }
-    // ----------------------------------------- pingTransporters ------------------------------------------------------
+    // ----------------------------------------- findTransporters ------------------------------------------------------
 
     @Test
     public void successPingAllTransporters(@Mocked UDDINaming uddiNamingMock, @Mocked TransporterClient transporterClientMock)
@@ -114,7 +114,7 @@ public class ManagerTest {
         }};
         //manager.setUddiNaming(uddiNamingMock);
 
-        int result = manager.pingTransporters();
+        int result = manager.findTransporters();
 
         new Verifications() {{
             transporterClientMock.ping("0"); maxTimes = 1;
@@ -132,7 +132,7 @@ public class ManagerTest {
         }};
         //manager.setUddiNaming(uddiNamingMock);
 
-        int result = manager.pingTransporters();
+        int result = manager.findTransporters();
 
         new Verifications() {{
             uddiNamingMock.list(transporterQuery); maxTimes = 1;
@@ -151,7 +151,7 @@ public class ManagerTest {
         }};
         //manager.setUddiNaming(uddiNamingMock);
 
-        int result = manager.pingTransporters();
+        int result = manager.findTransporters();
 
         new Verifications() {{
             uddiNamingMock.list(transporterQuery); maxTimes = 2;
@@ -237,8 +237,8 @@ public class ManagerTest {
             transporterClientMock.requestJob(centroCity1, centroCity2, referencePrice); maxTimes = 2;
         }};
 
-        assertEquals("transporter offer not saved, different size", 1, manager.getAllTransports().size());
-        Transport transport = manager.getAllTransports().get(0);
+        assertEquals("transporter offer not saved, different size", 1, manager.getTransportsList().size());
+        Transport transport = manager.getTransportsList().get(0);
 
         assertEquals("state don't changed", transport.getState(), TransportStateView.BUDGETED);
         assertNotNull("transport id not set", transport.getId());
@@ -261,9 +261,9 @@ public class ManagerTest {
             manager.requestTransport(centroCity1, centroCity2, referencePrice);
         } catch (UnavailableTransportFault_Exception e) {
 
-            assertTrue("transporter offer not saved", manager.getAllTransports().size() == 1);
+            assertTrue("transporter offer not saved", manager.getTransportsList().size() == 1);
 
-            for (Transport t : manager.getAllTransports()) {
+            for (Transport t : manager.getTransportsList()) {
                 TransportStateView state = t.getState();
                 assertEquals("wrong state", state, TransportStateView.FAILED);
                 assertNotNull("transport id not set", t.getId());

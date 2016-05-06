@@ -29,7 +29,7 @@ public class BrokerPort implements BrokerPortType{
 	
 	@Override
 	public String ping(String name) {
-		int numResponses = manager.pingTransporters();
+		int numResponses = manager.findTransporters();
 
 		log.debug("ping: " + numResponses);
 		return numResponses + " transporters available";
@@ -74,7 +74,7 @@ public class BrokerPort implements BrokerPortType{
 
 	@Override
 	public List<TransportView> listTransports() {
-		ArrayList<Transport> transports = (ArrayList<Transport>) manager.getAllTransports();
+		ArrayList<Transport> transports = (ArrayList<Transport>) manager.getTransportsList();
 
 		log.debug("listTransports:");
 		return transportListToTransportViewList(transports);
