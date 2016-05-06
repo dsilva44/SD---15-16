@@ -15,7 +15,6 @@ import javax.xml.registry.JAXRException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Date;
 
 import static org.junit.Assert.*;
 
@@ -37,6 +36,7 @@ public class ManagerTest {
 
     //Members
     private Manager manager = Manager.getInstance();
+    private final String uddiURL = "http://localhost:9090";
     private final String  transporterQuery = "UpaTransporter%";
     private final String wsURL1 = "http://localhost:8081/transporter-ws/endpoint";
     private final String wsURL2 = "http://localhost:8082/transporter-ws/endpoint";
@@ -74,9 +74,9 @@ public class ManagerTest {
         new Expectations() {{
             uddiNamingMock.list(transporterQuery); result = endpointsList;
         }};
-        manager.setUddiNaming(uddiNamingMock);
+        //manager.setUddiNaming(uddiNamingMock);
 
-        boolean result = manager.updateTransportersList();
+        boolean result = manager.updateTransportersList(uddiURL);
 
         new Verifications() {{
             uddiNamingMock.list(transporterQuery); maxTimes = 1;
@@ -91,9 +91,9 @@ public class ManagerTest {
         new Expectations() {{
             uddiNamingMock.list(transporterQuery); result = emptyList;
         }};
-        manager.setUddiNaming(uddiNamingMock);
+        //manager.setUddiNaming(uddiNamingMock);
 
-        boolean result = manager.updateTransportersList();
+        boolean result = manager.updateTransportersList(uddiURL);
 
         new Verifications() {{
             uddiNamingMock.list(transporterQuery); maxTimes = 1;
@@ -112,7 +112,7 @@ public class ManagerTest {
             transporterClientMock.ping("0"); result = "Pong 0!";
             transporterClientMock.ping("1"); result = "Pong 1!";
         }};
-        manager.setUddiNaming(uddiNamingMock);
+        //manager.setUddiNaming(uddiNamingMock);
 
         int result = manager.pingTransporters();
 
@@ -130,7 +130,7 @@ public class ManagerTest {
         new Expectations() {{
             uddiNamingMock.list(transporterQuery); result = emptyList;
         }};
-        manager.setUddiNaming(uddiNamingMock);
+        //manager.setUddiNaming(uddiNamingMock);
 
         int result = manager.pingTransporters();
 
@@ -149,7 +149,7 @@ public class ManagerTest {
             transporterClientMock.ping("0"); result = "Pong 0!";
             transporterClientMock.ping("1"); result = new JAXRException();
         }};
-        manager.setUddiNaming(uddiNamingMock);
+        //manager.setUddiNaming(uddiNamingMock);
 
         int result = manager.pingTransporters();
 
@@ -181,9 +181,9 @@ public class ManagerTest {
 
     @Test
     public void getNextTransporterIdShouldReturnDifferentValues() {
-        String id1 = manager.getNextTransporterID();
-        String id2 = manager.getNextTransporterID();
-        String id3 = manager.getNextTransporterID();
+        String id1 = manager.nextTransporterID();
+        String id2 = manager.nextTransporterID();
+        String id3 = manager.nextTransporterID();
 
         assertNotEquals("ids are equals", id1, id2);
         assertNotEquals("ids are equals", id1, id3);
@@ -202,10 +202,9 @@ public class ManagerTest {
     @Test(expected = UnknownLocationFault_Exception.class)
     public void unknownDestination()
             throws  Exception {
-        String invalidOrigin = null;
         int price = 50;
 
-        manager.requestTransport(centroCity2, invalidOrigin, price);
+        manager.requestTransport(centroCity2, null, price);
     }
 
     @Test(expected = InvalidPriceFault_Exception.class)
@@ -464,7 +463,7 @@ public class ManagerTest {
         JobView jobView = new JobView(); jobView.setJobState(JobStateView.PROPOSED);
         manager.addTransport(t1);
         t1.setChosenOfferID("1");
-        manager.setUddiNaming(uddiNamingMock);
+        //manager.setUddiNaming(uddiNamingMock);
 
         new Expectations() {{
             transporterClientMock.jobStatus("1"); result = jobView;

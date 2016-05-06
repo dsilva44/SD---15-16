@@ -5,7 +5,6 @@ import java.util.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
-import pt.upa.broker.exception.BrokerUddiNamingException;
 import pt.upa.broker.ws.*;
 import pt.upa.transporter.ws.*;
 import pt.upa.transporter.ws.cli.TransporterClient;
@@ -18,7 +17,7 @@ public class Manager {
 	static private final Logger log = LogManager.getRootLogger();
     private static Manager manager = new Manager();
 
-    private UDDINaming uddiNaming;
+    //private UDDINaming uddiNaming;
     private String uddiURL;
     private String keyStorePath;
     private int transportID = 0;
@@ -30,6 +29,7 @@ public class Manager {
             "Vila Real", "Bragança","Setúbal", "Évora", "Portalegre", "Beja","Faro"));
 
 
+    //Singleton
     private Manager() {
         transporterClients = new ArrayList<>();
         allTransports = new ArrayList<>();
@@ -38,34 +38,25 @@ public class Manager {
     public void init(String uddiURL, String keyStorePath) {
         this.uddiURL = uddiURL;
         this.keyStorePath = keyStorePath;
-        try {
-            this.uddiNaming = new UDDINaming(uddiURL);
-        } catch (JAXRException e) {
-            throw new BrokerUddiNamingException("Cannot Create uddiNaming instance");
-        }
     }
 
+    //getters
     public String getKeyStorePath(){
         return keyStorePath;
     }
-
-
     public static Manager getInstance() { return manager; }
+    ArrayList<TransporterClient> getTransporterClients() { return transporterClients; }
 
-    String getNextTransporterID() {
+    String nextTransporterID() {
         String id = Integer.toString(transportID);
         transportID++;
         return id;
     }
 
-    ArrayList<TransporterClient> getTransporterClients() { return transporterClients; }
-
-    void setUddiNaming(UDDINaming uddiNaming) { this.uddiNaming = uddiNaming; }
-
-
-    boolean updateTransportersList() {
+    boolean updateTransportersList(String uddiURL) {
         try {
             String query = "UpaTransporter%";
+            UDDINaming uddiNaming = new UDDINaming(uddiURL);
             ArrayList<String> endpoints = (ArrayList<String>) uddiNaming.list(query);
             transporterClients.clear();
             for (String endpoint : endpoints) {
@@ -82,7 +73,7 @@ public class Manager {
     public int pingTransporters() {
         int count = 0;
         TransporterClient client;
-        if (updateTransportersList()) {
+        if (updateTransportersList(uddiURL)) {
             Iterator<TransporterClient> iterator = transporterClients.iterator();
             while(iterator.hasNext()) {
                 try {
@@ -183,7 +174,7 @@ public class Manager {
         pingTransporters();
 
         Transport transport = new Transport(
-                getNextTransporterID(), origin, destination, price, null, TransportStateView.REQUESTED);
+                nextTransporterID(), origin, destination, price, null, TransportStateView.REQUESTED);
 
         int count = 0;
         for (TransporterClient client : transporterClients) {
