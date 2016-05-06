@@ -9,10 +9,10 @@
             <handler-class>example.ws.handler.HeaderHandler</handler-class>
         </handler-->
         <handler>
-            <handler-class>pt.upa.broker.ws.handler.AuthenticationHandler</handler-class>
+            <handler-class>pt.upa.transporter.ws.handler.AuthenticationHandler</handler-class>
         </handler>
         <handler>
-            <handler-class>pt.upa.broker.ws.handler.LoggingHandler</handler-class>
+            <handler-class>pt.upa.transporter.ws.handler.LoggingHandler</handler-class>
         </handler>
     </handler-chain>
 </handler-chains>

@@ -1,6 +1,6 @@
-package pt.upa.broker.ws.handler;
+package pt.upa.transporter.ws.handler;
 
-import pt.upa.broker.domain.Manager;
+import pt.upa.transporter.domain.Manager;
 import pt.upa.ca.ws.cli.CAClient;
 import sun.misc.BASE64Encoder;
 
@@ -99,7 +99,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
             sh = se.addHeader();
 
 
-        String idString = "Broker" + idCounter++; //correct ?
+        String idString = "UpaBroker" + idCounter++; //correct ?
         String dateTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").format(new Date()); //FIXME: xml date format
 
         //add FRESHNESS header element and respective children
@@ -143,8 +143,8 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 
         //FIXME: CHANGE TO LOGS!!!
         //Print out the outbound SOAP message to System.out
-        message.writeTo(System.out);
-        System.out.println("");
+        //message.writeTo(System.out);
+        //System.out.println("");
     }
 
     public boolean handleInboundMessage(SOAPMessageContext smc) throws Exception{

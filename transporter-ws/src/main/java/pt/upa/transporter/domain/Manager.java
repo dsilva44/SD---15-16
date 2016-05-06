@@ -207,6 +207,10 @@ public class Manager  {
         return null;
     }
 
+    public String getKeyStorePath(){
+        return keyStorePath;
+    }
+
     private boolean containsCaseInsensitive(String s, List<String> l) {
         for (String string : l){
             if (string.equalsIgnoreCase(s)){
