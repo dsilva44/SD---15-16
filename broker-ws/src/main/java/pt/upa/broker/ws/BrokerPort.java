@@ -21,7 +21,6 @@ import javax.jws.WebService;
 		targetNamespace = "http://ws.broker.upa.pt/",
 		serviceName = "BrokerService"
 )
-@HandlerChain(file = "/handler-chain.xml")
 public class BrokerPort implements BrokerPortType{
 	static private final Logger log = LogManager.getRootLogger();
 
@@ -60,6 +59,8 @@ public class BrokerPort implements BrokerPortType{
 		if (t == null) manager.throwUnknownTransportFault(id);
 
 		log.debug("viewTransport return:" );
+
+		assert t != null;
 		return t.toTransportView();
 	}
 	

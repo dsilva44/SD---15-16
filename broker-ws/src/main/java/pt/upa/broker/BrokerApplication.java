@@ -2,7 +2,6 @@ package pt.upa.broker;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import pt.upa.broker.domain.Manager;
 import pt.upa.broker.ws.EndpointManager;
 import java.io.IOException;
 
@@ -13,20 +12,19 @@ public class BrokerApplication {
 		// Check arguments
 		if (args.length < 4) {
 			log.error("Argument(s) missing!");
-			log.error("Usage: java "+ BrokerApplication.class.getName() +" + uddiURL wsName wsURL keyStorePath");
+			log.error("Usage: java "+ BrokerApplication.class.getName() +" + uddiURL wsName wsURL wsType");
 			return;
 		}
 
 		String uddiURL = args[0];
 		String wsName = args[1];
 		String wsUrl = args[2];
-		String keyStorePath = args[3];
+		String wsType = args[3];
 
-		EndpointManager endpointManager = new EndpointManager(uddiURL, wsUrl);
+		EndpointManager endpointManager = new EndpointManager(uddiURL, wsName, wsUrl);
 
+		if (Integer.parseInt(wsType) == 1) endpointManager.registerUddi();
 		endpointManager.start();
-
-		Manager.getInstance().init(uddiURL, keyStorePath);
 
 		if (endpointManager.awaitConnections()) {
 			try {

@@ -9,6 +9,9 @@ import pt.upa.broker.domain.Manager;
 
 import javax.xml.registry.JAXRException;
 import javax.xml.ws.Endpoint;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.regex.Pattern;
 
 public class EndpointManager {
@@ -18,15 +21,16 @@ public class EndpointManager {
     private UDDINaming uddiNaming = null;
 
     private String uddiURL;
-    private String wsName = "UpaBroker";
+    private String wsName;
     private String wsURL;
 
-    private boolean isStarted = false;
+    private boolean isPublish = false;
     private boolean isAwaitConnection = false;
+    private boolean isRegister = false;
 
 
 
-    public EndpointManager(String uddiURL, String wsURL) {
+    public EndpointManager(String uddiURL, String wsName ,String wsURL) {
         String urlRegex = "^(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]";
 
         boolean validUddiURL = Pattern.matches(urlRegex, uddiURL);
@@ -36,15 +40,21 @@ public class EndpointManager {
         else if (!validWsURL) throw new IllegalArgumentException(wsURL + " must be the form - http://host:port format!");
 
         this.uddiURL = uddiURL;
+        this.wsName = wsName;
         this.wsURL = wsURL;
 
         endpoint = Endpoint.create(new BrokerPort());
+
         try {
             uddiNaming = new UDDINaming(uddiURL);
         } catch (JAXRException e) {
             throw new BrokerUddiNamingException("Cannot Create uddiNaming instance");
         }
+
+        Manager.getInstance().init(this);
     }
+
+
 
     public void start() {
         try {
@@ -55,7 +65,10 @@ public class EndpointManager {
             log.error("Error publish endpoint: " + wsURL, e);
             throw new BrokerEndpointException("Error publish endpoint: " + wsURL);
         }
+        isPublish = true;
+    }
 
+    public void registerUddi() {
         try {
             // publish to UDDI
             log.info("Publishing '"+ wsName + "' to UDDI at "+ uddiURL);
@@ -64,17 +77,28 @@ public class EndpointManager {
             log.error("Error on uddiNaming rebind", e);
             throw new BrokerUddiNamingException("Error on rebind");
         }
-        isStarted = true;
+        isRegister = true;
+    }
+
+    public Collection<String> findInUddi(String query) {
+        Collection<String> result = null;
+
+        try {
+            result = uddiNaming.list(query);
+        } catch (JAXRException e) {
+            log.error("something goes wrong whit uddiNaming", e);
+        }
+        return result;
     }
 
     public boolean awaitConnections() {
-        return isAwaitConnection = isStarted;
+        return isAwaitConnection = isPublish;
     }
 
     public void stop() {
-        if(isAwaitConnection || isStarted) {
+        if(isAwaitConnection || isPublish) {
             try {
-                if (endpoint != null) {
+                if (endpoint.isPublished()) {
                     // stop endpoint
                     endpoint.stop();
                     log.info("Stopped " + wsURL);
@@ -84,7 +108,7 @@ public class EndpointManager {
                 throw new BrokerEndpointException("Fail to stop");
             }
             try {
-                if (uddiNaming != null) {
+                if (isRegister) {
                     // delete from UDDI
                     uddiNaming.unbind(wsName);
                     log.info("Deleted '"+ wsName +"' from UDDI");
@@ -94,15 +118,16 @@ public class EndpointManager {
                 throw new BrokerUddiNamingException("Fail to delete bind");
             }
         }
+        isPublish = false;
+        isRegister = false;
         isAwaitConnection = false;
-        isStarted = false;
     }
 
     void setEndpoint(Endpoint endpoint) { this.endpoint = endpoint; }
 
     void setUddiNaming(UDDINaming uddiNaming) { this.uddiNaming = uddiNaming; }
 
-    String getUddiURL() { return uddiURL; }
+    public String getUddiURL() { return uddiURL; }
 
     Endpoint getEndpoint() { return endpoint; }
 
@@ -110,11 +135,15 @@ public class EndpointManager {
 
     String getWsURL() { return wsURL; }
 
-    boolean isStarted() { return isStarted; }
+    boolean isPublish() { return isPublish; }
 
     boolean isAwaitConnection() { return isAwaitConnection; }
 
-    void setStarted(boolean started) { isStarted = started; }
+    void setPublished(boolean published) { isPublish = published; }
+
+    void setRegister(boolean register) {
+        isRegister = register;
+    }
 
     void setAwaitConnection(boolean awaitConnection) { isAwaitConnection = awaitConnection; }
 }

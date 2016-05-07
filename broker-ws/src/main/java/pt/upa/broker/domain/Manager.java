@@ -4,12 +4,9 @@ import java.util.*;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
 import pt.upa.broker.ws.*;
 import pt.upa.transporter.ws.*;
 import pt.upa.transporter.ws.cli.TransporterClient;
-
-import javax.xml.registry.JAXRException;
 
 import pt.upa.broker.exception.BrokerBadJobException;
 
@@ -17,9 +14,7 @@ public class Manager {
 	static private final Logger log = LogManager.getRootLogger();
     private static Manager manager = new Manager();
 
-    //private UDDINaming uddiNaming;
-    private String uddiURL;
-    private String keyStorePath;
+    private EndpointManager epm;
     private int transportID = 0;
     private ArrayList<TransporterClient> transporterClients;
     private ArrayList<Transport> transportsList;
@@ -36,15 +31,11 @@ public class Manager {
     }
 
     //Singleton init
-    public void init(String uddiURL, String keyStorePath) {
-        this.uddiURL = uddiURL;
-        this.keyStorePath = keyStorePath;
+    public void init(EndpointManager endpointManager) {
+        this.epm = endpointManager;
     }
 
     //getters
-    public String getKeyStorePath(){
-        return keyStorePath;
-    }
     public static Manager getInstance() { return manager; }
     ArrayList<TransporterClient> getTransporterClients() { return transporterClients; }
     public List<Transport> getTransportsList() {
@@ -68,26 +59,23 @@ public class Manager {
         transportsList.add(t);
     }
 
-    boolean updateTransportersList(String uddiURL) {
-        try {
-            String query = "UpaTransporter%";
-            UDDINaming uddiNaming = new UDDINaming(uddiURL);
-            ArrayList<String> transporterURLS = (ArrayList<String>) uddiNaming.list(query);
-            transporterClients.clear();
-            for (String url : transporterURLS) {
-                TransporterClient client = new TransporterClient(url);
-                transporterClients.add(client);
-            }
-        } catch (JAXRException e) {
-            log.error("something goes wrong whit uddiNaming", e);
+    boolean updateTransportersList() {
+        String query = "UpaTransporter%";
+        ArrayList<String> transporterURLS = (ArrayList<String>) epm.findInUddi(query);
+
+        transporterClients.clear();
+        for (String url : transporterURLS) {
+            TransporterClient client = new TransporterClient(url);
+            transporterClients.add(client);
         }
+
         return !transporterClients.isEmpty();
     }
 
     public int findTransporters() {
         int count = 0;
         TransporterClient client;
-        if (updateTransportersList(uddiURL)) {
+        if (updateTransportersList()) {
             Iterator<TransporterClient> iterator = transporterClients.iterator();
             while(iterator.hasNext()) {
                 try {
@@ -105,9 +93,10 @@ public class Manager {
     
     public  Transport updateTransportState(String id) throws UnknownTransportFault_Exception {
     	Transport t = getTransportById(id);
-        if (t == null) { throwUnknownTransportFault(id); return null; }
+        if (t == null) throwUnknownTransportFault(id);
 
-        TransporterClient client = new TransporterClient(uddiURL, t.getTransporterCompany());
+        assert t != null;
+        TransporterClient client = new TransporterClient(epm.getUddiURL(), t.getTransporterCompany());
         JobView jobView = client.jobStatus(t.getChosenOfferID());
         t.setState(jobView);
 
@@ -143,7 +132,7 @@ public class Manager {
 
         if (!findT) {
             t.setState(TransportStateView.FAILED);
-            throwUnavailableTransportFault(origin, destination); return null;
+            throwUnavailableTransportFault(origin, destination);
         }
         return t;
     }
@@ -197,7 +186,7 @@ public class Manager {
     private void rejectOffersAcceptBest(Transport t , JobView bestOffer) {
         for (JobView offer : t.getOffers()) {
             String companyName = offer.getCompanyName();
-            TransporterClient client = new TransporterClient(uddiURL, companyName);
+            TransporterClient client = new TransporterClient(epm.getUddiURL(), companyName);
 
             try {
                 if (bestOffer != null && offer.getJobIdentifier().equals(bestOffer.getJobIdentifier()) ) {

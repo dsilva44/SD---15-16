@@ -29,11 +29,8 @@
         <ws.host>localhost</ws.host>
         <ws.port>909${ws.i}</ws.port>
         <ws.url>http://${ws.host}:${ws.port}/broker-ws/endpoint</ws.url>
-        <ws.name>UpaTransporter${ws.i}</ws.name>
+        <ws.name>UpaBroker</ws.name>
         <uddi.url>http://localhost:9090</uddi.url>
-
-        <resources.directory>src/main/resources</resources.directory>
-        <resources.keyStore>${resources.directory}/${ws.name}.jks</resources.keyStore>
     </properties>
 
     <dependencies>
@@ -148,7 +145,7 @@
                         <argument>${uddi.url}</argument>
                         <argument>${ws.name}</argument>
                         <argument>${ws.url}</argument>
-                        <argument>${resources.keyStore}</argument>
+                        <argument>${ws.i}</argument>
                     </arguments>
                 </configuration>
             </plugin>
