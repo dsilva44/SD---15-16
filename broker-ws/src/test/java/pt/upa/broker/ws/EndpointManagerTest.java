@@ -52,9 +52,9 @@ public class EndpointManagerTest {
     // tests
     @Test
     public void successInitialization() {
-        EndpointManager endpointManager = new EndpointManager(validUddiURL, wsName, validWsURL);
+        EndpointManager endpointManager = new EndpointManager(validWsURL, validWsURL,wsName, validUddiURL);
         assertEquals("uddiURL not properly set", validUddiURL, endpointManager.getUddiURL());
-        assertEquals("wsURL not properly set", validWsURL, endpointManager.getWsURL());
+        assertEquals("wsURL not properly set", validWsURL, endpointManager.getWsURL1());
 
         assertNotNull("endpoint not initialize correctly", endpointManager.getEndpoint());
         assertNotNull("uddiNaming not initialize correctly", endpointManager.getUddiURL());
@@ -63,24 +63,24 @@ public class EndpointManagerTest {
     @Test(expected = IllegalArgumentException.class)
     public void invalidUddiURL() {
         String invalidUddiURL = "POTATO";
-        new EndpointManager(invalidUddiURL, wsName,validWsURL);
+        new EndpointManager(validWsURL, validWsURL,wsName, invalidUddiURL);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void invalidWsURL() {
         String invalidWsURL = "POTATO";
-        new EndpointManager(validUddiURL, wsName, invalidWsURL);
+        new EndpointManager(invalidWsURL, validWsURL,wsName, validUddiURL);
     }
 
     @Test
     public void successStart(@Mocked Endpoint endpointMock) {
-        EndpointManager endpointManager = new EndpointManager(validUddiURL, wsName, validWsURL);
+        EndpointManager endpointManager = new EndpointManager(validWsURL, validWsURL,wsName, validUddiURL);
 
         UDDINaming  uddiNamingMock = new MockUp<UDDINaming>() {
             @Mock
             void rebind(String wsName, String wsURL) {
                 assertEquals("wsName not pass correctly", wsName, endpointManager.getWsName());
-                assertEquals("wsURL not pass correctly", wsURL, endpointManager.getWsURL());
+                assertEquals("wsURL not pass correctly", wsURL, endpointManager.getWsURL1());
             }
         }.getMockInstance();
 
@@ -95,7 +95,7 @@ public class EndpointManagerTest {
     @Test(expected = BrokerEndpointException.class)
     public void startShouldTrowExceptionWhenErrorOccurredOnEndpoint (
             @Mocked Endpoint endpointMock, @Mocked UDDINaming uddiNamingMock) throws JAXRException {
-        EndpointManager endpointManager = new EndpointManager(validUddiURL, wsName, validWsURL);
+        EndpointManager endpointManager = new EndpointManager(validWsURL, validWsURL,wsName, validUddiURL);
 
         new Expectations() {{
             endpointMock.publish(validWsURL); result = new Exception();
@@ -112,7 +112,7 @@ public class EndpointManagerTest {
 
     @Test
     public void successAwaitConnection() {
-        EndpointManager endpointManager = new EndpointManager(validUddiURL, wsName, validWsURL);
+        EndpointManager endpointManager = new EndpointManager(validWsURL, validWsURL,wsName, validUddiURL);
 
         endpointManager.setPublished(true);
 
@@ -124,7 +124,7 @@ public class EndpointManagerTest {
 
     @Test
     public void shouldNotAwaitConnectionsWhenWsIsNotStarted() {
-        EndpointManager endpointManager = new EndpointManager(validUddiURL, wsName, validWsURL);
+        EndpointManager endpointManager = new EndpointManager(validWsURL, validWsURL,wsName, validUddiURL);
 
         endpointManager.setPublished(false);
 
@@ -136,7 +136,7 @@ public class EndpointManagerTest {
 
     @Test
     public void successStopWhenWsIsStarted(@Mocked Endpoint endpointMock) {
-        EndpointManager endpointManager = new EndpointManager(validUddiURL, wsName, validWsURL);
+        EndpointManager endpointManager = new EndpointManager(validWsURL, validWsURL,wsName, validUddiURL);
 
 
         UDDINaming  uddiNamingMock = new MockUp<UDDINaming>() {
@@ -158,7 +158,7 @@ public class EndpointManagerTest {
 
     @Test
     public void successStopWhenWsIsAwaiting(@Mocked Endpoint endpointMock) throws Exception {
-        EndpointManager endpointManager = new EndpointManager(validUddiURL, wsName, validWsURL);
+        EndpointManager endpointManager = new EndpointManager(validWsURL, validWsURL,wsName, validUddiURL);
 
         UDDINaming  uddiNamingMock = new MockUp<UDDINaming>() {
             @Mock
@@ -179,7 +179,7 @@ public class EndpointManagerTest {
 
     @Test
     public void successStopWhenEndpointAndUddiNamingIsNull() throws Exception {
-        EndpointManager endpointManager = new EndpointManager(validUddiURL, wsName, validWsURL);
+        EndpointManager endpointManager = new EndpointManager(validWsURL, validWsURL,wsName, validUddiURL);
 
         endpointManager.setEndpoint(null);
         endpointManager.setUddiNaming(null);
@@ -193,7 +193,7 @@ public class EndpointManagerTest {
     @Test
     public void successStopWhenWsIsNotStartedAndAwaitingConnections(
             @Mocked Endpoint endpointMock, @Mocked UDDINaming uddiNamingMock) throws Exception {
-        EndpointManager endpointManager = new EndpointManager(validUddiURL, wsName, validWsURL);
+        EndpointManager endpointManager = new EndpointManager(validWsURL, validWsURL,wsName, validUddiURL);
 
         endpointManager.setEndpoint(endpointMock);
         endpointManager.setUddiNaming(uddiNamingMock);
@@ -209,7 +209,7 @@ public class EndpointManagerTest {
     @Test (expected = BrokerEndpointException.class)
     public void stopShouldTrowExceptionWhenErrorOccurredOnEndpoint (
             @Mocked Endpoint endpointMock, @Mocked UDDINaming uddiNamingMock) throws JAXRException {
-        EndpointManager endpointManager = new EndpointManager(validUddiURL, wsName, validWsURL);
+        EndpointManager endpointManager = new EndpointManager(validWsURL, validWsURL,wsName, validUddiURL);
 
         new Expectations() {{
             endpointMock.stop(); result = new Exception();
@@ -227,7 +227,7 @@ public class EndpointManagerTest {
     @Test (expected = BrokerUddiNamingException.class)
     public void stopShouldTrowExceptionWhenErrorOccurredOnUddiNaming (
             @Mocked Endpoint endpointMock, @Mocked UDDINaming uddiNamingMock) throws JAXRException {
-        EndpointManager endpointManager = new EndpointManager(validUddiURL, wsName, validWsURL);
+        EndpointManager endpointManager = new EndpointManager(validWsURL, validWsURL,wsName, validUddiURL);
         endpointManager.setRegister(true);
 
         new Expectations() {{

@@ -16,7 +16,7 @@ import javax.jws.WebService;
 
 @WebService(
 		endpointInterface = "pt.upa.broker.ws.BrokerPortType",
-		wsdlLocation = "broker.1_0.wsdl",
+		wsdlLocation = "broker.2_0.wsdl",
 		portName = "BrokerPort",
 		targetNamespace = "http://ws.broker.upa.pt/",
 		serviceName = "BrokerService"
@@ -51,6 +51,12 @@ public class BrokerPort implements BrokerPortType{
 		}
 
 		return transport.getId();
+	}
+
+	@Override
+	public String updateTransport(TransportView transport) {
+		//TODO
+		return null;
 	}
 
 	@Override

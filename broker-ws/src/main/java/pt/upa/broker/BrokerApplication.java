@@ -10,25 +10,31 @@ public class BrokerApplication {
 
 	public static void main(String[] args) throws Exception {
 		// Check arguments
-		if (args.length < 4) {
+		if (args.length < 5) {
 			log.error("Argument(s) missing!");
-			log.error("Usage: java "+ BrokerApplication.class.getName() +" + uddiURL wsName wsURL wsType");
+			log.error("Usage: java "+ BrokerApplication.class.getName() +" + wsPrimary wsBackup wsType wsName uddiURL");
 			return;
 		}
 
-		String uddiURL = args[0];
-		String wsName = args[1];
-		String wsUrl = args[2];
-		String wsType = args[3];
+		String wsPrimary = args[0];
+		String wsBackup = args[1];
+		String wsType = args[2];
+		String wsName = args[3];
+		String uddiURL = args[4];
 
-		EndpointManager endpointManager = new EndpointManager(uddiURL, wsName, wsUrl);
+		EndpointManager endpointManager;
+		if (Integer.parseInt(wsType) == 1) {
+			endpointManager = new EndpointManager(wsPrimary, wsBackup,  wsName, uddiURL);
+			endpointManager.registerUddi();
+		} else
+			endpointManager = new EndpointManager(wsBackup, wsPrimary,  wsName, uddiURL);
 
-		if (Integer.parseInt(wsType) == 1) endpointManager.registerUddi();
 		endpointManager.start();
 
 		if (endpointManager.awaitConnections()) {
 			try {
 				System.out.println("Press enter to shutdown");
+
 				System.in.read();
 			} catch (IOException e) {
 				log.error("Error:: ", e);

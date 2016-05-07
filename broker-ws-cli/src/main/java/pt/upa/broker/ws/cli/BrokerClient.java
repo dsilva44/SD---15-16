@@ -76,6 +76,11 @@ public class BrokerClient implements BrokerPortType {
     }
 
     @Override
+    public String updateTransport(TransportView transport) {
+        return port.updateTransport(transport);
+    }
+
+    @Override
     public TransportView viewTransport(String id) throws UnknownTransportFault_Exception {
         return port.viewTransport(id);
     }

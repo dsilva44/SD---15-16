@@ -9,9 +9,7 @@ import pt.upa.broker.domain.Manager;
 
 import javax.xml.registry.JAXRException;
 import javax.xml.ws.Endpoint;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.regex.Pattern;
 
 public class EndpointManager {
@@ -22,7 +20,8 @@ public class EndpointManager {
 
     private String uddiURL;
     private String wsName;
-    private String wsURL;
+    private String wsURL1;
+    private String wsURL2;
 
     private boolean isPublish = false;
     private boolean isAwaitConnection = false;
@@ -30,18 +29,20 @@ public class EndpointManager {
 
 
 
-    public EndpointManager(String uddiURL, String wsName ,String wsURL) {
+    public EndpointManager(String wsURL1, String wsURL2, String wsName, String uddiURL) {
         String urlRegex = "^(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]";
 
         boolean validUddiURL = Pattern.matches(urlRegex, uddiURL);
-        boolean validWsURL = Pattern.matches(urlRegex, wsURL);
+        boolean validWsURL1 = Pattern.matches(urlRegex, wsURL1);
+        boolean validWsURL2 = Pattern.matches(urlRegex, wsURL2);
 
-        if (!validUddiURL) throw new IllegalArgumentException(uddiURL + " must be the form - http://host:port format!");
-        else if (!validWsURL) throw new IllegalArgumentException(wsURL + " must be the form - http://host:port format!");
+        if(!validWsURL1 || !validWsURL2 || !validUddiURL)
+            throw new IllegalArgumentException("Must be the form - http://host:port format!");
 
-        this.uddiURL = uddiURL;
+        this.wsURL1 = wsURL1;
+        this.wsURL2 = wsURL2;
         this.wsName = wsName;
-        this.wsURL = wsURL;
+        this.uddiURL = uddiURL;
 
         endpoint = Endpoint.create(new BrokerPort());
 
@@ -59,11 +60,11 @@ public class EndpointManager {
     public void start() {
         try {
             // publish endpoint
-            log.info("Starting: " + wsURL);
-            endpoint.publish(wsURL);
+            log.info("Starting: " + wsURL1);
+            endpoint.publish(wsURL1);
         } catch (Exception e) {
-            log.error("Error publish endpoint: " + wsURL, e);
-            throw new BrokerEndpointException("Error publish endpoint: " + wsURL);
+            log.error("Error publish endpoint: " + wsURL1, e);
+            throw new BrokerEndpointException("Error publish endpoint: " + wsURL1);
         }
         isPublish = true;
     }
@@ -72,7 +73,7 @@ public class EndpointManager {
         try {
             // publish to UDDI
             log.info("Publishing '"+ wsName + "' to UDDI at "+ uddiURL);
-            uddiNaming.rebind(wsName, wsURL);
+            uddiNaming.rebind(wsName, wsURL1);
         } catch (Exception e) {
             log.error("Error on uddiNaming rebind", e);
             throw new BrokerUddiNamingException("Error on rebind");
@@ -80,7 +81,7 @@ public class EndpointManager {
         isRegister = true;
     }
 
-    public Collection<String> findInUddi(String query) {
+    public Collection<String> uddiNamingList(String query) {
         Collection<String> result = null;
 
         try {
@@ -101,7 +102,7 @@ public class EndpointManager {
                 if (endpoint.isPublished()) {
                     // stop endpoint
                     endpoint.stop();
-                    log.info("Stopped " + wsURL);
+                    log.info("Stopped " + wsURL1);
                 }
             } catch (Exception e) {
                 log.error("Caught exception when stopping", e);
@@ -133,7 +134,8 @@ public class EndpointManager {
 
     String getWsName() { return wsName; }
 
-    String getWsURL() { return wsURL; }
+    String getWsURL1() { return wsURL1; }
+    public String getWsURL2() { return wsURL2; }
 
     boolean isPublish() { return isPublish; }
 
