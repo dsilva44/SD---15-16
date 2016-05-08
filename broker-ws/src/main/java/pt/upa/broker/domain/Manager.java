@@ -42,6 +42,8 @@ public class Manager {
         return transportsList;
     }
 
+    public EndpointManager getEndPointManager() {return epm;}
+
     Transport getTransportById(String id) {
         for (Transport t : transportsList)
             if (t.getId().equals(id))
@@ -159,6 +161,10 @@ public class Manager {
         transporterClients.clear();
     }
 
+    public void updateTransport(TransportView t) {
+
+    }
+
     //-------------------------------------------Aux methods------------------------------------------------------------
     private boolean containsCaseInsensitive(String s, List<String> l) {
         for (String string : l){
@@ -221,7 +227,7 @@ public class Manager {
         throw new InvalidPriceFault_Exception(price + " is not a valid price", faultInfo);
     }
 
-    private void throwUnavailableTransportFault(String origin, String destination) throws UnavailableTransportFault_Exception {
+    public void throwUnavailableTransportFault(String origin, String destination) throws UnavailableTransportFault_Exception {
         UnavailableTransportFault faultInfo = new UnavailableTransportFault();
         faultInfo.setOrigin(origin);
         faultInfo.setDestination(destination);

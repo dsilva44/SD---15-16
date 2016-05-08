@@ -26,7 +26,7 @@
 
             <xs:complexType name="transportView">
                 <xs:sequence>
-                    <xs:element name="id" type="xs:string" minOccurs="1" />
+                    <xs:element name="id" type="xs:string" minOccurs="0" />
                     <xs:element name="origin" type="xs:string" minOccurs="0" />
                     <xs:element name="destination" type="xs:string" minOccurs="0" />
                     <xs:element name="price" type="xs:int" minOccurs="0" />
@@ -64,14 +64,14 @@
 
             <xs:complexType name="updateTransport">
                 <xs:sequence>
-                    <xs:element name="transport" type="tns:transportView" minOccurs="1" />
+                    <xs:element name="transport" type="xs:string"/>
                 </xs:sequence>
             </xs:complexType>
             <xs:element name="updateTransport" type="tns:updateTransport" />
 
             <xs:complexType name="updateTransportResponse">
                 <xs:sequence>
-                    <xs:element name="acknowledge" type="xs:string" minOccurs="1" />
+                    <xs:element name="acknowledge" type="xs:string" minOccurs="0" />
                 </xs:sequence>
             </xs:complexType>
             <xs:element name="updateTransportResponse" type="tns:updateTransportResponse" />
@@ -245,6 +245,8 @@
                    message="tns:updateTransport" />
             <output wsam:Action="http://ws.broker.upa.pt/BrokerPort/updateTransport"
                     message="tns:updateTransportResponse" />
+            <fault message="tns:UnknownTransportFault" name="UnknownTransportFault"
+                   wsam:Action="http://ws.broker.upa.pt/BrokerPort/viewTransport/Fault/UnknownTransportFault" />
         </operation>
 
         <operation name="requestTransport">
@@ -342,6 +344,9 @@
             <output>
                 <soap:body use="literal" />
             </output>
+            <fault name="UnknownTransportFault">
+                <soap:fault name="UnknownTransportFault" use="literal" />
+            </fault>
         </operation>
 
         <operation name="viewTransport">

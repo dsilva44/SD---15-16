@@ -2,7 +2,9 @@ package pt.upa.broker.ws;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import com.google.gson.Gson;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import pt.upa.broker.domain.Manager;
@@ -10,8 +12,10 @@ import pt.upa.broker.domain.Transport;
 import pt.upa.transporter.ws.BadLocationFault_Exception;
 import pt.upa.transporter.ws.BadPriceFault_Exception;
 
-import javax.jws.HandlerChain;
 import javax.jws.WebService;
+import javax.xml.ws.BindingProvider;
+
+import static javax.xml.ws.BindingProvider.ENDPOINT_ADDRESS_PROPERTY;
 
 
 @WebService(
@@ -43,6 +47,12 @@ public class BrokerPort implements BrokerPortType{
 		try {
 			transport = manager.requestTransport(origin, destination, price);
 			manager.decideBestOffer(transport);
+
+			if (updateBackup(transport) == null) {
+				log.error("backup failed!!!");
+				manager.throwUnavailableTransportFault(origin, destination);
+			}
+
 			log.debug("requestTransport: " + transport.getId() );
 		} catch (BadLocationFault_Exception e) {
 			manager.throwUnknownLocationFault(e.getMessage()); return null;
@@ -54,9 +64,12 @@ public class BrokerPort implements BrokerPortType{
 	}
 
 	@Override
-	public String updateTransport(TransportView transport) {
-		//TODO
-		return null;
+	public String updateTransport(String tSerialized) throws UnknownTransportFault_Exception  {
+
+		log.debug("updateTransport:" );
+		Transport transport = new Gson().fromJson( tSerialized, Transport.class );
+
+		return "OK";
 	}
 
 	@Override
@@ -97,6 +110,35 @@ public class BrokerPort implements BrokerPortType{
 
 		log.debug("listTransports:");
 		return views;
+	}
+
+	private String updateBackup(Transport transport) {
+		EndpointManager epm = Manager.getInstance().getEndPointManager();
+		BrokerPortType brokerBackup = createStub(epm.getWsURL2());
+
+		String tSerialized = new Gson().toJson(transport);
+
+		try {
+			return brokerBackup.updateTransport(tSerialized);
+		}
+		catch (UnknownTransportFault_Exception e) {
+			log.error("Transport does not exist", e);
+			return null;
+		}
+	}
+
+	/** Stub creation and configuration */
+	private BrokerPortType createStub(String wsURL) {
+		log.info("Creating stub ...");
+		BrokerService service = new BrokerService();
+		BrokerPortType port = service.getBrokerPort();
+
+		log.info("Setting endpoint address ...");
+		BindingProvider bindingProvider = (BindingProvider) port;
+		Map<String, Object> requestContext = bindingProvider.getRequestContext();
+		requestContext.put(ENDPOINT_ADDRESS_PROPERTY, wsURL);
+
+		return port;
 	}
 	
 }
