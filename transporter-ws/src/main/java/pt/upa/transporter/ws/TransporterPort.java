@@ -1,8 +1,12 @@
 package pt.upa.transporter.ws;
 
+import javax.annotation.Resource;
 import javax.jws.HandlerChain;
 import javax.jws.WebService;
+import javax.xml.ws.WebServiceContext;
+import javax.xml.ws.handler.MessageContext;
 
+import example.ws.handler.AuthenticationHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import pt.upa.transporter.domain.Job;
@@ -20,8 +24,10 @@ import java.util.List;
 @HandlerChain(file = "/transporter_handler-chain.xml")
 public class TransporterPort implements TransporterPortType {
     static private final Logger log = LogManager.getRootLogger();
-	
-	private Manager manager = Manager.getInstance();
+    private Manager manager = Manager.getInstance();
+
+    @Resource
+    private WebServiceContext wsContext;
 
     @Override
     public String ping(String name) {
@@ -33,6 +39,7 @@ public class TransporterPort implements TransporterPortType {
     public JobView requestJob(String origin, String destination, int price)
             throws BadLocationFault_Exception, BadPriceFault_Exception {
 
+        setupMessageContext();
         Job offerJob = manager.decideResponse(origin, destination, price);
 
         log.debug("requestJob:");
@@ -43,13 +50,19 @@ public class TransporterPort implements TransporterPortType {
 
     @Override
     public JobView decideJob(String id, boolean accept) throws BadJobFault_Exception {
+
+        setupMessageContext();
         Job job = manager.confirmationJobs(id, accept);
+
         return job.toJobView();
     }
 
     @Override
     public JobView jobStatus(String id) {
-    	Job job = manager.getJobById(id);
+
+        setupMessageContext();
+        Job job = manager.getJobById(id);
+
 
     	if (job==null) {
             log.debug("jobStatus:");
@@ -63,15 +76,20 @@ public class TransporterPort implements TransporterPortType {
 
     @Override
     public List<JobView> listJobs() {
+
+        setupMessageContext();
+
         ArrayList<Job> jobs = manager.getJobs();
 
         log.debug("listJobs:");
+
         return jobListToJobViewList(jobs);
     }
 
     @Override
     public void clearJobs(){
 
+        setupMessageContext();
         log.debug("clearJobs:");
         manager.setJobs(null);
     }
@@ -88,5 +106,15 @@ public class TransporterPort implements TransporterPortType {
 
         log.debug("jobListToJobViewList:");
         return newList;
+    }
+
+    private void setupMessageContext(){
+
+        String companyName = manager.getTransporterName();
+        String path = manager.getKeyStorePath();
+        MessageContext messageContext = wsContext.getMessageContext();
+        messageContext.put(AuthenticationHandler.INVOKER_PROPERTY, companyName);
+        messageContext.put(AuthenticationHandler.KSPATH_PROPERTY, path);
+        messageContext.put(AuthenticationHandler.PASSWORD_PROPERTY, "pass"+companyName);
     }
 }

@@ -144,7 +144,7 @@
                     <!-- to prevent deprecation warning: -->
                     <killAfter>-1</killAfter>
                     <mainClass>${mainclass}</mainClass>
-                    <arguments> keyStore.password
+                    <arguments>
                         <argument>${resources.keyStore}</argument>
                         <argument>${password}</argument>
                     </arguments>

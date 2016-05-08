@@ -6,6 +6,8 @@ import org.apache.logging.log4j.Logger;
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
 import pt.upa.transporter.exception.TransporterClientException;
 import pt.upa.transporter.ws.*;
+//import pt.upa.broker.domain.Manager;
+
 
 import javax.annotation.Resource;
 import javax.xml.ws.BindingProvider;
@@ -70,50 +72,52 @@ public class TransporterClient implements TransporterPortType {
 
 	/*-----------------------------------------------remote invocation methods----------------------------------------*/
 
-	@Resource
-	private WebServiceContext webServiceContext;
-	private final String server = "UpaBroker";
-
-	public void setWsContext(WebServiceContext wsContext) {
-		this.webServiceContext = wsContext;
-	}
 
 	@Override
 	public String ping(String name) {
-		MessageContext messageContext = webServiceContext.getMessageContext();
-		messageContext.put(AuthenticationHandler.SERVER, server);
-
 		return port.ping(name);
 	}
 
 	@Override
 	public JobView requestJob(String origin, String destination, int price)
 			throws BadLocationFault_Exception, BadPriceFault_Exception {
-
+		setupMessageContext();
 		return port.requestJob(origin, destination, price);
 	}
 
 	@Override
 	public JobView decideJob(String id, boolean accept) throws BadJobFault_Exception {
-
+		setupMessageContext();
 		return port.decideJob(id, accept);
 	}
 
 	@Override
 	public JobView jobStatus(String id) {
-
+		setupMessageContext();
 		return port.jobStatus(id);
 	}
 
 	@Override
 	public List<JobView> listJobs() {
-
+		setupMessageContext();
 		return port.listJobs();
 	}
 
 	@Override
 	public void clearJobs() {
-
+		setupMessageContext();
 		port.clearJobs();
 	}
+
+	private void setupMessageContext(){
+
+		BindingProvider bindingProvider = (BindingProvider) port;
+		Map<String, Object> requestContext = bindingProvider.getRequestContext();
+		requestContext.put(AuthenticationHandler.INVOKER_PROPERTY, "UpaBroker");
+		requestContext.put(AuthenticationHandler.KSPATH_PROPERTY, "src/main/resources/UpaBroker.jks");
+		requestContext.put(AuthenticationHandler.PASSWORD_PROPERTY, "pass"+"UpaBroker");
+
+		//requestContext.put(ENDPOINT_ADDRESS_PROPERTY, "http://localhost:8080/broker-ws/endpoint");
+	}
+
 }

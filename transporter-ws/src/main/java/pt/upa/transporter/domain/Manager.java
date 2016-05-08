@@ -86,6 +86,10 @@ public class Manager  {
         return jobs;
     }
 
+    public String getKeyStorePath(){ return keyStorePath;}
+
+    public String getTransporterName(){ return transporterName;}
+
     public Job decideResponse(String origin, String destination, int price)
             throws BadLocationFault_Exception, BadPriceFault_Exception {
 
