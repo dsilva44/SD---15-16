@@ -28,13 +28,20 @@ public class BrokerBackup extends Broker {
         if (tSerialized == null) {
             manager.clearTransports();
             manager.clearTransportersClients();
+            log.debug("Cleaning...");
         } else {
             Transport transport = new Gson().fromJson(tSerialized, Transport.class);
 
             Transport oldT = manager.getTransportById(transport.getId());
 
-            if (oldT == null) manager.addTransport(transport);
-            else manager.replaceTransport(oldT, transport);
+            if (oldT == null) {
+                manager.addTransport(transport);
+                log.debug("Create: "+transport.toString());
+            }
+            else {
+                manager.replaceTransport(oldT, transport);
+                log.debug("Update: "+transport.toString());
+            }
         }
     }
 
@@ -45,8 +52,9 @@ public class BrokerBackup extends Broker {
             public void run() {
                 try {
                     brokerPrimary.ping("BrokerBackup");
-                    log.debug("ping!!!");
+                    log.debug("--------------Is Alive----------------");
                 } catch (WebServiceException wse) {
+                    //Substitute primary
                     log.error("BrokerPrimary is down: "+wse.getMessage());
                     registerUddi();
                     this.cancel();

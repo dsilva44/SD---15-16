@@ -52,13 +52,23 @@ public abstract class Broker {
         return isRegister;
     }
 
+    public String uddiNamingLookup(String name) {
+        String result = null;
+        try {
+            result = uddiNaming.lookup(name);
+        } catch (JAXRException e) {
+            log.error("something goes wrong with uddiNaming", e);
+        }
+        return result;
+    }
+
     public Collection<String> uddiNamingList(String query) {
         Collection<String> result = null;
 
         try {
             result = uddiNaming.list(query);
         } catch (JAXRException e) {
-            log.error("something goes wrong whit uddiNaming", e);
+            log.error("something goes wrong with uddiNaming", e);
         }
         return result;
     }

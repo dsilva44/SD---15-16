@@ -28,9 +28,6 @@ public class BrokerPort implements BrokerPortType{
 	
 	@Override
 	public String ping(String name) {
-
-		log.debug("ping:");
-
 		return "pong "+name+"!!!";
 	}
 
@@ -44,10 +41,10 @@ public class BrokerPort implements BrokerPortType{
 			transport = manager.requestTransport(origin, destination, price);
 			manager.decideBestOffer(transport);
 
+			log.debug("Backup: "+transport.toString());
+
 			String tSerialized = new Gson().toJson(transport);
 			updateBackup(tSerialized);
-
-			log.debug("requestTransport: " + transport.getId() );
 		} catch (BadLocationFault_Exception e) {
 			manager.throwUnknownLocationFault(e.getMessage()); return null;
 		} catch (BadPriceFault_Exception e) {
@@ -59,8 +56,6 @@ public class BrokerPort implements BrokerPortType{
 
 	@Override
 	public String updateTransport(String tSerialized) {
-		log.debug("updateTransport:" );
-
 		manager.updateTransport(tSerialized);
 
 		return "OK";
@@ -70,8 +65,6 @@ public class BrokerPort implements BrokerPortType{
 	public TransportView viewTransport(String id) throws UnknownTransportFault_Exception {
 		Transport transport = manager.updateTransportState(id);
 		if (transport == null) manager.throwUnknownTransportFault(id);
-
-		log.debug("viewTransport return:" );
 
 		String tSerialized = new Gson().toJson(transport);
 		updateBackup(tSerialized);
@@ -83,8 +76,6 @@ public class BrokerPort implements BrokerPortType{
 	@Override
 	public List<TransportView> listTransports() {
 		ArrayList<Transport> transports = (ArrayList<Transport>) manager.getTransportsList();
-
-		log.debug("listTransports:");
 		return transportListToTransportViewList(transports);
 	}
 
@@ -105,8 +96,6 @@ public class BrokerPort implements BrokerPortType{
                 views.add(transport.toTransportView());
             }
         }
-
-		log.debug("listTransports:");
 		return views;
 	}
 

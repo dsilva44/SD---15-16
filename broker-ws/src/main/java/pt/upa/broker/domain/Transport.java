@@ -133,4 +133,11 @@ public class Transport {
 		setChosenOfferID(jobView.getJobIdentifier());
 		setPrice(jobView.getJobPrice());
 	}
+
+	@Override
+	public String toString() {
+		String string = getId()+" "+getOrigin()+" "+getDestination()+" "+getPrice()+" "+getTransporterCompany()+" "+
+				getState()+" offer: "+offers.size()+"chosen id: "+getChosenOfferID();
+		return string;
+	}
 }
