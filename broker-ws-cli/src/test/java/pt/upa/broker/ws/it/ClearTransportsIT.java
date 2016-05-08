@@ -11,14 +11,15 @@ public class ClearTransportsIT extends AbstractIT {
     /*----------------------------------------------T_27-Tests--------------------------------------------------------*/
     @Test
     public void clearTransportsRequestedNotEmpty() throws Exception{
-
-       CLIENT.requestTransport(CENTER_1, CENTER_2, PRICE_UPPER_LIMIT);
+        CLIENT.requestTransport(CENTER_1, CENTER_2, PRICE_UPPER_LIMIT);
 
         assertFalse(CLIENT.listTransports().isEmpty());
+        assertFalse(CLIENT_BACKUP.listTransports().isEmpty());
 
         CLIENT.clearTransports();
 
         assertTrue(CLIENT.listTransports().isEmpty());
+        assertTrue(CLIENT_BACKUP.listTransports().isEmpty());
     }
 
     /*----------------------------------------------SD-Tests1---------------------------------------------------------*/

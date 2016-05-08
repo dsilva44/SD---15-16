@@ -20,6 +20,12 @@ public class BrokerClient implements BrokerPortType {
     private String uddiURL;
     private String wsName;
 
+
+    public BrokerClient(String wsURL)  {
+        this.wsURL = wsURL;
+        createStub();
+    }
+
     public BrokerClient(String uddiURL, String wsName)  {
         this.uddiURL = uddiURL;
         this.wsName = wsName;
