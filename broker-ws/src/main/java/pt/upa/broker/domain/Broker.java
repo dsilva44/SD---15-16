@@ -4,11 +4,17 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
 import pt.upa.broker.exception.BrokerUddiNamingException;
+import pt.upa.broker.ws.BrokerPortType;
+import pt.upa.broker.ws.BrokerService;
 import pt.upa.broker.ws.EndpointManager;
 
 import javax.xml.registry.JAXRException;
+import javax.xml.ws.BindingProvider;
 import java.util.Collection;
+import java.util.Map;
 import java.util.regex.Pattern;
+
+import static javax.xml.ws.BindingProvider.ENDPOINT_ADDRESS_PROPERTY;
 
 public abstract class Broker {
     static private final Logger log = LogManager.getRootLogger();
@@ -59,7 +65,7 @@ public abstract class Broker {
         try {
             // publish to UDDI
             log.info("Publishing '"+ epm.getWsName() + "' to UDDI at "+ uddiURL);
-            uddiNaming.rebind(epm.getWsName(), epm.getWsURL());
+            uddiNaming.rebind(epm.getWsName(), epm.getWsURL1());
         } catch (JAXRException e) {
             throw new BrokerUddiNamingException("rebind error");
         }
@@ -80,4 +86,22 @@ public abstract class Broker {
         }
         isRegister = false;
     }
+
+    /** Stub creation and configuration */
+    public BrokerPortType createStub() {
+        EndpointManager epm = Manager.getInstance().getEndPointManager();
+
+        log.info("Creating stub ...");
+        BrokerService service = new BrokerService();
+        BrokerPortType port = service.getBrokerPort();
+
+        log.info("Setting endpoint address ...");
+        BindingProvider bindingProvider = (BindingProvider) port;
+        Map<String, Object> requestContext = bindingProvider.getRequestContext();
+        requestContext.put(ENDPOINT_ADDRESS_PROPERTY, epm.getWsURL2());
+
+        return port;
+    }
+
+    public abstract void updateTransport(Manager manager, Transport transport);
 }

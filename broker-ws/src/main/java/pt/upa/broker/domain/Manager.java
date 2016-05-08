@@ -54,8 +54,6 @@ public class Manager {
         return null;
     }
 
-
-
     String nextTransporterID() {
         String id = Integer.toString(transportID);
         transportID++;
@@ -66,7 +64,7 @@ public class Manager {
         transportsList.add(t);
     }
 
-    private void replaceTransport(Transport oldT, Transport newT) {
+    void replaceTransport(Transport oldT, Transport newT) {
         int index = transportsList.indexOf(oldT);
         transportsList.set(index, newT);
     }
@@ -172,10 +170,7 @@ public class Manager {
     }
 
     public void updateTransport(Transport newT) {
-        Transport oldT = getTransportById(newT.getId());
-
-        if (oldT == null) addTransport(newT);
-        else replaceTransport(oldT, newT);
+        broker.updateTransport(this, newT);
     }
 
     //-------------------------------------------Aux methods------------------------------------------------------------

@@ -17,22 +17,25 @@ public class EndpointManager {
 
     private Endpoint endpoint = null;
     private String wsName;
-    private String wsURL;
+    private String wsURL1;
+    private String wsURL2;
 
     private boolean isPublish = false;
     private boolean isAwaitConnection = false;
 
 
 
-    public EndpointManager(String wsURL, String wsName) {
+    public EndpointManager(String wsURL1, String wsURL2, String wsName) {
         String urlRegex = "^(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]";
 
-        boolean validWsURL = Pattern.matches(urlRegex, wsURL);
+        boolean validWsURL1 = Pattern.matches(urlRegex, wsURL1);
+        boolean validWsURL2 = Pattern.matches(urlRegex, wsURL2);
 
-        if(!validWsURL)
+        if(!validWsURL1 || !validWsURL2)
             throw new IllegalArgumentException("Must be the form - http://host:port format!");
 
-        this.wsURL = wsURL;
+        this.wsURL1 = wsURL1;
+        this.wsURL2 = wsURL2;
         this.wsName = wsName;
 
         endpoint = Endpoint.create(new BrokerPort());
@@ -43,11 +46,11 @@ public class EndpointManager {
     public void start() {
         try {
             // publish endpoint
-            log.info("Starting: " + wsURL);
-            endpoint.publish(wsURL);
+            log.info("Starting: " + wsURL1);
+            endpoint.publish(wsURL1);
         } catch (Exception e) {
-            log.error("Error publish endpoint: " + wsURL, e);
-            throw new BrokerEndpointException("Error publish endpoint: " + wsURL);
+            log.error("Error publish endpoint: " + wsURL1, e);
+            throw new BrokerEndpointException("Error publish endpoint: " + wsURL1);
         }
         isPublish = true;
     }
@@ -62,7 +65,7 @@ public class EndpointManager {
                 if (endpoint.isPublished()) {
                     // stop endpoint
                     endpoint.stop();
-                    log.info("Stopped " + wsURL);
+                    log.info("Stopped " + wsURL1);
                 }
             } catch (Exception e) {
                 log.error("Caught exception when stopping", e);
@@ -79,7 +82,8 @@ public class EndpointManager {
 
     public String getWsName() { return wsName; }
 
-    public String getWsURL() { return wsURL; }
+    public String getWsURL1() { return wsURL1; }
+    public String getWsURL2() { return wsURL2; }
 
     boolean isPublish() { return isPublish; }
 

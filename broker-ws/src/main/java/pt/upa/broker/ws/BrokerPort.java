@@ -1,9 +1,5 @@
 package pt.upa.broker.ws;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import com.google.gson.Gson;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,9 +9,8 @@ import pt.upa.transporter.ws.BadLocationFault_Exception;
 import pt.upa.transporter.ws.BadPriceFault_Exception;
 
 import javax.jws.WebService;
-import javax.xml.ws.BindingProvider;
-
-import static javax.xml.ws.BindingProvider.ENDPOINT_ADDRESS_PROPERTY;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @WebService(
@@ -48,7 +43,7 @@ public class BrokerPort implements BrokerPortType{
 			transport = manager.requestTransport(origin, destination, price);
 			manager.decideBestOffer(transport);
 
-			if (updateBackup(transport) == null) {
+			if (update(transport) == null) {
 				log.error("backup failed!!!");
 				manager.throwUnavailableTransportFault(origin, destination);
 			}
@@ -80,10 +75,15 @@ public class BrokerPort implements BrokerPortType{
 
 		log.debug("viewTransport return:" );
 
+		if (update(t) == null) {
+			log.error("backup failed!!!");
+			manager.throwUnknownTransportFault(id);
+		}
+
 		assert t != null;
 		return t.toTransportView();
 	}
-	
+
 
 	@Override
 	public List<TransportView> listTransports() {
@@ -113,28 +113,9 @@ public class BrokerPort implements BrokerPortType{
 		return views;
 	}
 
-	private String updateBackup(Transport transport) {
-		BrokerPortType brokerBackup = createBackupStub();
-
+	private String update(Transport transport) {
+		BrokerPortType brokerBackup = manager.getBroker().createStub();
 		String tSerialized = new Gson().toJson(transport);
-
 		return brokerBackup.updateTransport(tSerialized);
 	}
-
-	/** Stub creation and configuration */
-	private BrokerPortType createBackupStub() {
-		EndpointManager epm = Manager.getInstance().getEndPointManager();
-
-		log.info("Creating stub ...");
-		BrokerService service = new BrokerService();
-		BrokerPortType port = service.getBrokerPort();
-
-		log.info("Setting endpoint address ...");
-		BindingProvider bindingProvider = (BindingProvider) port;
-		Map<String, Object> requestContext = bindingProvider.getRequestContext();
-		requestContext.put(ENDPOINT_ADDRESS_PROPERTY, epm.getWsURL());
-
-		return port;
-	}
-	
 }

@@ -7,4 +7,14 @@ public class BrokerBackup extends Broker {
     public BrokerBackup(String uddiURL, EndpointManager epm) {
         super(uddiURL, epm);
     }
+
+    @Override
+    public void updateTransport(Manager manager, Transport transport) {
+        Transport oldT = manager.getTransportById(transport.getId());
+
+        if (oldT == null) manager.addTransport(transport);
+        else manager.replaceTransport(oldT, transport);
+    }
+
+
 }

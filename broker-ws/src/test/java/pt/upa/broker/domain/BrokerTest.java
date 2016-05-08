@@ -16,11 +16,12 @@ public class BrokerTest {
     private EndpointManager endpointManager;
     private final String wsName = "UpaBroker";
     private final String validUddiURL = "http://localhost:9090";
-    private final String validWsURL = "http://localhost:8080/broker-ws/endpoint";
+    private final String wsURL1 = "http://localhost:8081/broker-ws/endpoint";
+    private final String wsURL2 = "http://localhost:8082/broker-ws/endpoint";
 
     @Before
     public void setUp() {
-        endpointManager = new EndpointManager(validWsURL, wsName);
+        endpointManager = new EndpointManager(wsURL1, wsURL2, wsName);
     }
 
     @Test
@@ -42,7 +43,7 @@ public class BrokerTest {
         Broker broker = new BrokerPrimary(validUddiURL, endpointManager);
 
         new Expectations() {{
-            uddiNamingMock.rebind(endpointManager.getWsName(), endpointManager.getWsURL());
+            uddiNamingMock.rebind(endpointManager.getWsName(), endpointManager.getWsURL1());
             uddiNamingMock.unbind(endpointManager.getWsName());
         }};
 
@@ -66,7 +67,7 @@ public class BrokerTest {
         Broker broker = new BrokerPrimary(validUddiURL, endpointManager);
 
         new Expectations() {{
-            uddiNamingMock.rebind(endpointManager.getWsName(), endpointManager.getWsURL());
+            uddiNamingMock.rebind(endpointManager.getWsName(), endpointManager.getWsURL1());
             uddiNamingMock.unbind(endpointManager.getWsName()); result = new Exception();
         }};
 

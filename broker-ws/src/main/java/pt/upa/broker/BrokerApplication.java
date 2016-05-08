@@ -29,11 +29,11 @@ public class BrokerApplication {
 		EndpointManager endpointManager;
 		Broker broker;
 		if (Integer.parseInt(wsType) == 1) {
-			endpointManager = new EndpointManager(wsPrimary,  wsName);
+			endpointManager = new EndpointManager(wsPrimary, wsBackup, wsName);
 			broker = new BrokerPrimary(uddiURL, endpointManager);
 			broker.registerUddi();
 		} else {
-			endpointManager = new EndpointManager(wsBackup, wsName);
+			endpointManager = new EndpointManager(wsBackup, wsPrimary, wsName);
 			broker = new BrokerBackup(uddiURL, endpointManager);
 		}
 
