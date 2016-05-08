@@ -62,8 +62,7 @@ public class BrokerPort implements BrokerPortType{
 	public String updateTransport(String tSerialized) {
 		log.debug("updateTransport:" );
 
-		Transport transport = new Gson().fromJson(tSerialized, Transport.class );
-		manager.updateTransport(transport);
+		manager.updateTransport(tSerialized);
 
 		return "OK";
 	}
@@ -97,6 +96,9 @@ public class BrokerPort implements BrokerPortType{
 	public void clearTransports() {
 		manager.clearTransports();
 		manager.clearTransportersClients();
+
+		BrokerPortType broker = manager.getBroker().createStub();
+		broker.updateTransport(null);
 	}
 
 	private List<TransportView> transportListToTransportViewList(ArrayList<Transport> transports){
@@ -114,8 +116,8 @@ public class BrokerPort implements BrokerPortType{
 	}
 
 	private String update(Transport transport) {
-		BrokerPortType brokerBackup = manager.getBroker().createStub();
+		BrokerPortType broker = manager.getBroker().createStub();
 		String tSerialized = new Gson().toJson(transport);
-		return brokerBackup.updateTransport(tSerialized);
+		return broker.updateTransport(tSerialized);
 	}
 }

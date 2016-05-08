@@ -1,5 +1,6 @@
 package pt.upa.broker.domain;
 
+import com.google.gson.Gson;
 import pt.upa.broker.ws.EndpointManager;
 
 public class BrokerBackup extends Broker {
@@ -9,11 +10,18 @@ public class BrokerBackup extends Broker {
     }
 
     @Override
-    public void updateTransport(Manager manager, Transport transport) {
-        Transport oldT = manager.getTransportById(transport.getId());
+    public void updateTransport(Manager manager, String tSerialized) {
+        if (tSerialized == null) {
+            manager.clearTransports();
+            manager.clearTransportersClients();
+        } else {
+            Transport transport = new Gson().fromJson(tSerialized, Transport.class);
 
-        if (oldT == null) manager.addTransport(transport);
-        else manager.replaceTransport(oldT, transport);
+            Transport oldT = manager.getTransportById(transport.getId());
+
+            if (oldT == null) manager.addTransport(transport);
+            else manager.replaceTransport(oldT, transport);
+        }
     }
 
 

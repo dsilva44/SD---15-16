@@ -24,7 +24,6 @@ public class Manager {
             "Castelo Branco", "Coimbra", "Aveiro", "Viseu", "Guarda","Porto", "Braga", "Viana do Castelo",
             "Vila Real", "Bragança","Setúbal", "Évora", "Portalegre", "Beja","Faro"));
 
-
     //Singleton
     private Manager() {
         transporterClients = new ArrayList<>();
@@ -161,6 +160,7 @@ public class Manager {
     }
 
     public void clearTransports(){
+
         transportsList.clear();
     }
 
@@ -169,8 +169,8 @@ public class Manager {
         transporterClients.clear();
     }
 
-    public void updateTransport(Transport newT) {
-        broker.updateTransport(this, newT);
+    public void updateTransport(String tSerialize) {
+        broker.updateTransport(this, tSerialize);
     }
 
     //-------------------------------------------Aux methods------------------------------------------------------------

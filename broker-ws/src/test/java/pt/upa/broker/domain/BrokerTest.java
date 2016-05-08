@@ -1,5 +1,6 @@
 package pt.upa.broker.domain;
 
+import com.google.gson.Gson;
 import mockit.Expectations;
 import mockit.Mocked;
 import org.junit.Before;
@@ -7,6 +8,7 @@ import org.junit.Test;
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
 import pt.upa.broker.exception.BrokerUddiNamingException;
 import pt.upa.broker.ws.EndpointManager;
+import pt.upa.broker.ws.TransportStateView;
 
 import javax.xml.registry.JAXRException;
 
@@ -19,9 +21,15 @@ public class BrokerTest {
     private final String wsURL1 = "http://localhost:8081/broker-ws/endpoint";
     private final String wsURL2 = "http://localhost:8082/broker-ws/endpoint";
 
+    private Manager manager = Manager.getInstance();
+    private Transport transport;
+
     @Before
     public void setUp() {
         endpointManager = new EndpointManager(wsURL1, wsURL2, wsName);
+        transport = new Transport();
+        transport.setId("1");
+        transport.setState(TransportStateView.REQUESTED);
     }
 
     @Test
@@ -75,6 +83,29 @@ public class BrokerTest {
         assertTrue("register status not changed", broker.isRegister());
 
         broker.deleteFromUDDI();
+    }
+
+    //-----------------------------------------updateTransport(...) -----------------------------------------
+    @Test
+    public void successUpdateNotExistentTransport() {
+        BrokerBackup brokerBackup = new BrokerBackup(validUddiURL, endpointManager);
+        String tSerialized = new Gson().toJson(transport);
+        brokerBackup.updateTransport(manager, tSerialized);
+
+        assertNotNull("Transport not added", manager.getTransportById(transport.getId()));
+    }
+
+    @Test
+    public void successUpdateExistentTransport() {
+        manager.addTransport(transport);
+        assertEquals(manager.getTransportById("1").getState(), TransportStateView.REQUESTED);
+
+        Transport newT = new Transport(); newT.setId("1"); newT.setState(TransportStateView.COMPLETED);
+        BrokerBackup brokerBackup = new BrokerBackup(validUddiURL, endpointManager);
+        String tSerialized = new Gson().toJson(newT);
+        brokerBackup.updateTransport(manager, tSerialized);
+
+        assertEquals("Not update", manager.getTransportById("1").getState(), TransportStateView.COMPLETED);
     }
 
 }

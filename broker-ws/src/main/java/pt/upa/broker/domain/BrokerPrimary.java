@@ -9,7 +9,7 @@ public class BrokerPrimary extends Broker {
     }
 
     @Override
-    public void updateTransport(Manager manager, Transport transport) {
+    public void updateTransport(Manager manager, String tSerialized) {
 
     }
 

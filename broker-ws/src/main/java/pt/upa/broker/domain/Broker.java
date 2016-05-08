@@ -103,5 +103,5 @@ public abstract class Broker {
         return port;
     }
 
-    public abstract void updateTransport(Manager manager, Transport transport);
+    public abstract void updateTransport(Manager manager, String tSerialized);
 }
