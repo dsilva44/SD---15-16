@@ -43,8 +43,9 @@ public class Manager {
         return transportsList;
     }
     public Broker getBroker() {return broker;}
-
     public EndpointManager getEndPointManager() {return epm;}
+
+    public void setBroker(Broker broker) { this.broker = broker; }
 
     Transport getTransportById(String id) {
         for (Transport t : transportsList)

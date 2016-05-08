@@ -49,9 +49,6 @@ public class RequestTransportIT extends AbstractIT {
         TransportView tView;
         tView = CLIENT.viewTransport(tID);
         assertTrue("job price is not zero", tView.getPrice().equals(ZERO_PRICE));
-
-        tView = CLIENT_BACKUP.viewTransport(tID);
-        assertTrue("not same is primary", tView.getPrice().equals(ZERO_PRICE));
     }
 
     @Test
@@ -61,9 +58,6 @@ public class RequestTransportIT extends AbstractIT {
         TransportView tView;
         tView = CLIENT.viewTransport(tID);
         assertTrue("job price is not zero", tView.getPrice().equals(ZERO_PRICE));
-
-        tView = CLIENT_BACKUP.viewTransport(tID);
-        assertTrue("not same is primary ", tView.getPrice().equals(ZERO_PRICE));
     }
 
     @Test
@@ -73,9 +67,6 @@ public class RequestTransportIT extends AbstractIT {
         TransportView tView;
         tView = CLIENT.viewTransport(tID);
         assertTrue("job price is not less them reference price", tView.getPrice() < PRICE_SMALLEST_LIMIT);
-
-        tView = CLIENT_BACKUP.viewTransport(tID);
-        assertTrue("not same is primary", tView.getPrice() < PRICE_SMALLEST_LIMIT);
     }
 
     @Test
@@ -85,9 +76,6 @@ public class RequestTransportIT extends AbstractIT {
         TransportView tView;
         tView = CLIENT.viewTransport(tID);
         assertTrue("job price is not less them reference price", tView.getPrice() < evenPrice*2);
-
-        tView = CLIENT_BACKUP.viewTransport(tID);
-        assertTrue("not same is primary", tView.getPrice() < evenPrice*2);
     }
 
     @Test
@@ -97,9 +85,6 @@ public class RequestTransportIT extends AbstractIT {
         TransportView tView;
         tView = CLIENT.viewTransport(tID);
         assertTrue("job price is not less them reference price", tView.getPrice() < oddPrice*3);
-
-        tView = CLIENT_BACKUP.viewTransport(tID);
-        assertTrue("not same is primary", tView.getPrice() < oddPrice*3);
     }
 
     @Test(expected = UnavailableTransportPriceFault_Exception.class)
@@ -109,9 +94,6 @@ public class RequestTransportIT extends AbstractIT {
         TransportView tView;
         tView = CLIENT.viewTransport(tID);
         assertTrue("job price is not less them reference price", tView.getPrice() < evenPrice*4);
-
-        tView = CLIENT_BACKUP.viewTransport(tID);
-        assertTrue("not same is primary", tView.getPrice() < evenPrice*4);
     }
 
     @Test
@@ -121,9 +103,6 @@ public class RequestTransportIT extends AbstractIT {
         TransportView tView;
         tView = CLIENT.viewTransport(tID);
         assertTrue("job price is not less them reference price", tView.getPrice() < oddPrice*5);
-
-        tView = CLIENT_BACKUP.viewTransport(tID);
-        assertTrue("not same is primary", tView.getPrice() < oddPrice*5);
     }
 
     @Test
@@ -133,9 +112,6 @@ public class RequestTransportIT extends AbstractIT {
         TransportView tView;
         tView = CLIENT.viewTransport(tID);
         assertTrue("job price is not less them reference price", tView.getPrice() < evenPrice*6);
-
-        tView = CLIENT_BACKUP.viewTransport(tID);
-        assertTrue("not same is primary", tView.getPrice() < evenPrice*6);
     }
 
     @Test(expected = UnavailableTransportPriceFault_Exception.class)
@@ -145,9 +121,6 @@ public class RequestTransportIT extends AbstractIT {
         TransportView tView;
         tView = CLIENT.viewTransport(tID);
         assertTrue("job price is not less them reference price", tView.getPrice() < oddPrice*7);
-
-        tView = CLIENT_BACKUP.viewTransport(tID);
-        assertTrue("not same is primary", tView.getPrice() < oddPrice*7);
     }
 
     @Test(expected = UnavailableTransportPriceFault_Exception.class)
@@ -157,9 +130,6 @@ public class RequestTransportIT extends AbstractIT {
         TransportView tView;
         tView = CLIENT.viewTransport(tID);
         assertTrue("job price is not less them reference price", tView.getPrice() < evenPrice*8);
-
-        tView = CLIENT_BACKUP.viewTransport(tID);
-        assertTrue("not same is primary", tView.getPrice() < evenPrice*8);
     }
 
     @Test
@@ -169,9 +139,6 @@ public class RequestTransportIT extends AbstractIT {
         TransportView tView;
         tView = CLIENT.viewTransport(tID);
         assertTrue("job price is not less them reference price", tView.getPrice() < oddPrice*9);
-
-        tView = CLIENT_BACKUP.viewTransport(tID);
-        assertTrue("not same is primary", tView.getPrice() < oddPrice*9);
     }
 
     @Test(expected = UnavailableTransportPriceFault_Exception.class)
@@ -181,9 +148,6 @@ public class RequestTransportIT extends AbstractIT {
         TransportView tView;
         tView = CLIENT.viewTransport(tID);
         assertTrue("job price is not less them reference price", tView.getPrice() < oddPrice*3);
-
-        tView = CLIENT_BACKUP.viewTransport(tID);
-        assertTrue("not same is primary ", tView.getPrice() < oddPrice*3);
     }
 
     @Test
@@ -193,9 +157,6 @@ public class RequestTransportIT extends AbstractIT {
         TransportView tView;
         tView = CLIENT.viewTransport(tID);
         assertTrue("job price is not less them reference price", tView.getPrice() < evenPrice*2);
-
-        tView = CLIENT_BACKUP.viewTransport(tID);
-        assertTrue("not same is primary ", tView.getPrice() < evenPrice*2);
     }
 
     @Test
@@ -205,9 +166,6 @@ public class RequestTransportIT extends AbstractIT {
         TransportView tView;
         tView = CLIENT.viewTransport(tID);
         assertTrue("job price is not less them reference price", tView.getPrice() < PRICE_SMALLEST_LIMIT);
-
-        tView = CLIENT_BACKUP.viewTransport(tID);
-        assertTrue("not same is primary", tView.getPrice() < PRICE_SMALLEST_LIMIT);
     }
     /*----------------------------------------------SD-Tests1---------------------------------------------------------*/
 

@@ -10,7 +10,9 @@ import pt.upa.broker.ws.EndpointManager;
 
 import javax.xml.registry.JAXRException;
 import javax.xml.ws.BindingProvider;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -88,17 +90,34 @@ public abstract class Broker {
     }
 
     /** Stub creation and configuration */
-    public BrokerPortType createStub() {
-        EndpointManager epm = Manager.getInstance().getEndPointManager();
-
-        log.info("Creating stub ...");
+    public BrokerPortType createStub(int connTimeout , int recvTimeout) {
         BrokerService service = new BrokerService();
         BrokerPortType port = service.getBrokerPort();
 
-        log.info("Setting endpoint address ...");
         BindingProvider bindingProvider = (BindingProvider) port;
         Map<String, Object> requestContext = bindingProvider.getRequestContext();
         requestContext.put(ENDPOINT_ADDRESS_PROPERTY, epm.getWsURL2());
+
+        // The connection timeout property has different names in different versions of JAX-WS
+        // Set them all to avoid compatibility issues
+        final List<String> CONN_TIME_PROPS = new ArrayList<>();
+        CONN_TIME_PROPS.add("com.sun.xml.ws.connect.timeout");
+        CONN_TIME_PROPS.add("com.sun.xml.internal.ws.connect.timeout");
+        CONN_TIME_PROPS.add("javax.xml.ws.client.connectionTimeout");
+        // Set timeout until a connection is established (unit is milliseconds; 0 means infinite)
+        for (String propName : CONN_TIME_PROPS)
+            requestContext.put(propName, connTimeout);
+
+
+        // The receive timeout property has alternative names
+        // Again, set them all to avoid capability issues
+        final List<String> RECV_TIMEOUT_PROPERTY = new ArrayList<>();
+        RECV_TIMEOUT_PROPERTY.add("com.sun.xml.ws.request.timeout");
+        RECV_TIMEOUT_PROPERTY.add("com.sun.xml.internal.ws.request.timeout");
+        RECV_TIMEOUT_PROPERTY.add("javax.xml.ws.client.receiveTimeout");
+        // Set timeout until the response is received (unit is milliseconds; 0 means infinite)
+        for (String propertyName : RECV_TIMEOUT_PROPERTY)
+            requestContext.put(propertyName, recvTimeout);
 
         return port;
     }

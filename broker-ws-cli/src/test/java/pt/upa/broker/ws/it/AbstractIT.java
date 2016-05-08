@@ -17,7 +17,7 @@ import pt.upa.broker.ws.cli.BrokerClient;
 public abstract class AbstractIT {
     // static members
     static final Logger log = LogManager.getRootLogger();
-    static BrokerClient CLIENT, CLIENT_BACKUP;
+    static BrokerClient CLIENT;
 
     static int PRICE_UPPER_LIMIT = 100;
     static int PRICE_SMALLEST_LIMIT = 10;
@@ -51,14 +51,12 @@ public abstract class AbstractIT {
         String clientBackupURL = "http://localhost:9092/broker-ws/endpoint";
 
         CLIENT = new BrokerClient(uddiURL, "UpaBroker");
-        CLIENT_BACKUP = new BrokerClient(clientBackupURL);
     }
 
     @AfterClass
     public static void oneTimeTearDown() {
         CLIENT.clearTransports();
         CLIENT = null;
-        CLIENT_BACKUP = null;
     }
 
     // members

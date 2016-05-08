@@ -9,6 +9,7 @@ import pt.upa.transporter.ws.BadLocationFault_Exception;
 import pt.upa.transporter.ws.BadPriceFault_Exception;
 
 import javax.jws.WebService;
+import javax.xml.ws.WebServiceException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,10 +28,10 @@ public class BrokerPort implements BrokerPortType{
 	
 	@Override
 	public String ping(String name) {
-		int numResponses = manager.findTransporters();
 
-		log.debug("ping: " + numResponses);
-		return numResponses + " transporters available";
+		log.debug("ping:");
+
+		return "pong "+name+"!!!";
 	}
 
 	@Override
@@ -43,10 +44,8 @@ public class BrokerPort implements BrokerPortType{
 			transport = manager.requestTransport(origin, destination, price);
 			manager.decideBestOffer(transport);
 
-			if (update(transport) == null) {
-				log.error("backup failed!!!");
-				manager.throwUnavailableTransportFault(origin, destination);
-			}
+			String tSerialized = new Gson().toJson(transport);
+			updateBackup(tSerialized);
 
 			log.debug("requestTransport: " + transport.getId() );
 		} catch (BadLocationFault_Exception e) {
@@ -69,18 +68,15 @@ public class BrokerPort implements BrokerPortType{
 
 	@Override
 	public TransportView viewTransport(String id) throws UnknownTransportFault_Exception {
-		Transport t = manager.updateTransportState(id);
-		if (t == null) manager.throwUnknownTransportFault(id);
+		Transport transport = manager.updateTransportState(id);
+		if (transport == null) manager.throwUnknownTransportFault(id);
 
 		log.debug("viewTransport return:" );
 
-		if (update(t) == null) {
-			log.error("backup failed!!!");
-			manager.throwUnknownTransportFault(id);
-		}
+		String tSerialized = new Gson().toJson(transport);
+		updateBackup(tSerialized);
 
-		assert t != null;
-		return t.toTransportView();
+		return transport.toTransportView();
 	}
 
 
@@ -97,8 +93,7 @@ public class BrokerPort implements BrokerPortType{
 		manager.clearTransports();
 		manager.clearTransportersClients();
 
-		BrokerPortType broker = manager.getBroker().createStub();
-		broker.updateTransport(null);
+		updateBackup(null);
 	}
 
 	private List<TransportView> transportListToTransportViewList(ArrayList<Transport> transports){
@@ -115,9 +110,13 @@ public class BrokerPort implements BrokerPortType{
 		return views;
 	}
 
-	private String update(Transport transport) {
-		BrokerPortType broker = manager.getBroker().createStub();
-		String tSerialized = new Gson().toJson(transport);
-		return broker.updateTransport(tSerialized);
+	private String updateBackup(String tSerialized) {
+		try {
+			BrokerPortType broker = manager.getBroker().createStub(0, 0);
+			return broker.updateTransport(tSerialized);
+		} catch (WebServiceException wse) {
+			log.error("Backup is down: "+wse.getMessage());
+			return null;
+		}
 	}
 }

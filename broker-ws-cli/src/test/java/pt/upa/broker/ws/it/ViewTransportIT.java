@@ -26,15 +26,11 @@ public class ViewTransportIT extends AbstractIT {
 
         String rt = CLIENT.requestTransport(CENTER_1, SOUTH_1, PRICE_SMALLEST_LIMIT);
         TransportView vt = CLIENT.viewTransport(rt);
-        TransportView vtb = CLIENT_BACKUP.viewTransport(rt);
         assertEquals(vt.getState(), TransportStateView.BOOKED);
-        //assertEquals(vt.getState(), vtb.getState());
 
         for (int t = 0; t <= 3 * DELAY_UPPER || !tS.isEmpty(); t += TENTH_OF_SECOND) {
             Thread.sleep(TENTH_OF_SECOND);
             vt = CLIENT.viewTransport(rt);
-            //vtb = CLIENT_BACKUP.viewTransport(rt);
-            //assertEquals(vt.getState(), vtb.getState());
             if (tS.contains(vt.getState()))
                 tS.remove(vt.getState());
         }

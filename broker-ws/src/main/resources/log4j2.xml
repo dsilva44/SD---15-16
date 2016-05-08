@@ -18,7 +18,7 @@
     </Appenders>
     <Loggers>
         <!--Root level="info"-->
-        <Root level="trace">
+        <Root level="INFO">
             <AppenderRef ref="RollingFile"/>
             <AppenderRef ref="Console"/>
         </Root>
