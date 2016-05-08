@@ -609,4 +609,23 @@ public class ManagerTest {
 
         assertEquals("not update transport status", TransportStateView.COMPLETED, t1.getState());
     }
+
+    //-----------------------------------------updateTransportState(String id) -----------------------------------------
+    @Test
+    public void successUpdateNotExistentTransport() {
+        manager.updateTransport(transport);
+
+        assertNotNull("Transport not added", manager.getTransportById(transport.getId()));
+    }
+
+    @Test
+    public void successUpdateExistentTransport() {
+        manager.addTransport(transport);
+        assertEquals(manager.getTransportById("1").getState(), TransportStateView.REQUESTED);
+
+        Transport newT = new Transport(); newT.setId("1"); newT.setState(TransportStateView.COMPLETED);
+        manager.updateTransport(newT);
+
+        assertEquals("Not update", manager.getTransportById("1").getState(), TransportStateView.COMPLETED);
+    }
 }

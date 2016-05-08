@@ -51,6 +51,8 @@ public class Manager {
         return null;
     }
 
+
+
     String nextTransporterID() {
         String id = Integer.toString(transportID);
         transportID++;
@@ -59,6 +61,11 @@ public class Manager {
 
     void addTransport(Transport t){
         transportsList.add(t);
+    }
+
+    private void replaceTransport(Transport oldT, Transport newT) {
+        int index = transportsList.indexOf(oldT);
+        transportsList.set(index, newT);
     }
 
     boolean updateTransportersList() {
@@ -161,8 +168,11 @@ public class Manager {
         transporterClients.clear();
     }
 
-    public void updateTransport(TransportView t) {
+    public void updateTransport(Transport newT) {
+        Transport oldT = getTransportById(newT.getId());
 
+        if (oldT == null) addTransport(newT);
+        else replaceTransport(oldT, newT);
     }
 
     //-------------------------------------------Aux methods------------------------------------------------------------

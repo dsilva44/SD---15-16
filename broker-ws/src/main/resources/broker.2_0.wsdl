@@ -245,8 +245,6 @@
                    message="tns:updateTransport" />
             <output wsam:Action="http://ws.broker.upa.pt/BrokerPort/updateTransport"
                     message="tns:updateTransportResponse" />
-            <fault message="tns:UnknownTransportFault" name="UnknownTransportFault"
-                   wsam:Action="http://ws.broker.upa.pt/BrokerPort/viewTransport/Fault/UnknownTransportFault" />
         </operation>
 
         <operation name="requestTransport">
@@ -344,9 +342,6 @@
             <output>
                 <soap:body use="literal" />
             </output>
-            <fault name="UnknownTransportFault">
-                <soap:fault name="UnknownTransportFault" use="literal" />
-            </fault>
         </operation>
 
         <operation name="viewTransport">

@@ -64,10 +64,11 @@ public class BrokerPort implements BrokerPortType{
 	}
 
 	@Override
-	public String updateTransport(String tSerialized) throws UnknownTransportFault_Exception  {
-
+	public String updateTransport(String tSerialized) {
 		log.debug("updateTransport:" );
-		Transport transport = new Gson().fromJson( tSerialized, Transport.class );
+
+		Transport transport = new Gson().fromJson(tSerialized, Transport.class );
+		manager.updateTransport(transport);
 
 		return "OK";
 	}
@@ -113,22 +114,17 @@ public class BrokerPort implements BrokerPortType{
 	}
 
 	private String updateBackup(Transport transport) {
-		EndpointManager epm = Manager.getInstance().getEndPointManager();
-		BrokerPortType brokerBackup = createStub(epm.getWsURL2());
+		BrokerPortType brokerBackup = createBackupStub();
 
 		String tSerialized = new Gson().toJson(transport);
 
-		try {
-			return brokerBackup.updateTransport(tSerialized);
-		}
-		catch (UnknownTransportFault_Exception e) {
-			log.error("Transport does not exist", e);
-			return null;
-		}
+		return brokerBackup.updateTransport(tSerialized);
 	}
 
 	/** Stub creation and configuration */
-	private BrokerPortType createStub(String wsURL) {
+	private BrokerPortType createBackupStub() {
+		EndpointManager epm = Manager.getInstance().getEndPointManager();
+
 		log.info("Creating stub ...");
 		BrokerService service = new BrokerService();
 		BrokerPortType port = service.getBrokerPort();
@@ -136,7 +132,7 @@ public class BrokerPort implements BrokerPortType{
 		log.info("Setting endpoint address ...");
 		BindingProvider bindingProvider = (BindingProvider) port;
 		Map<String, Object> requestContext = bindingProvider.getRequestContext();
-		requestContext.put(ENDPOINT_ADDRESS_PROPERTY, wsURL);
+		requestContext.put(ENDPOINT_ADDRESS_PROPERTY, epm.getWsURL2());
 
 		return port;
 	}

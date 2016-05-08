@@ -76,7 +76,7 @@ public class BrokerClient implements BrokerPortType {
     }
 
     @Override
-    public String updateTransport(String tSerialized) throws UnknownTransportFault_Exception {
+    public String updateTransport(String tSerialized) {
         return port.updateTransport(tSerialized);
     }
 
