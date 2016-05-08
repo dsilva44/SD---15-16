@@ -15,6 +15,7 @@ public class Manager {
     private static Manager manager = new Manager();
 
     private EndpointManager epm;
+    private Broker broker;
     private int transportID = 0;
     private ArrayList<TransporterClient> transporterClients;
     private ArrayList<Transport> transportsList;
@@ -31,8 +32,9 @@ public class Manager {
     }
 
     //Singleton init
-    public void init(EndpointManager endpointManager) {
+    public void init(EndpointManager endpointManager, Broker broker) {
         this.epm = endpointManager;
+        this.broker = broker;
     }
 
     //getters
@@ -41,6 +43,7 @@ public class Manager {
     public List<Transport> getTransportsList() {
         return transportsList;
     }
+    public Broker getBroker() {return broker;}
 
     public EndpointManager getEndPointManager() {return epm;}
 
@@ -70,7 +73,7 @@ public class Manager {
 
     boolean updateTransportersList() {
         String query = "UpaTransporter%";
-        ArrayList<String> transporterURLS = (ArrayList<String>) epm.uddiNamingList(query);
+        ArrayList<String> transporterURLS = (ArrayList<String>) broker.uddiNamingList(query);
 
         transporterClients.clear();
         for (String url : transporterURLS) {
@@ -105,7 +108,7 @@ public class Manager {
         if (t == null) throwUnknownTransportFault(id);
 
         assert t != null;
-        TransporterClient client = new TransporterClient(epm.getUddiURL(), t.getTransporterCompany());
+        TransporterClient client = new TransporterClient(broker.getUddiURL(), t.getTransporterCompany());
         JobView jobView = client.jobStatus(t.getChosenOfferID());
         t.setState(jobView);
 
@@ -202,7 +205,7 @@ public class Manager {
     private void rejectOffersAcceptBest(Transport t , JobView bestOffer) {
         for (JobView offer : t.getOffers()) {
             String companyName = offer.getCompanyName();
-            TransporterClient client = new TransporterClient(epm.getUddiURL(), companyName);
+            TransporterClient client = new TransporterClient(broker.getUddiURL(), companyName);
 
             try {
                 if (bestOffer != null && offer.getJobIdentifier().equals(bestOffer.getJobIdentifier()) ) {

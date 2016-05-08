@@ -132,7 +132,7 @@ public class BrokerPort implements BrokerPortType{
 		log.info("Setting endpoint address ...");
 		BindingProvider bindingProvider = (BindingProvider) port;
 		Map<String, Object> requestContext = bindingProvider.getRequestContext();
-		requestContext.put(ENDPOINT_ADDRESS_PROPERTY, epm.getWsURL2());
+		requestContext.put(ENDPOINT_ADDRESS_PROPERTY, epm.getWsURL());
 
 		return port;
 	}
