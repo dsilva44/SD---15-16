@@ -31,8 +31,8 @@ import java.util.Set;
 public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
     static private final Logger log = LogManager.getRootLogger();
 
-    public static final String INVOKER_PROPERTY = "my.request.property";
-    public static final String KSPATH_PROPERTY = "my.response.property";
+    public static final String INVOKER_PROPERTY = "my.invoker.property";
+    public static final String KSPATH_PROPERTY = "my.kspath.property";
     public static final String PASSWORD_PROPERTY = "my.password.property";
 
     public static long MaxWaitTime = 10;
@@ -48,7 +48,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         try {
             //sign outbound message
             if (outboundElement) handleOutboundMessage(smc);
-                //verify signature
+            //verify signature
             else handleInboundMessage(smc);
         } catch (Exception e) {
             log.error(e);
@@ -57,15 +57,14 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
     }
 
     public boolean handleFault(SOAPMessageContext smc) {
+        //FIXME: handleMessage(SOAPMessageContext smc);
         return true;
     }
 
-    public void close(MessageContext messageContext) {
-    }
+    public void close(MessageContext messageContext) {   }
 
     public void handleOutboundMessage(SOAPMessageContext smc) throws Exception{
 
-        //FIXME: SOAPMessage substitution (FAQ)
         SOAPMessage message = smc.getMessage();
         SOAPPart sp = message.getSOAPPart();
         SOAPEnvelope se = sp.getEnvelope();
@@ -88,10 +87,6 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         String path = (String) smc.get(KSPATH_PROPERTY);
         String pass = (String) smc.get(PASSWORD_PROPERTY);
 
-        System.out.println("INVOKER:" + invoker);
-        System.out.println("KSPATH:" + path);
-        System.out.println("PASS:" + pass);
-
         KeyStore ks = readKeyStoreFile(path, pass.toCharArray());
         PrivateKey privateKey = (PrivateKey) ks.getKey(invoker, pass.toCharArray());
 
@@ -107,21 +102,8 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         BASE64Encoder encoder = new BASE64Encoder();
         String mSigStr = encoder.encode(msgDigSig);
 
-        // add MESSAGE SIGNATURE header element (name, namespace prefix, namespace)
         name = se.createName("MessageSignature", "mSig", "http://messageSignature");
         sh.addChildElement(name).addTextNode(mSigStr);
-
-        message.writeTo(System.out);
-        System.out.println("");
-    /*
-        //FIXME: PROBLEMS WITH LOGGING HANDLER
-        //Print out the outbound SOAP message to System.out
-        System.out.println("COMEÇA: IMPRIME MENSAGEM OUTBOUND");
-        message.writeTo(System.out);
-        System.out.println("");
-        System.out.println("TERMINA: IMPRIME MENSAGEM OUTBOUND");
-    */
-
     }
 
     public boolean handleInboundMessage(SOAPMessageContext smc) throws Exception{

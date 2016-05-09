@@ -117,6 +117,7 @@ public class TransporterClient implements TransporterPortType {
 		requestContext.put(AuthenticationHandler.KSPATH_PROPERTY, "src/main/resources/UpaBroker.jks");
 		requestContext.put(AuthenticationHandler.PASSWORD_PROPERTY, "pass"+"UpaBroker");
 
+		//FIXME ENDPOINT_ADDRESS_PROPERTY
 		//requestContext.put(ENDPOINT_ADDRESS_PROPERTY, "http://localhost:8080/broker-ws/endpoint");
 	}
 
