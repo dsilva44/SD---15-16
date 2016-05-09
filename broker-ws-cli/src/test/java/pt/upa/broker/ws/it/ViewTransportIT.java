@@ -28,7 +28,7 @@ public class ViewTransportIT extends AbstractIT {
         TransportView vt = CLIENT.viewTransport(rt);
         assertEquals(vt.getState(), TransportStateView.BOOKED);
 
-        for (int t = 0; t <= 3 * DELAY_UPPER || !tS.isEmpty(); t += TENTH_OF_SECOND) {
+        for (int t = 0; t <= 3 * DELAY_UPPER && !tS.isEmpty(); t += TENTH_OF_SECOND) {
             Thread.sleep(TENTH_OF_SECOND);
             vt = CLIENT.viewTransport(rt);
             if (tS.contains(vt.getState()))

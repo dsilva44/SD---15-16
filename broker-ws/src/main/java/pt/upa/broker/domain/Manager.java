@@ -105,7 +105,6 @@ public class Manager {
     	Transport t = getTransportById(id);
         if (t == null) throwUnknownTransportFault(id);
 
-        assert t != null;
         TransporterClient client = new TransporterClient(broker.getUddiURL(), t.getTransporterCompany());
         JobView jobView = client.jobStatus(t.getChosenOfferID());
         t.setState(jobView);

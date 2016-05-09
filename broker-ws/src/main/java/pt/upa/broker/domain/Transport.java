@@ -30,6 +30,13 @@ public class Transport {
 	    this.transporterCompany = transporterCompany;
 	    this.state = state;
 	}
+
+	public JobView getOfferByID(String id) {
+		for (JobView offer : offers)
+			if (offer.getJobIdentifier().equals(id))
+				return offer;
+		return null;
+	}
 	
 	
 	public String getId() {
@@ -136,7 +143,7 @@ public class Transport {
 	@Override
 	public String toString() {
 		String string = getId()+" "+getOrigin()+" "+getDestination()+" "+getPrice()+" "+getTransporterCompany()+" "+
-				getState()+" offer: "+offers.size()+" chosen id: "+getChosenOfferID();
+				getState()+" offers: "+offers.size()+" chosen id: "+getChosenOfferID();
 		return string;
 	}
 }

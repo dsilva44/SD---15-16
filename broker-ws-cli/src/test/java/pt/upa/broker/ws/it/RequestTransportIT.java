@@ -48,7 +48,7 @@ public class RequestTransportIT extends AbstractIT {
 
         TransportView tView;
         tView = CLIENT.viewTransport(tID);
-        assertTrue("job price is not zero", tView.getPrice().equals(ZERO_PRICE));
+        assertEquals(ZERO_PRICE, tView.getPrice().intValue());
     }
 
     @Test
@@ -181,6 +181,7 @@ public class RequestTransportIT extends AbstractIT {
     public void testRequestTransportSouthZeroPrice() throws Exception {
         String id = CLIENT.requestTransport(SOUTH_1, CENTER_1, ZERO_PRICE);
         TransportView tv = CLIENT.viewTransport(id);
+
         assertEquals(ZERO_PRICE, tv.getPrice().intValue());
     }
 

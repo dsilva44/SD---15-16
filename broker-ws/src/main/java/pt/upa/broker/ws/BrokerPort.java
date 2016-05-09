@@ -41,10 +41,10 @@ public class BrokerPort implements BrokerPortType{
 			transport = manager.requestTransport(origin, destination, price);
 			manager.decideBestOffer(transport);
 
-			log.debug("Backup: "+transport.toString());
-
 			String tSerialized = new Gson().toJson(transport);
 			updateBackup(tSerialized);
+
+			log.debug("Backup: "+transport.toString());
 		} catch (BadLocationFault_Exception e) {
 			manager.throwUnknownLocationFault(e.getMessage()); return null;
 		} catch (BadPriceFault_Exception e) {
@@ -66,10 +66,10 @@ public class BrokerPort implements BrokerPortType{
 		Transport transport = manager.updateTransportState(id);
 		if (transport == null) manager.throwUnknownTransportFault(id);
 
-		log.debug("Backup: "+transport.toString());
-
 		String tSerialized = new Gson().toJson(transport);
 		updateBackup(tSerialized);
+
+		log.debug("Update Backup: "+transport.toString());
 
 		return transport.toTransportView();
 	}

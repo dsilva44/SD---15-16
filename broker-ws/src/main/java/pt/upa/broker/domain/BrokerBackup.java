@@ -13,13 +13,13 @@ import java.util.TimerTask;
 public class BrokerBackup extends Broker {
     static private final Logger log = LogManager.getRootLogger();
 
-    private final int connTimeout = 2000;
-    private int recvPeriod = 2000;
+    private final int CONN_TIMEOUT = 2000;
+    private int RECV_TIMEOUT = 2000;
     private BrokerPortType brokerPrimary;
 
     public BrokerBackup(String uddiURL, EndpointManager epm) {
         super(uddiURL, epm);
-        brokerPrimary = createStub(connTimeout, recvPeriod);
+        brokerPrimary = createStub(CONN_TIMEOUT, RECV_TIMEOUT);
         monitorPrimary();
     }
 
@@ -60,6 +60,10 @@ public class BrokerBackup extends Broker {
                     this.cancel();
                 }
             }
-        }, connTimeout, connTimeout);
+        }, CONN_TIMEOUT, CONN_TIMEOUT);
+    }
+
+    private void replacePrimary() {
+
     }
 }
