@@ -4,12 +4,9 @@ import java.util.*;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
 import pt.upa.broker.ws.*;
 import pt.upa.transporter.ws.*;
 import pt.upa.transporter.ws.cli.TransporterClient;
-
-import javax.xml.registry.JAXRException;
 
 import pt.upa.broker.exception.BrokerBadJobException;
 
@@ -17,17 +14,14 @@ public class Manager {
 	static private final Logger log = LogManager.getRootLogger();
     private static Manager manager = new Manager();
 
-    //private UDDINaming uddiNaming;
-    private String uddiURL;
-    private String keyStorePath;
-    private int transportID = 0;
+    private EndpointManager epm;
+    private Broker currBroker;
     private ArrayList<TransporterClient> transporterClients;
     private ArrayList<Transport> transportsList;
 
     private final ArrayList<String> knowCities = new ArrayList<>(Arrays.asList("Lisboa", "Leiria", "Santarém",
             "Castelo Branco", "Coimbra", "Aveiro", "Viseu", "Guarda","Porto", "Braga", "Viana do Castelo",
             "Vila Real", "Bragança","Setúbal", "Évora", "Portalegre", "Beja","Faro"));
-
 
     //Singleton
     private Manager() {
@@ -36,20 +30,27 @@ public class Manager {
     }
 
     //Singleton init
-    public void init(String uddiURL, String keyStorePath) {
-        this.uddiURL = uddiURL;
-        this.keyStorePath = keyStorePath;
+    public void init(EndpointManager endpointManager, Broker broker) {
+        this.epm = endpointManager;
+        this.currBroker = broker;
+        broker.monitor(2000, 2000);
+    }
+
+    //State pattern
+    public void goNext() {
+        currBroker.goNext();
     }
 
     //getters
-    public String getKeyStorePath(){
-        return keyStorePath;
-    }
     public static Manager getInstance() { return manager; }
     ArrayList<TransporterClient> getTransporterClients() { return transporterClients; }
     public List<Transport> getTransportsList() {
         return transportsList;
     }
+    public Broker getCurrBroker() {return currBroker;}
+    public EndpointManager getEndPointManager() { return epm; }
+
+    public void setCurrBroker(Broker currBroker) { this.currBroker = currBroker; }
 
     Transport getTransportById(String id) {
         for (Transport t : transportsList)
@@ -58,36 +59,36 @@ public class Manager {
         return null;
     }
 
-    String nextTransporterID() {
-        String id = Integer.toString(transportID);
-        transportID++;
-        return id;
+    private String nextTransporterID() {
+        return Integer.toString(getTransportsList().size());
     }
 
     void addTransport(Transport t){
         transportsList.add(t);
     }
 
-    boolean updateTransportersList(String uddiURL) {
-        try {
-            String query = "UpaTransporter%";
-            UDDINaming uddiNaming = new UDDINaming(uddiURL);
-            ArrayList<String> transporterURLS = (ArrayList<String>) uddiNaming.list(query);
-            transporterClients.clear();
-            for (String url : transporterURLS) {
-                TransporterClient client = new TransporterClient(url);
-                transporterClients.add(client);
-            }
-        } catch (JAXRException e) {
-            log.error("something goes wrong whit uddiNaming", e);
+    void replaceTransport(Transport oldT, Transport newT) {
+        int index = transportsList.indexOf(oldT);
+        transportsList.set(index, newT);
+    }
+
+    boolean updateTransportersList() {
+        String query = "UpaTransporter%";
+        ArrayList<String> transporterURLS = (ArrayList<String>) epm.findInUddi(query);
+
+        transporterClients.clear();
+        for (String url : transporterURLS) {
+            TransporterClient client = new TransporterClient(url);
+            transporterClients.add(client);
         }
+
         return !transporterClients.isEmpty();
     }
 
     public int findTransporters() {
         int count = 0;
         TransporterClient client;
-        if (updateTransportersList(uddiURL)) {
+        if (updateTransportersList()) {
             Iterator<TransporterClient> iterator = transporterClients.iterator();
             while(iterator.hasNext()) {
                 try {
@@ -105,9 +106,9 @@ public class Manager {
     
     public  Transport updateTransportState(String id) throws UnknownTransportFault_Exception {
     	Transport t = getTransportById(id);
-        if (t == null) { throwUnknownTransportFault(id); return null; }
+        if (t == null) throwUnknownTransportFault(id);
 
-        TransporterClient client = new TransporterClient(uddiURL, t.getTransporterCompany());
+        TransporterClient client = new TransporterClient(epm.getUddiURL(), t.getTransporterCompany());
         JobView jobView = client.jobStatus(t.getChosenOfferID());
         t.setState(jobView);
 
@@ -143,7 +144,7 @@ public class Manager {
 
         if (!findT) {
             t.setState(TransportStateView.FAILED);
-            throwUnavailableTransportFault(origin, destination); return null;
+            throwUnavailableTransportFault(origin, destination);
         }
         return t;
     }
@@ -162,6 +163,7 @@ public class Manager {
     }
 
     public void clearTransports(){
+
         transportsList.clear();
     }
 
@@ -197,7 +199,7 @@ public class Manager {
     private void rejectOffersAcceptBest(Transport t , JobView bestOffer) {
         for (JobView offer : t.getOffers()) {
             String companyName = offer.getCompanyName();
-            TransporterClient client = new TransporterClient(uddiURL, companyName);
+            TransporterClient client = new TransporterClient(epm.getUddiURL(), companyName);
 
             try {
                 if (bestOffer != null && offer.getJobIdentifier().equals(bestOffer.getJobIdentifier()) ) {
@@ -232,7 +234,7 @@ public class Manager {
         throw new InvalidPriceFault_Exception(price + " is not a valid price", faultInfo);
     }
 
-    private void throwUnavailableTransportFault(String origin, String destination) throws UnavailableTransportFault_Exception {
+    public void throwUnavailableTransportFault(String origin, String destination) throws UnavailableTransportFault_Exception {
         UnavailableTransportFault faultInfo = new UnavailableTransportFault();
         faultInfo.setOrigin(origin);
         faultInfo.setDestination(destination);

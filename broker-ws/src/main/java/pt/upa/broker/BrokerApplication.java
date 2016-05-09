@@ -2,6 +2,9 @@ package pt.upa.broker;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import pt.upa.broker.domain.Broker;
+import pt.upa.broker.domain.BrokerBackup;
+import pt.upa.broker.domain.BrokerPrimary;
 import pt.upa.broker.domain.Manager;
 import pt.upa.broker.ws.EndpointManager;
 import java.io.IOException;
@@ -11,26 +14,36 @@ public class BrokerApplication {
 
 	public static void main(String[] args) throws Exception {
 		// Check arguments
-		if (args.length < 4) {
+		if (args.length < 5) {
 			log.error("Argument(s) missing!");
-			log.error("Usage: java "+ BrokerApplication.class.getName() +" + uddiURL wsName wsURL keyStorePath");
+			log.error("Usage: java "+ BrokerApplication.class.getName() +" + wsPrimary wsBackup wsType wsName uddiURL");
 			return;
 		}
 
-		String uddiURL = args[0];
-		String wsName = args[1];
-		String wsUrl = args[2];
-		String keyStorePath = args[3];
+		String wsPrimary = args[0];
+		String wsBackup = args[1];
+		String wsType = args[2];
+		String wsName = args[3];
+		String uddiURL = args[4];
 
-		EndpointManager endpointManager = new EndpointManager(uddiURL, wsUrl);
+		EndpointManager endpointManager;
+		Broker broker;
+		if (Integer.parseInt(wsType) == 1) {
+			endpointManager = new EndpointManager(wsPrimary, wsBackup, wsName, uddiURL);
+			broker = new BrokerPrimary();
+			endpointManager.registerUddi();
+		} else {
+			endpointManager = new EndpointManager(wsBackup, wsPrimary, wsName, uddiURL);
+			broker = new BrokerBackup();
+		}
 
 		endpointManager.start();
-
-		Manager.getInstance().init(uddiURL, keyStorePath);
+		Manager.getInstance().init(endpointManager, broker);
 
 		if (endpointManager.awaitConnections()) {
 			try {
 				System.out.println("Press enter to shutdown");
+
 				System.in.read();
 			} catch (IOException e) {
 				log.error("Error:: ", e);

@@ -46,15 +46,17 @@ public class RequestTransportIT extends AbstractIT {
     public void referencePrice0ShouldReturn0() throws Exception {
         String tID = CLIENT.requestTransport(CENTER_1, CENTER_2, ZERO_PRICE);
 
-        TransportView tView = CLIENT.viewTransport(tID);
-        assertTrue("job price is not zero", tView.getPrice().equals(ZERO_PRICE));
+        TransportView tView;
+        tView = CLIENT.viewTransport(tID);
+        assertEquals(ZERO_PRICE, tView.getPrice().intValue());
     }
 
     @Test
     public void referencePrice1ShouldReturn0() throws Exception {
         String tID = CLIENT.requestTransport(CENTER_1, CENTER_2, UNITARY_PRICE);
 
-        TransportView tView = CLIENT.viewTransport(tID);
+        TransportView tView;
+        tView = CLIENT.viewTransport(tID);
         assertTrue("job price is not zero", tView.getPrice().equals(ZERO_PRICE));
     }
 
@@ -62,7 +64,8 @@ public class RequestTransportIT extends AbstractIT {
     public void referencePriceLowerLimitShouldReturnPriceBelowLowerLimit() throws Exception {
         String tID = CLIENT.requestTransport(CENTER_1, CENTER_2, PRICE_SMALLEST_LIMIT);
 
-        TransportView tView = CLIENT.viewTransport(tID);
+        TransportView tView;
+        tView = CLIENT.viewTransport(tID);
         assertTrue("job price is not less them reference price", tView.getPrice() < PRICE_SMALLEST_LIMIT);
     }
 
@@ -70,7 +73,8 @@ public class RequestTransportIT extends AbstractIT {
     public void successEvenPriceRequestTransporterCenter() throws Exception {
         String tID = CLIENT.requestTransport(CENTER_1, CENTER_2, evenPrice*2);
 
-        TransportView tView = CLIENT.viewTransport(tID);
+        TransportView tView;
+        tView = CLIENT.viewTransport(tID);
         assertTrue("job price is not less them reference price", tView.getPrice() < evenPrice*2);
     }
 
@@ -78,7 +82,8 @@ public class RequestTransportIT extends AbstractIT {
     public void successODDPriceRequestTransporterCenter() throws Exception {
         String tID = CLIENT.requestTransport(CENTER_1, CENTER_2, oddPrice*3);
 
-        TransportView tView = CLIENT.viewTransport(tID);
+        TransportView tView;
+        tView = CLIENT.viewTransport(tID);
         assertTrue("job price is not less them reference price", tView.getPrice() < oddPrice*3);
     }
 
@@ -86,7 +91,8 @@ public class RequestTransportIT extends AbstractIT {
     public void evenPriceRequestTransporterSouth() throws Exception {
         String tID = CLIENT.requestTransport(SOUTH_1, SOUTH_2, evenPrice*4);
 
-        TransportView tView = CLIENT.viewTransport(tID);
+        TransportView tView;
+        tView = CLIENT.viewTransport(tID);
         assertTrue("job price is not less them reference price", tView.getPrice() < evenPrice*4);
     }
 
@@ -94,7 +100,8 @@ public class RequestTransportIT extends AbstractIT {
     public void successODDPriceRequestTransporterSouth() throws Exception {
         String tID = CLIENT.requestTransport(SOUTH_1, SOUTH_2, oddPrice*5);
 
-        TransportView tView = CLIENT.viewTransport(tID);
+        TransportView tView;
+        tView = CLIENT.viewTransport(tID);
         assertTrue("job price is not less them reference price", tView.getPrice() < oddPrice*5);
     }
 
@@ -102,7 +109,8 @@ public class RequestTransportIT extends AbstractIT {
     public void successEvenPriceRequestTransporterNorth() throws Exception {
         String tID = CLIENT.requestTransport(NORTH_1, NORTH_2, evenPrice*6);
 
-        TransportView tView = CLIENT.viewTransport(tID);
+        TransportView tView;
+        tView = CLIENT.viewTransport(tID);
         assertTrue("job price is not less them reference price", tView.getPrice() < evenPrice*6);
     }
 
@@ -110,7 +118,8 @@ public class RequestTransportIT extends AbstractIT {
     public void oddPriceRequestTransporterNorth() throws Exception {
         String tID = CLIENT.requestTransport(NORTH_1, NORTH_2, oddPrice*7);
 
-        TransportView tView = CLIENT.viewTransport(tID);
+        TransportView tView;
+        tView = CLIENT.viewTransport(tID);
         assertTrue("job price is not less them reference price", tView.getPrice() < oddPrice*7);
     }
 
@@ -118,7 +127,8 @@ public class RequestTransportIT extends AbstractIT {
     public void evenPriceRequestTransporterCenterSouth() throws Exception {
         String tID = CLIENT.requestTransport(CENTER_1, SOUTH_2, evenPrice*8);
 
-        TransportView tView = CLIENT.viewTransport(tID);
+        TransportView tView;
+        tView = CLIENT.viewTransport(tID);
         assertTrue("job price is not less them reference price", tView.getPrice() < evenPrice*8);
     }
 
@@ -126,7 +136,8 @@ public class RequestTransportIT extends AbstractIT {
     public void successOddPriceRequestTransporterCenterSouth() throws Exception {
         String tID = CLIENT.requestTransport(SOUTH_1, CENTER_2, oddPrice*9);
 
-        TransportView tView = CLIENT.viewTransport(tID);
+        TransportView tView;
+        tView = CLIENT.viewTransport(tID);
         assertTrue("job price is not less them reference price", tView.getPrice() < oddPrice*9);
     }
 
@@ -134,7 +145,8 @@ public class RequestTransportIT extends AbstractIT {
     public void oddPriceRequestTransporterCenterNorth() throws Exception {
         String tID = CLIENT.requestTransport(NORTH_1, CENTER_2, oddPrice*3);
 
-        TransportView tView = CLIENT.viewTransport(tID);
+        TransportView tView;
+        tView = CLIENT.viewTransport(tID);
         assertTrue("job price is not less them reference price", tView.getPrice() < oddPrice*3);
     }
 
@@ -142,7 +154,8 @@ public class RequestTransportIT extends AbstractIT {
     public void successEvenPriceRequestTransporterCenterNorth() throws Exception {
         String tID = CLIENT.requestTransport(CENTER_1, NORTH_2, evenPrice*2);
 
-        TransportView tView = CLIENT.viewTransport(tID);
+        TransportView tView;
+        tView = CLIENT.viewTransport(tID);
         assertTrue("job price is not less them reference price", tView.getPrice() < evenPrice*2);
     }
 
@@ -150,7 +163,8 @@ public class RequestTransportIT extends AbstractIT {
     public void successCaseInsensitiveOriginDestinationRequestTransporter() throws Exception {
         String tID = CLIENT.requestTransport("LisBOA", "LEIria", PRICE_SMALLEST_LIMIT);
 
-        TransportView tView = CLIENT.viewTransport(tID);
+        TransportView tView;
+        tView = CLIENT.viewTransport(tID);
         assertTrue("job price is not less them reference price", tView.getPrice() < PRICE_SMALLEST_LIMIT);
     }
     /*----------------------------------------------SD-Tests1---------------------------------------------------------*/
@@ -167,6 +181,7 @@ public class RequestTransportIT extends AbstractIT {
     public void testRequestTransportSouthZeroPrice() throws Exception {
         String id = CLIENT.requestTransport(SOUTH_1, CENTER_1, ZERO_PRICE);
         TransportView tv = CLIENT.viewTransport(id);
+
         assertEquals(ZERO_PRICE, tv.getPrice().intValue());
     }
 

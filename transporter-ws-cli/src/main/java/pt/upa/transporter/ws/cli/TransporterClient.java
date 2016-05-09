@@ -41,10 +41,7 @@ public class TransporterClient implements TransporterPortType {
 	/** UDDI lookup */
 	private void uddiLookup() throws TransporterClientException {
 		try {
-			log.info("Contacting UDDI at " + uddiURL);
 			UDDINaming uddiNaming = new UDDINaming(uddiURL);
-
-			log.info("Looking for '" + wsName + "'");
 			wsURL = uddiNaming.lookup(wsName);
 
 		} catch (Exception e) {
@@ -60,11 +57,9 @@ public class TransporterClient implements TransporterPortType {
 
 	/** Stub creation and configuration */
 	private void createStub() {
-		log.info("Creating stub ...");
 		TransporterService service = new TransporterService();
 		port = service.getTransporterPort();
 
-		log.info("Setting endpoint address ...");
 		BindingProvider bindingProvider = (BindingProvider) port;
 		Map<String, Object> requestContext = bindingProvider.getRequestContext();
 		requestContext.put(ENDPOINT_ADDRESS_PROPERTY, wsURL);
