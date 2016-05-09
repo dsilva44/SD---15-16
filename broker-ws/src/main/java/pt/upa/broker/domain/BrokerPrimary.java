@@ -1,12 +1,6 @@
 package pt.upa.broker.domain;
 
-import pt.upa.broker.ws.EndpointManager;
-
 public class BrokerPrimary extends Broker {
-
-    public BrokerPrimary(String uddiURL, EndpointManager epm) {
-        super(uddiURL, epm);
-    }
 
     @Override
     public void updateTransport(String tSerialized) {
@@ -15,9 +9,11 @@ public class BrokerPrimary extends Broker {
 
     @Override
     public void goNext() {
-        BrokerBackup brokerBackup = new BrokerBackup(getUddiURL(), getEndPointManager());
-        brokerBackup.registerUddi();
-        Manager.getInstance().setCurrBroker(brokerBackup);
+        Manager manager = Manager.getInstance();
+
+        BrokerBackup brokerBackup = new BrokerBackup();
+        manager.getEndPointManager().registerUddi();
+        manager.setCurrBroker(brokerBackup);
     }
 
     @Override

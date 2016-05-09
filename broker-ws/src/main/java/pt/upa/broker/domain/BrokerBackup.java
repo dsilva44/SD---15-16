@@ -13,10 +13,6 @@ import java.util.TimerTask;
 public class BrokerBackup extends Broker {
     static private final Logger log = LogManager.getRootLogger();
 
-    public BrokerBackup(String uddiURL, EndpointManager epm) {
-        super(uddiURL, epm);
-    }
-
     @Override
     public void updateTransport(String tSerialized) {
         Manager manager = Manager.getInstance();
@@ -43,20 +39,24 @@ public class BrokerBackup extends Broker {
 
     @Override
     public void goNext() {
-        BrokerPrimary brokerPrimary = new BrokerPrimary(getUddiURL(), getEndPointManager());
-        brokerPrimary.registerUddi();
-        Manager.getInstance().setCurrBroker(brokerPrimary);
+        Manager manager = Manager.getInstance();
+
+        BrokerPrimary brokerPrimary = new BrokerPrimary();
+        manager.getEndPointManager().registerUddi();
+        manager.setCurrBroker(brokerPrimary);
     }
 
     @Override
     public void monitor(long delay, long period) {
-        BrokerPortType broker = createStub(2000, 2000);
+        EndpointManager epm = Manager.getInstance().getEndPointManager();
+
+        BrokerPortType brokerPrimary = epm.createStub(epm.getWsURL2(), 2000, 2000);
         Timer timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask(){
             @Override
             public void run() {
                 try {
-                    broker.ping("BrokerBackup");
+                    brokerPrimary.ping("BrokerBackup");
                     log.debug("--------------Is Alive----------------");
                 } catch (WebServiceException wse) {
                     log.debug("--------------Is Dead.----------------");

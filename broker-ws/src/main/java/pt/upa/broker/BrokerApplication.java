@@ -29,12 +29,12 @@ public class BrokerApplication {
 		EndpointManager endpointManager;
 		Broker broker;
 		if (Integer.parseInt(wsType) == 1) {
-			endpointManager = new EndpointManager(wsPrimary, wsBackup, wsName);
-			broker = new BrokerPrimary(uddiURL, endpointManager);
-			broker.registerUddi();
+			endpointManager = new EndpointManager(wsPrimary, wsBackup, wsName, uddiURL);
+			broker = new BrokerPrimary();
+			endpointManager.registerUddi();
 		} else {
-			endpointManager = new EndpointManager(wsBackup, wsPrimary, wsName);
-			broker = new BrokerBackup(uddiURL, endpointManager);
+			endpointManager = new EndpointManager(wsBackup, wsPrimary, wsName, uddiURL);
+			broker = new BrokerBackup();
 		}
 
 		endpointManager.start();
@@ -50,7 +50,6 @@ public class BrokerApplication {
 			}
 		}
 		endpointManager.stop();
-		broker.deleteFromUDDI();
 	}
 
 }

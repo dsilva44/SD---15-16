@@ -103,7 +103,8 @@ public class BrokerPort implements BrokerPortType{
 			tSerialized = new Gson().toJson(transport);
 		}
 		try {
-			BrokerPortType brokerStub = manager.getCurrBroker().createStub(0, 0);
+			EndpointManager epm = manager.getEndPointManager();
+			BrokerPortType brokerStub = epm.createStub(epm.getWsURL2(), 2000, 2000);
 			return brokerStub.updateTransport(tSerialized);
 		} catch (WebServiceException wse) {
 			return null;

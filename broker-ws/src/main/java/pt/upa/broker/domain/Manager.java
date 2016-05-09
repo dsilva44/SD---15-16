@@ -48,7 +48,7 @@ public class Manager {
         return transportsList;
     }
     public Broker getCurrBroker() {return currBroker;}
-    public EndpointManager getEndPointManager() {return epm;}
+    public EndpointManager getEndPointManager() { return epm; }
 
     public void setCurrBroker(Broker currBroker) { this.currBroker = currBroker; }
 
@@ -74,7 +74,7 @@ public class Manager {
 
     boolean updateTransportersList() {
         String query = "UpaTransporter%";
-        ArrayList<String> transporterURLS = (ArrayList<String>) currBroker.uddiNamingList(query);
+        ArrayList<String> transporterURLS = (ArrayList<String>) epm.findInUddi(query);
 
         transporterClients.clear();
         for (String url : transporterURLS) {
@@ -108,7 +108,7 @@ public class Manager {
     	Transport t = getTransportById(id);
         if (t == null) throwUnknownTransportFault(id);
 
-        TransporterClient client = new TransporterClient(currBroker.getUddiURL(), t.getTransporterCompany());
+        TransporterClient client = new TransporterClient(epm.getUddiURL(), t.getTransporterCompany());
         JobView jobView = client.jobStatus(t.getChosenOfferID());
         t.setState(jobView);
 
@@ -199,7 +199,7 @@ public class Manager {
     private void rejectOffersAcceptBest(Transport t , JobView bestOffer) {
         for (JobView offer : t.getOffers()) {
             String companyName = offer.getCompanyName();
-            TransporterClient client = new TransporterClient(currBroker.getUddiURL(), companyName);
+            TransporterClient client = new TransporterClient(epm.getUddiURL(), companyName);
 
             try {
                 if (bestOffer != null && offer.getJobIdentifier().equals(bestOffer.getJobIdentifier()) ) {

@@ -18,8 +18,6 @@ import java.util.Collection;
 
 import static org.junit.Assert.*;
 
-
-
 public class ManagerTest {
 
     // static members
@@ -64,8 +62,8 @@ public class ManagerTest {
         transport.setId("1");
         transport.setState(TransportStateView.REQUESTED);
 
-        EndpointManager endpointManager = new EndpointManager(wsBackup, wsPrimary, wsName);
-        Broker broker = new BrokerBackup(uddiURL, endpointManager);
+        EndpointManager endpointManager = new EndpointManager(wsBackup, wsPrimary, wsName, uddiURL);
+        Broker broker = new BrokerBackup();
         manager.init(endpointManager, broker);
     }
 
