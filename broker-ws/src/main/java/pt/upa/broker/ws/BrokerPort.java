@@ -1,8 +1,6 @@
 package pt.upa.broker.ws;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import com.google.gson.Gson;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import pt.upa.broker.domain.Manager;
@@ -10,13 +8,15 @@ import pt.upa.broker.domain.Transport;
 import pt.upa.transporter.ws.BadLocationFault_Exception;
 import pt.upa.transporter.ws.BadPriceFault_Exception;
 
-import javax.jws.HandlerChain;
 import javax.jws.WebService;
+import javax.xml.ws.WebServiceException;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @WebService(
 		endpointInterface = "pt.upa.broker.ws.BrokerPortType",
-		wsdlLocation = "broker.1_0.wsdl",
+		wsdlLocation = "broker.2_0.wsdl",
 		portName = "BrokerPort",
 		targetNamespace = "http://ws.broker.upa.pt/",
 		serviceName = "BrokerService"
@@ -28,10 +28,7 @@ public class BrokerPort implements BrokerPortType{
 	
 	@Override
 	public String ping(String name) {
-		int numResponses = manager.findTransporters();
-
-		log.debug("ping: " + numResponses);
-		return numResponses + " transporters available";
+		return "pong "+name+"!!!";
 	}
 
 	@Override
@@ -43,7 +40,9 @@ public class BrokerPort implements BrokerPortType{
 		try {
 			transport = manager.requestTransport(origin, destination, price);
 			manager.decideBestOffer(transport);
-			log.debug("requestTransport: " + transport.getId() );
+
+			updateBackup(transport);
+
 		} catch (BadLocationFault_Exception e) {
 			manager.throwUnknownLocationFault(e.getMessage()); return null;
 		} catch (BadPriceFault_Exception e) {
@@ -54,20 +53,26 @@ public class BrokerPort implements BrokerPortType{
 	}
 
 	@Override
-	public TransportView viewTransport(String id) throws UnknownTransportFault_Exception {
-		Transport t = manager.updateTransportState(id);
-		if (t == null) manager.throwUnknownTransportFault(id);
+	public String updateTransport(String tSerialized) {
+		manager.getCurrBroker().updateTransport(tSerialized);
 
-		log.debug("viewTransport return:" );
-		return t.toTransportView();
+		return "OK";
 	}
-	
+
+	@Override
+	public TransportView viewTransport(String id) throws UnknownTransportFault_Exception {
+		Transport transport = manager.updateTransportState(id);
+		if (transport == null) manager.throwUnknownTransportFault(id);
+
+		updateBackup(transport);
+
+		return transport.toTransportView();
+	}
+
 
 	@Override
 	public List<TransportView> listTransports() {
 		ArrayList<Transport> transports = (ArrayList<Transport>) manager.getTransportsList();
-
-		log.debug("listTransports:");
 		return transportListToTransportViewList(transports);
 	}
 
@@ -75,6 +80,8 @@ public class BrokerPort implements BrokerPortType{
 	public void clearTransports() {
 		manager.clearTransports();
 		manager.clearTransportersClients();
+
+		updateBackup(null);
 	}
 
 	private List<TransportView> transportListToTransportViewList(ArrayList<Transport> transports){
@@ -86,9 +93,21 @@ public class BrokerPort implements BrokerPortType{
                 views.add(transport.toTransportView());
             }
         }
-
-		log.debug("listTransports:");
 		return views;
 	}
-	
+
+	private String updateBackup(Transport transport) {
+		String tSerialized = null;
+		if (transport != null) {
+			log.debug("Backup: "+transport.toString());
+			tSerialized = new Gson().toJson(transport);
+		}
+		try {
+			EndpointManager epm = manager.getEndPointManager();
+			BrokerPortType brokerStub = epm.createStub(epm.getWsURL2(), 2000, 2000);
+			return brokerStub.updateTransport(tSerialized);
+		} catch (WebServiceException wse) {
+			return null;
+		}
+	}
 }

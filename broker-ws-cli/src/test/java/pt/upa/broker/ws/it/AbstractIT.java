@@ -48,6 +48,7 @@ public abstract class AbstractIT {
     @BeforeClass
     public static void oneTimeSetUp() throws Exception {
         String uddiURL = "http://localhost:9090";
+        String clientBackupURL = "http://localhost:9092/broker-ws/endpoint";
 
         CLIENT = new BrokerClient(uddiURL, "UpaBroker");
     }

@@ -18,8 +18,6 @@ import java.util.Collection;
 
 import static org.junit.Assert.*;
 
-
-
 public class ManagerTest {
 
     // static members
@@ -36,7 +34,10 @@ public class ManagerTest {
 
     //Members
     private Manager manager = Manager.getInstance();
+    private final String wsName = "UpaBroker";
     private final String uddiURL = "http://localhost:9090";
+    private final String wsPrimary = "http://localhost:9091/broker-ws/endpoint";
+    private final String wsBackup = "http://localhost:9091/broker-ws/endpoint";
     private final String  transporterQuery = "UpaTransporter%";
     private final String wsURL1 = "http://localhost:8081/transporter-ws/endpoint";
     private final String wsURL2 = "http://localhost:8082/transporter-ws/endpoint";
@@ -60,6 +61,10 @@ public class ManagerTest {
         transport = new Transport();
         transport.setId("1");
         transport.setState(TransportStateView.REQUESTED);
+
+        EndpointManager endpointManager = new EndpointManager(wsBackup, wsPrimary, wsName, uddiURL);
+        Broker broker = new BrokerBackup();
+        manager.init(endpointManager, broker);
     }
 
     @After
@@ -76,7 +81,7 @@ public class ManagerTest {
         }};
         //manager.setUddiNaming(uddiNamingMock);
 
-        boolean result = manager.updateTransportersList(uddiURL);
+        boolean result = manager.updateTransportersList();
 
         new Verifications() {{
             uddiNamingMock.list(transporterQuery); maxTimes = 1;
@@ -93,7 +98,7 @@ public class ManagerTest {
         }};
         //manager.setUddiNaming(uddiNamingMock);
 
-        boolean result = manager.updateTransportersList(uddiURL);
+        boolean result = manager.updateTransportersList();
 
         new Verifications() {{
             uddiNamingMock.list(transporterQuery); maxTimes = 1;
@@ -179,16 +184,6 @@ public class ManagerTest {
 		assertEquals(t1, manager.getTransportById("id1"));
 	}
 
-    @Test
-    public void getNextTransporterIdShouldReturnDifferentValues() {
-        String id1 = manager.nextTransporterID();
-        String id2 = manager.nextTransporterID();
-        String id3 = manager.nextTransporterID();
-
-        assertNotEquals("ids are equals", id1, id2);
-        assertNotEquals("ids are equals", id1, id3);
-        assertNotEquals("ids are equals", id2, id3);
-    }
     //-------------------------------------requestTransport(origin, destination, price)---------------------------------
     @Test(expected = UnknownLocationFault_Exception.class)
     public void unknownOrigin()

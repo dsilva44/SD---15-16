@@ -5,6 +5,10 @@ import mockit.integration.junit4.JMockit;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
+import pt.upa.broker.domain.Broker;
+import pt.upa.broker.domain.BrokerPrimary;
+import pt.upa.broker.domain.Manager;
+import pt.upa.broker.domain.Transport;
 import pt.upa.broker.exception.BrokerEndpointException;
 import pt.upa.broker.exception.BrokerUddiNamingException;
 
@@ -34,9 +38,9 @@ public class EndpointManagerTest {
     }
 
     // members
-    private String brokerName = "UpaBroker";
-    private String validUddiURL = "http://localhost:9090";
+    private String wsName = "UpaBroker";
     private String validWsURL = "http://localhost:8080/broker-ws/endpoint";
+    private final String validUddiURL = "http://localhost:9090";
 
     // initialization and clean-up for each test
     @Before
@@ -52,75 +56,45 @@ public class EndpointManagerTest {
     // tests
     @Test
     public void successInitialization() {
-        EndpointManager endpointManager = new EndpointManager(validUddiURL, validWsURL);
-        assertEquals("uddiURL not properly set", validUddiURL, endpointManager.getUddiURL());
-        assertEquals("wsURL not properly set", validWsURL, endpointManager.getWsURL());
+        EndpointManager endpointManager = new EndpointManager(validWsURL, validWsURL, wsName, validUddiURL);
+        assertEquals("wsURL not properly set", validWsURL, endpointManager.getWsURL1());
 
         assertNotNull("endpoint not initialize correctly", endpointManager.getEndpoint());
-        assertNotNull("uddiNaming not initialize correctly", endpointManager.getUddiURL());
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void invalidUddiURL() {
-        String invalidUddiURL = "POTATO";
-        new EndpointManager(invalidUddiURL, validWsURL);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void invalidWsURL() {
         String invalidWsURL = "POTATO";
-        new EndpointManager(validUddiURL, invalidWsURL);
+        new EndpointManager(invalidWsURL, validWsURL, wsName, validUddiURL);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void invalidUddiURL() {
+        String invalidUddiURL = "POTATO";
+        new EndpointManager(validWsURL, validWsURL, wsName, invalidUddiURL);
     }
 
     @Test
     public void successStart(@Mocked Endpoint endpointMock) {
-        EndpointManager endpointManager = new EndpointManager(validUddiURL, validWsURL);
-
-        UDDINaming  uddiNamingMock = new MockUp<UDDINaming>() {
-            @Mock
-            void rebind(String wsName, String wsURL) {
-                assertEquals("wsName not pass correctly", wsName, endpointManager.getWsName());
-                assertEquals("wsURL not pass correctly", wsURL, endpointManager.getWsURL());
-            }
-        }.getMockInstance();
-
-        endpointManager.setUddiNaming(uddiNamingMock);
+        EndpointManager endpointManager = new EndpointManager(validWsURL, validWsURL, wsName, validUddiURL);
         endpointManager.setEndpoint(endpointMock);
 
         endpointManager.start();
 
-        assertTrue("started status is not set to true", endpointManager.isStarted());
+        assertTrue("started status is not set to true", endpointManager.isPublish());
     }
 
     @Test(expected = BrokerEndpointException.class)
     public void startShouldTrowExceptionWhenErrorOccurredOnEndpoint (
-            @Mocked Endpoint endpointMock, @Mocked UDDINaming uddiNamingMock) throws JAXRException {
-        EndpointManager endpointManager = new EndpointManager(validUddiURL, validWsURL);
+            @Mocked Endpoint endpointMock) throws JAXRException {
+        EndpointManager endpointManager = new EndpointManager(validWsURL, validWsURL, wsName, validUddiURL);
 
         new Expectations() {{
             endpointMock.publish(validWsURL); result = new Exception();
         }};
 
         endpointManager.setAwaitConnection(true);
-        endpointManager.setStarted(true);
-        endpointManager.setUddiNaming(uddiNamingMock);
-        endpointManager.setEndpoint(endpointMock);
-
-        endpointManager.start();
-    }
-
-    @Test(expected = BrokerUddiNamingException.class)
-    public void startShouldTrowExceptionWhenErrorOccurredOnUddiNaming (
-            @Mocked Endpoint endpointMock, @Mocked UDDINaming uddiNamingMock) throws JAXRException {
-        EndpointManager endpointManager = new EndpointManager(validUddiURL, validWsURL);
-
-        new Expectations() {{
-            uddiNamingMock.rebind(brokerName, validWsURL); result = new Exception();
-        }};
-
-        endpointManager.setAwaitConnection(true);
-        endpointManager.setStarted(true);
-        endpointManager.setUddiNaming(uddiNamingMock);
+        endpointManager.setPublished(true);
         endpointManager.setEndpoint(endpointMock);
 
         endpointManager.start();
@@ -129,9 +103,9 @@ public class EndpointManagerTest {
 
     @Test
     public void successAwaitConnection() {
-        EndpointManager endpointManager = new EndpointManager(validUddiURL, validWsURL);
+        EndpointManager endpointManager = new EndpointManager(validWsURL, validWsURL, wsName, validUddiURL);
 
-        endpointManager.setStarted(true);
+        endpointManager.setPublished(true);
 
         boolean awaitConnectionReturn = endpointManager.awaitConnections();
 
@@ -141,9 +115,9 @@ public class EndpointManagerTest {
 
     @Test
     public void shouldNotAwaitConnectionsWhenWsIsNotStarted() {
-        EndpointManager endpointManager = new EndpointManager(validUddiURL, validWsURL);
+        EndpointManager endpointManager = new EndpointManager(validWsURL, validWsURL, wsName, validUddiURL);
 
-        endpointManager.setStarted(false);
+        endpointManager.setPublished(false);
 
         boolean awaitConnectionReturn = endpointManager.awaitConnections();
 
@@ -153,106 +127,91 @@ public class EndpointManagerTest {
 
     @Test
     public void successStopWhenWsIsStarted(@Mocked Endpoint endpointMock) {
-        EndpointManager endpointManager = new EndpointManager(validUddiURL, validWsURL);
+        EndpointManager endpointManager = new EndpointManager(validWsURL, validWsURL, wsName, validUddiURL);
 
-
-        UDDINaming  uddiNamingMock = new MockUp<UDDINaming>() {
-            @Mock
-            void unbind(String wsName) {
-                assertEquals("wsName not pass correctly", wsName, endpointManager.getWsName());
-            }
-        }.getMockInstance();
-        endpointManager.setStarted(true);
+        endpointManager.setPublished(true);
         endpointManager.setAwaitConnection(false);
         endpointManager.setEndpoint(endpointMock);
-        endpointManager.setUddiNaming(uddiNamingMock);
 
         endpointManager.stop();
 
-        assertFalse("started status not changed", endpointManager.isStarted());
+        assertFalse("started status not changed", endpointManager.isPublish());
         assertFalse("await status not changed", endpointManager.isAwaitConnection());
     }
 
     @Test
     public void successStopWhenWsIsAwaiting(@Mocked Endpoint endpointMock) throws Exception {
-        EndpointManager endpointManager = new EndpointManager(validUddiURL, validWsURL);
+        EndpointManager endpointManager = new EndpointManager(validWsURL, validWsURL, wsName, validUddiURL);
 
-        UDDINaming  uddiNamingMock = new MockUp<UDDINaming>() {
-            @Mock
-            void unbind(String wsName) {
-                assertEquals("wsName not pass correctly", wsName, endpointManager.getWsName());
-            }
-        }.getMockInstance();
         endpointManager.setAwaitConnection(true);
-        endpointManager.setStarted(false);
+        endpointManager.setPublished(false);
         endpointManager.setEndpoint(endpointMock);
-        endpointManager.setUddiNaming(uddiNamingMock);
 
         endpointManager.stop();
 
-        assertFalse("started status not changed", endpointManager.isStarted());
-        assertFalse("await status not changed", endpointManager.isAwaitConnection());
-    }
-
-    @Test
-    public void successStopWhenEndpointAndUddiNamingIsNull() throws Exception {
-        EndpointManager endpointManager = new EndpointManager(validUddiURL, validWsURL);
-
-        endpointManager.setEndpoint(null);
-        endpointManager.setUddiNaming(null);
-
-        endpointManager.stop();
-
-        assertFalse("started status not changed", endpointManager.isStarted());
+        assertFalse("started status not changed", endpointManager.isPublish());
         assertFalse("await status not changed", endpointManager.isAwaitConnection());
     }
 
     @Test
     public void successStopWhenWsIsNotStartedAndAwaitingConnections(
             @Mocked Endpoint endpointMock, @Mocked UDDINaming uddiNamingMock) throws Exception {
-        EndpointManager endpointManager = new EndpointManager(validUddiURL, validWsURL);
+        EndpointManager endpointManager = new EndpointManager(validWsURL, validWsURL, wsName, validUddiURL);
 
         endpointManager.setEndpoint(endpointMock);
-        endpointManager.setUddiNaming(uddiNamingMock);
         endpointManager.setAwaitConnection(false);
-        endpointManager.setStarted(false);
+        endpointManager.setPublished(false);
 
         endpointManager.stop();
 
-        assertFalse("started status not changed", endpointManager.isStarted());
+        assertFalse("started status not changed", endpointManager.isPublish());
         assertFalse("await status not changed", endpointManager.isAwaitConnection());
     }
 
     @Test (expected = BrokerEndpointException.class)
-    public void stopShouldTrowExceptionWhenErrorOccurredOnEndpoint (
-            @Mocked Endpoint endpointMock, @Mocked UDDINaming uddiNamingMock) throws JAXRException {
-        EndpointManager endpointManager = new EndpointManager(validUddiURL, validWsURL);
+    public void stopShouldTrowExceptionWhenErrorOccurredOnEndpoint (@Mocked Endpoint endpointMock) throws JAXRException {
+        EndpointManager endpointManager = new EndpointManager(validWsURL, validWsURL, wsName, validUddiURL);
 
         new Expectations() {{
             endpointMock.stop(); result = new Exception();
+            endpointMock.isPublished(); result = true;
         }};
 
         endpointManager.setAwaitConnection(true);
-        endpointManager.setStarted(true);
-        endpointManager.setUddiNaming(uddiNamingMock);
+        endpointManager.setPublished(true);
         endpointManager.setEndpoint(endpointMock);
 
         endpointManager.stop();
     }
 
-    @Test (expected = BrokerUddiNamingException.class)
-    public void stopShouldTrowExceptionWhenErrorOccurredOnUddiNaming (
-            @Mocked Endpoint endpointMock, @Mocked UDDINaming uddiNamingMock) throws JAXRException {
-        EndpointManager endpointManager = new EndpointManager(validUddiURL, validWsURL);
+    @Test
+    public void successRegisterAndDeleteFromUddi(@Mocked UDDINaming uddiNamingMock) throws Exception {
+        EndpointManager endpointManager = new EndpointManager(validWsURL, validWsURL, wsName, validUddiURL);
 
         new Expectations() {{
-            uddiNamingMock.unbind(brokerName); result = new Exception();
+            uddiNamingMock.rebind(endpointManager.getWsName(), endpointManager.getWsURL1());
+            uddiNamingMock.unbind(endpointManager.getWsName());
         }};
 
-        endpointManager.setAwaitConnection(true);
-        endpointManager.setStarted(true);
-        endpointManager.setUddiNaming(uddiNamingMock);
-        endpointManager.setEndpoint(endpointMock);
+        endpointManager.registerUddi();
+        assertTrue("register status not changed", endpointManager.isRegister());
+
+        endpointManager.stop();
+
+        assertFalse("register status not changed", endpointManager.isRegister());
+    }
+
+    @Test (expected = BrokerUddiNamingException.class)
+    public void stopShouldTrowExceptionWhenErrorOccurredOnUddiNaming (@Mocked UDDINaming uddiNamingMock) throws JAXRException {
+        EndpointManager endpointManager = new EndpointManager(validWsURL, validWsURL, wsName, validUddiURL);
+
+        new Expectations() {{
+            uddiNamingMock.rebind(endpointManager.getWsName(), endpointManager.getWsURL1());
+            uddiNamingMock.unbind(endpointManager.getWsName()); result = new Exception();
+        }};
+
+        endpointManager.registerUddi();
+        assertTrue("register status not changed", endpointManager.isRegister());
 
         endpointManager.stop();
     }

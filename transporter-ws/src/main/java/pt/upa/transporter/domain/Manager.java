@@ -105,7 +105,6 @@ public class Manager  {
             offerPrice = 0;
         else if (price <= 10) {
             offerPrice = genRandomTime(1, price);
-            log.debug("offerPrice: "  + offerPrice);
         }
         else if ((price % 2 == 0 & transporterParity.equals("EVEN")) ||
                 (price % 2 != 0 & transporterParity.equals("ODD")))
@@ -115,6 +114,8 @@ public class Manager  {
 
         offerJob.setJobPrice(offerPrice);
         jobs.add(offerJob);
+
+        log.debug("reference price: "+price+" offerPrice: "  + offerPrice+" offerID: "+offerJob.getJobIdentifier());
         return offerJob;
     }
 
