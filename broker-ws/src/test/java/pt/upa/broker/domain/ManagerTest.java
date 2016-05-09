@@ -186,16 +186,6 @@ public class ManagerTest {
 		assertEquals(t1, manager.getTransportById("id1"));
 	}
 
-    @Test
-    public void getNextTransporterIdShouldReturnDifferentValues() {
-        String id1 = manager.nextTransporterID();
-        String id2 = manager.nextTransporterID();
-        String id3 = manager.nextTransporterID();
-
-        assertNotEquals("ids are equals", id1, id2);
-        assertNotEquals("ids are equals", id1, id3);
-        assertNotEquals("ids are equals", id2, id3);
-    }
     //-------------------------------------requestTransport(origin, destination, price)---------------------------------
     @Test(expected = UnknownLocationFault_Exception.class)
     public void unknownOrigin()

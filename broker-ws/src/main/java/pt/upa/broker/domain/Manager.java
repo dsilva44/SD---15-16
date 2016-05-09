@@ -15,8 +15,7 @@ public class Manager {
     private static Manager manager = new Manager();
 
     private EndpointManager epm;
-    private Broker broker;
-    private int transportID = 0;
+    private Broker currBroker;
     private ArrayList<TransporterClient> transporterClients;
     private ArrayList<Transport> transportsList;
 
@@ -33,7 +32,13 @@ public class Manager {
     //Singleton init
     public void init(EndpointManager endpointManager, Broker broker) {
         this.epm = endpointManager;
-        this.broker = broker;
+        this.currBroker = broker;
+        broker.monitor(2000, 2000);
+    }
+
+    //State pattern
+    public void goNext() {
+        currBroker.goNext();
     }
 
     //getters
@@ -42,10 +47,10 @@ public class Manager {
     public List<Transport> getTransportsList() {
         return transportsList;
     }
-    public Broker getBroker() {return broker;}
+    public Broker getCurrBroker() {return currBroker;}
     public EndpointManager getEndPointManager() {return epm;}
 
-    public void setBroker(Broker broker) { this.broker = broker; }
+    public void setCurrBroker(Broker currBroker) { this.currBroker = currBroker; }
 
     Transport getTransportById(String id) {
         for (Transport t : transportsList)
@@ -54,10 +59,8 @@ public class Manager {
         return null;
     }
 
-    String nextTransporterID() {
-        String id = Integer.toString(transportID);
-        transportID++;
-        return id;
+    private String nextTransporterID() {
+        return Integer.toString(getTransportsList().size());
     }
 
     void addTransport(Transport t){
@@ -71,7 +74,7 @@ public class Manager {
 
     boolean updateTransportersList() {
         String query = "UpaTransporter%";
-        ArrayList<String> transporterURLS = (ArrayList<String>) broker.uddiNamingList(query);
+        ArrayList<String> transporterURLS = (ArrayList<String>) currBroker.uddiNamingList(query);
 
         transporterClients.clear();
         for (String url : transporterURLS) {
@@ -105,7 +108,7 @@ public class Manager {
     	Transport t = getTransportById(id);
         if (t == null) throwUnknownTransportFault(id);
 
-        TransporterClient client = new TransporterClient(broker.getUddiURL(), t.getTransporterCompany());
+        TransporterClient client = new TransporterClient(currBroker.getUddiURL(), t.getTransporterCompany());
         JobView jobView = client.jobStatus(t.getChosenOfferID());
         t.setState(jobView);
 
@@ -169,10 +172,6 @@ public class Manager {
         transporterClients.clear();
     }
 
-    public void updateTransport(String tSerialize) {
-        broker.updateTransport(this, tSerialize);
-    }
-
     //-------------------------------------------Aux methods------------------------------------------------------------
     private boolean containsCaseInsensitive(String s, List<String> l) {
         for (String string : l){
@@ -200,7 +199,7 @@ public class Manager {
     private void rejectOffersAcceptBest(Transport t , JobView bestOffer) {
         for (JobView offer : t.getOffers()) {
             String companyName = offer.getCompanyName();
-            TransporterClient client = new TransporterClient(broker.getUddiURL(), companyName);
+            TransporterClient client = new TransporterClient(currBroker.getUddiURL(), companyName);
 
             try {
                 if (bestOffer != null && offer.getJobIdentifier().equals(bestOffer.getJobIdentifier()) ) {

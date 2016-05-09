@@ -41,10 +41,8 @@ public class BrokerPort implements BrokerPortType{
 			transport = manager.requestTransport(origin, destination, price);
 			manager.decideBestOffer(transport);
 
-			String tSerialized = new Gson().toJson(transport);
-			updateBackup(tSerialized);
+			updateBackup(transport);
 
-			log.debug("Backup: "+transport.toString());
 		} catch (BadLocationFault_Exception e) {
 			manager.throwUnknownLocationFault(e.getMessage()); return null;
 		} catch (BadPriceFault_Exception e) {
@@ -56,7 +54,7 @@ public class BrokerPort implements BrokerPortType{
 
 	@Override
 	public String updateTransport(String tSerialized) {
-		manager.updateTransport(tSerialized);
+		manager.getCurrBroker().updateTransport(tSerialized);
 
 		return "OK";
 	}
@@ -66,10 +64,7 @@ public class BrokerPort implements BrokerPortType{
 		Transport transport = manager.updateTransportState(id);
 		if (transport == null) manager.throwUnknownTransportFault(id);
 
-		String tSerialized = new Gson().toJson(transport);
-		updateBackup(tSerialized);
-
-		log.debug("Update Backup: "+transport.toString());
+		updateBackup(transport);
 
 		return transport.toTransportView();
 	}
@@ -101,12 +96,16 @@ public class BrokerPort implements BrokerPortType{
 		return views;
 	}
 
-	private String updateBackup(String tSerialized) {
+	private String updateBackup(Transport transport) {
+		String tSerialized = null;
+		if (transport != null) {
+			log.debug("Backup: "+transport.toString());
+			tSerialized = new Gson().toJson(transport);
+		}
 		try {
-			BrokerPortType broker = manager.getBroker().createStub(0, 0);
-			return broker.updateTransport(tSerialized);
+			BrokerPortType brokerStub = manager.getCurrBroker().createStub(0, 0);
+			return brokerStub.updateTransport(tSerialized);
 		} catch (WebServiceException wse) {
-			log.warn("--------------Backup Is Down-----------");
 			return null;
 		}
 	}

@@ -13,18 +13,14 @@ import java.util.TimerTask;
 public class BrokerBackup extends Broker {
     static private final Logger log = LogManager.getRootLogger();
 
-    private final int CONN_TIMEOUT = 2000;
-    private int RECV_TIMEOUT = 2000;
-    private BrokerPortType brokerPrimary;
-
     public BrokerBackup(String uddiURL, EndpointManager epm) {
         super(uddiURL, epm);
-        brokerPrimary = createStub(CONN_TIMEOUT, RECV_TIMEOUT);
-        monitorPrimary();
     }
 
     @Override
-    public void updateTransport(Manager manager, String tSerialized) {
+    public void updateTransport(String tSerialized) {
+        Manager manager = Manager.getInstance();
+
         if (tSerialized == null) {
             manager.clearTransports();
             manager.clearTransportersClients();
@@ -45,25 +41,30 @@ public class BrokerBackup extends Broker {
         }
     }
 
-    private void monitorPrimary() {
+    @Override
+    public void goNext() {
+        BrokerPrimary brokerPrimary = new BrokerPrimary(getUddiURL(), getEndPointManager());
+        brokerPrimary.registerUddi();
+        Manager.getInstance().setCurrBroker(brokerPrimary);
+    }
+
+    @Override
+    public void monitor(long delay, long period) {
+        BrokerPortType broker = createStub(2000, 2000);
         Timer timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask(){
             @Override
             public void run() {
                 try {
-                    brokerPrimary.ping("BrokerBackup");
+                    broker.ping("BrokerBackup");
                     log.debug("--------------Is Alive----------------");
                 } catch (WebServiceException wse) {
-                    //Substitute primary
-                    log.error("BrokerPrimary is down: "+wse.getMessage());
-                    registerUddi();
+                    log.debug("--------------Is Dead.----------------");
+                    Manager.getInstance().goNext();
                     this.cancel();
                 }
             }
-        }, CONN_TIMEOUT, CONN_TIMEOUT);
+        }, delay, period);
     }
 
-    private void replacePrimary() {
-
-    }
 }

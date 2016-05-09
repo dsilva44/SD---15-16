@@ -90,7 +90,7 @@ public class BrokerTest {
     public void successUpdateNotExistentTransport() {
         BrokerBackup brokerBackup = new BrokerBackup(validUddiURL, endpointManager);
         String tSerialized = new Gson().toJson(transport);
-        brokerBackup.updateTransport(manager, tSerialized);
+        brokerBackup.updateTransport(tSerialized);
 
         assertNotNull("Transport not added", manager.getTransportById(transport.getId()));
     }
@@ -103,7 +103,7 @@ public class BrokerTest {
         Transport newT = new Transport(); newT.setId("1"); newT.setState(TransportStateView.COMPLETED);
         BrokerBackup brokerBackup = new BrokerBackup(validUddiURL, endpointManager);
         String tSerialized = new Gson().toJson(newT);
-        brokerBackup.updateTransport(manager, tSerialized);
+        brokerBackup.updateTransport(tSerialized);
 
         assertEquals("Not update", manager.getTransportById("1").getState(), TransportStateView.COMPLETED);
     }

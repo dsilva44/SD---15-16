@@ -132,5 +132,7 @@ public abstract class Broker {
         return port;
     }
 
-    public abstract void updateTransport(Manager manager, String tSerialized);
+    public abstract void updateTransport(String tSerialized);
+    public abstract void goNext();
+    public abstract void monitor(long delay, long period);
 }
