@@ -66,6 +66,8 @@ public class BrokerPort implements BrokerPortType{
 		Transport transport = manager.updateTransportState(id);
 		if (transport == null) manager.throwUnknownTransportFault(id);
 
+		log.debug("Backup: "+transport.toString());
+
 		String tSerialized = new Gson().toJson(transport);
 		updateBackup(tSerialized);
 
@@ -104,7 +106,7 @@ public class BrokerPort implements BrokerPortType{
 			BrokerPortType broker = manager.getBroker().createStub(0, 0);
 			return broker.updateTransport(tSerialized);
 		} catch (WebServiceException wse) {
-			log.error("Backup is down: "+wse.getMessage());
+			log.warn("--------------Backup Is Down-----------");
 			return null;
 		}
 	}

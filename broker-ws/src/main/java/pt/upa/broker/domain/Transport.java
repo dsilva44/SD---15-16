@@ -20,7 +20,6 @@ public class Transport {
 	private String chosenOfferID = null;
 	 
 	public Transport () {
-	
 	}
 	
 	public Transport(String id, String origin, String destination, int price, String transporterCompany, TransportStateView state) {
@@ -137,7 +136,7 @@ public class Transport {
 	@Override
 	public String toString() {
 		String string = getId()+" "+getOrigin()+" "+getDestination()+" "+getPrice()+" "+getTransporterCompany()+" "+
-				getState()+" offer: "+offers.size()+"chosen id: "+getChosenOfferID();
+				getState()+" offer: "+offers.size()+" chosen id: "+getChosenOfferID();
 		return string;
 	}
 }

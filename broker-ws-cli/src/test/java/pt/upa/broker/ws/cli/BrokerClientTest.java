@@ -51,7 +51,7 @@ public class BrokerClientTest {
 	// tests
 	// assertEquals(expected, actual);
 
-	@Test
+	//@Test
 	public void testMockUddi(@Mocked final UDDINaming uddiNaming) throws Exception {
 
 		// Preparation code not specific to JMockit, if any.
@@ -93,7 +93,7 @@ public class BrokerClientTest {
 		// verification block.
 	}
 
-	@Test
+	//@Test
 	public void testMockUddiNameNotFound(@Mocked final UDDINaming uddiNaming) throws Exception {
 
 		// Preparation code not specific to JMockit, if any.
@@ -137,7 +137,7 @@ public class BrokerClientTest {
 		// verification block.
 	}
 
-	@Test
+	//@Test
 	public void testMockUddiServerNotFound(@Mocked final UDDINaming uddiNaming) throws Exception {
 
 		// Preparation code not specific to JMockit, if any.
