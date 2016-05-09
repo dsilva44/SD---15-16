@@ -57,6 +57,10 @@ git clone -b R_1 https://github.com/tecnico-distsys/T_27-project.git
 cd uddi-naming
 mvn clean install
 ```
+```
+cd ws-handlers
+mvn clean install
+```
 
 
 
