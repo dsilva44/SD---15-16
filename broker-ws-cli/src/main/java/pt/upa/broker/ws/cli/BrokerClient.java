@@ -118,6 +118,12 @@ public class BrokerClient implements BrokerPortType {
     }
 
     @Override
+    public String registerBackup(String wsURL) {
+        //TODO
+        return port.registerBackup(wsURL);
+    }
+
+    @Override
     public String updateTransport(String tSerialized) {
         for(int i = NUM_TRIES; i > 0; i--) {
             try {

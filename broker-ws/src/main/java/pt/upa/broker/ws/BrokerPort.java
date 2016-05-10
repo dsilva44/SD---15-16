@@ -53,6 +53,12 @@ public class BrokerPort implements BrokerPortType{
 	}
 
 	@Override
+	public String registerBackup(String wsURL) {
+		//TODO
+		return null;
+	}
+
+	@Override
 	public String updateTransport(String tSerialized) {
 		manager.getCurrBroker().updateTransport(tSerialized);
 
