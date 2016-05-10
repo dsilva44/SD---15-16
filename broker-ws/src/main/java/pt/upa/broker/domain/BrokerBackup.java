@@ -3,6 +3,7 @@ package pt.upa.broker.domain;
 import com.google.gson.Gson;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import pt.upa.broker.exception.BrokerException;
 import pt.upa.broker.ws.BrokerPortType;
 import pt.upa.broker.ws.EndpointManager;
 
@@ -12,6 +13,15 @@ import java.util.TimerTask;
 
 public class BrokerBackup extends Broker {
     static private final Logger log = LogManager.getRootLogger();
+
+    public BrokerBackup(String primaryURL) {
+        super(primaryURL);
+    }
+
+    @Override
+    public void addBackupURL(String url) {
+        throw new BrokerException("BackUp Cannot add backups");
+    }
 
     @Override
     public void updateTransport(String tSerialized) {
@@ -41,7 +51,7 @@ public class BrokerBackup extends Broker {
     public void goNext() {
         Manager manager = Manager.getInstance();
 
-        BrokerPrimary brokerPrimary = new BrokerPrimary();
+        BrokerPrimary brokerPrimary = new BrokerPrimary(getPrimaryURL());
         manager.getEndPointManager().registerUddi();
         manager.setCurrBroker(brokerPrimary);
     }
@@ -50,7 +60,7 @@ public class BrokerBackup extends Broker {
     public void monitor(long delay, long period) {
         EndpointManager epm = Manager.getInstance().getEndPointManager();
 
-        BrokerPortType brokerPrimary = epm.createStub(epm.getWsURL2(), 2000, 2000);
+        BrokerPortType brokerPrimary = epm.createStub(getPrimaryURL(), 2000, 2000);
         Timer timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask(){
             @Override

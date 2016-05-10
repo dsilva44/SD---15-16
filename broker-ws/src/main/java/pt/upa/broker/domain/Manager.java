@@ -74,7 +74,7 @@ public class Manager {
 
     boolean updateTransportersList() {
         String query = "UpaTransporter%";
-        ArrayList<String> transporterURLS = (ArrayList<String>) epm.findInUddi(query);
+        ArrayList<String> transporterURLS = (ArrayList<String>) epm.uddiList(query);
 
         transporterClients.clear();
         for (String url : transporterURLS) {

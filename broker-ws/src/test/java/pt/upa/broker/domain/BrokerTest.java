@@ -12,6 +12,7 @@ public class BrokerTest {
 
     private Manager manager = Manager.getInstance();
     private Transport transport;
+    private final String primaryURL = "http://localhost:9091/broker-ws/endpoint";
 
     @Before
     public void setUp() {
@@ -23,7 +24,7 @@ public class BrokerTest {
     //-----------------------------------------updateTransport(...) -----------------------------------------
     @Test
     public void successUpdateNotExistentTransport() {
-        BrokerBackup brokerBackup = new BrokerBackup();
+        BrokerBackup brokerBackup = new BrokerBackup(primaryURL);
         String tSerialized = new Gson().toJson(transport);
         brokerBackup.updateTransport(tSerialized);
 
@@ -36,7 +37,7 @@ public class BrokerTest {
         assertEquals(manager.getTransportById("1").getState(), TransportStateView.REQUESTED);
 
         Transport newT = new Transport(); newT.setId("1"); newT.setState(TransportStateView.COMPLETED);
-        BrokerBackup brokerBackup = new BrokerBackup();
+        BrokerBackup brokerBackup = new BrokerBackup(primaryURL);
         String tSerialized = new Gson().toJson(newT);
         brokerBackup.updateTransport(tSerialized);
 

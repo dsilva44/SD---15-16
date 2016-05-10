@@ -7,10 +7,12 @@ import pt.upa.broker.domain.Manager;
 import pt.upa.broker.domain.Transport;
 import pt.upa.transporter.ws.BadLocationFault_Exception;
 import pt.upa.transporter.ws.BadPriceFault_Exception;
+import pt.upa.transporter.ws.cli.TransporterClient;
 
 import javax.jws.WebService;
 import javax.xml.ws.WebServiceException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 
@@ -54,8 +56,10 @@ public class BrokerPort implements BrokerPortType{
 
 	@Override
 	public String registerBackup(String wsURL) {
-		//TODO
-		return null;
+		//TODO - Throw exception if invalid wsURL
+		manager.getCurrBroker().addBackupURL(wsURL);
+
+		return "OK";
 	}
 
 	@Override
@@ -102,18 +106,23 @@ public class BrokerPort implements BrokerPortType{
 		return views;
 	}
 
-	private String updateBackup(Transport transport) {
+	private void updateBackup(Transport transport) {
 		String tSerialized = null;
 		if (transport != null) {
 			log.debug("Backup: "+transport.toString());
 			tSerialized = new Gson().toJson(transport);
 		}
-		try {
-			EndpointManager epm = manager.getEndPointManager();
-			BrokerPortType brokerStub = epm.createStub(epm.getWsURL2(), 2000, 2000);
-			return brokerStub.updateTransport(tSerialized);
-		} catch (WebServiceException wse) {
-			return null;
+
+		EndpointManager epm = manager.getEndPointManager();
+		Iterator<String> iterator = manager.getCurrBroker().getBackupURLs().iterator();
+		while(iterator.hasNext()) {
+			try {
+				BrokerPortType brokerStub = epm.createStub(iterator.next(), 2000, 2000);
+				brokerStub.updateTransport(tSerialized);
+			} catch (WebServiceException e) {
+				log.error("Backup endpoint down");
+				iterator.remove();
+			}
 		}
 	}
 }

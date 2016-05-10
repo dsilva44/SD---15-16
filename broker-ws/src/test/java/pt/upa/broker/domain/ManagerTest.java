@@ -36,9 +36,9 @@ public class ManagerTest {
     private Manager manager = Manager.getInstance();
     private final String wsName = "UpaBroker";
     private final String uddiURL = "http://localhost:9090";
-    private final String wsPrimary = "http://localhost:9091/broker-ws/endpoint";
-    private final String wsBackup = "http://localhost:9091/broker-ws/endpoint";
-    private final String  transporterQuery = "UpaTransporter%";
+    private final String primaryURL = "http://localhost:9091/broker-ws/endpoint";
+    private final String backupURL = "http://localhost:9092/broker-ws/endpoint";
+    private final String transporterQuery = "UpaTransporter%";
     private final String wsURL1 = "http://localhost:8081/transporter-ws/endpoint";
     private final String wsURL2 = "http://localhost:8082/transporter-ws/endpoint";
     private Collection<String> endpointsList = new ArrayList<>(Arrays.asList(wsURL1, wsURL2));
@@ -62,8 +62,8 @@ public class ManagerTest {
         transport.setId("1");
         transport.setState(TransportStateView.REQUESTED);
 
-        EndpointManager endpointManager = new EndpointManager(wsBackup, wsPrimary, wsName, uddiURL);
-        Broker broker = new BrokerBackup();
+        EndpointManager endpointManager = new EndpointManager(backupURL, wsName, uddiURL);
+        Broker broker = new BrokerBackup(primaryURL);
         manager.init(endpointManager, broker);
     }
 
