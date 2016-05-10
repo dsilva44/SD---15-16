@@ -15,7 +15,7 @@ public class TransporterApplication {
 		// Check arguments
 		if (args.length < 3) {
 			log.error("Argument(s) missing!");
-			log.error("Usage: java "+ TransporterApplication.class.getName() +" + uddiURL wsName wsURL keyStorePath");
+			log.error("Usage: java "+ TransporterApplication.class.getName() +" + uddiURL wsName wsURL keyStorePath pass");
 			return;
 		}
 
@@ -23,12 +23,13 @@ public class TransporterApplication {
 		String wsName = args[1];
 		String wsUrl = args[2];
 		String keyStorePath = args[3];
+		String pass = args[4];
 
 		EndpointManager endpointManager = new EndpointManager(uddiURL, wsName, wsUrl);
 
 		endpointManager.start();
 
-		Manager.getInstance().init(wsName, keyStorePath);
+		Manager.getInstance().init(wsName, keyStorePath, pass);
 
 		if (endpointManager.awaitConnections()) {
 			try {

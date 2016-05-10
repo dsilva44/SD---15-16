@@ -28,6 +28,9 @@ public class TransporterClientTest {
 	private static final String uddiURL = "http://localhost:9090";
 	private static final String wsName = "TransporterWebService";
 	private static final String wsURL = "http://localhost:8080/transporter-ws/endpoint";
+	private static final String brokerName = "UpaBroker";
+	private static final String brokerKSPath = "src/main/resources/UpaBroker.jks";
+	private static final String brokerPass = "passUpaBroker";
 
 	// one-time initialization and clean-up
 
@@ -81,7 +84,7 @@ public class TransporterClientTest {
 		};
 
 		// Unit under test is exercised.
-		new TransporterClient(uddiURL, wsName);
+		new TransporterClient(uddiURL, wsName, brokerName, brokerKSPath, brokerPass);
 
 		// a "verification block"
 		// One or more invocations to mocked types, causing expectations to be
@@ -133,7 +136,7 @@ public class TransporterClientTest {
 
 		// Unit under test is exercised.
 		try {
-			new TransporterClient(uddiURL, wsName);
+			new TransporterClient(uddiURL, wsName, brokerName, brokerKSPath, brokerPass);
 			fail();
 
 		} catch (TransporterClientException e) {
@@ -184,7 +187,7 @@ public class TransporterClientTest {
 
 		// Unit under test is exercised.
 		try {
-			new TransporterClient(uddiURL, wsName);
+			new TransporterClient(uddiURL, wsName, brokerName, brokerKSPath, brokerPass);
 			fail();
 
 		} catch (TransporterClientException e) {

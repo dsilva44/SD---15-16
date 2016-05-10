@@ -20,6 +20,7 @@ public class Manager  {
 
     private String transporterName;
     private String keyStorePath;
+    private String password;
     private String transporterParity;
     private ArrayList<Job> jobs;
     private int jobID = 0;
@@ -46,8 +47,9 @@ public class Manager  {
 
     public static Manager getInstance() { return manager; }
 
-    public void init(String transporterName, String keyStorePath) {
+    public void init(String transporterName, String keyStorePath, String password) {
         this.keyStorePath = keyStorePath;
+        this.password = password;
         init(transporterName);
     }
 
@@ -89,6 +91,7 @@ public class Manager  {
     public String getKeyStorePath(){ return keyStorePath;}
 
     public String getTransporterName(){ return transporterName;}
+    public String getPassword(){ return password; }
 
     public Job decideResponse(String origin, String destination, int price)
             throws BadLocationFault_Exception, BadPriceFault_Exception {

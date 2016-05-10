@@ -25,6 +25,8 @@ public class BrokerApplication {
 		String wsType = args[2];
 		String wsName = args[3];
 		String uddiURL = args[4];
+		String ksPath = args[5];
+		String password = args[6];
 
 		EndpointManager endpointManager;
 		Broker broker;
@@ -38,7 +40,7 @@ public class BrokerApplication {
 		}
 
 		endpointManager.start();
-		Manager.getInstance().init(endpointManager, broker);
+		Manager.getInstance().init(endpointManager, broker, ksPath, password);
 
 		if (endpointManager.awaitConnections()) {
 			try {

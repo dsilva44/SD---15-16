@@ -87,6 +87,14 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         String path = (String) smc.get(KSPATH_PROPERTY);
         String pass = (String) smc.get(PASSWORD_PROPERTY);
 
+
+
+        System.out.println("INVOKER:" + invoker);
+        System.out.println("KSPATH:" + path);
+        System.out.println("PASS:" + pass);
+
+
+
         KeyStore ks = readKeyStoreFile(path, pass.toCharArray());
         PrivateKey privateKey = (PrivateKey) ks.getKey(invoker, pass.toCharArray());
 
@@ -265,16 +273,6 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         throw new Exception("Nothing to read");
     }
 
-    /**
-     * Reads a PrivateKey from a key-store
-     *
-     * @return The PrivateKey
-     * @throws Exception
-     */
-    public PrivateKey getPrivateKeyFromKeyStore(KeyStore keystore,
-                                                String keyAlias, char[] keyPassword) throws Exception {
-        return (PrivateKey) keystore.getKey(keyAlias, keyPassword);
-    }
 
     public Certificate toCertificate(byte[] certBytes) throws CertificateException {
         CertificateFactory cf = CertificateFactory.getInstance("X.509");

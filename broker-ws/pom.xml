@@ -32,6 +32,10 @@
         <ws.name>UpaBroker</ws.name>
         <uddi.url>http://localhost:9090</uddi.url>
 
+        <resources.directory>src/main/resources</resources.directory>
+        <resources.keyStore>${resources.directory}/${ws.name}.jks</resources.keyStore>
+        <pass>pass${ws.name}</pass>
+
     </properties>
 
     <dependencies>
@@ -155,6 +159,8 @@
                         <argument>${ws.type}</argument>
                         <argument>${ws.name}</argument>
                         <argument>${uddi.url}</argument>
+                        <argument>${resources.keyStore}</argument>
+                        <argument>${pass}</argument>
                     </arguments>
                 </configuration>
             </plugin>

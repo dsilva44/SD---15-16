@@ -31,6 +31,7 @@ public class TransporterPort implements TransporterPortType {
 
     @Override
     public String ping(String name) {
+        //setupMessageContext();
         log.debug("ping:");
         return "Pong " + name + "!";
     }
@@ -53,6 +54,7 @@ public class TransporterPort implements TransporterPortType {
 
         setupMessageContext();
         Job job = manager.confirmationJobs(id, accept);
+        log.debug("decideJob:");
 
         return job.toJobView();
     }
@@ -109,12 +111,12 @@ public class TransporterPort implements TransporterPortType {
     }
 
     private void setupMessageContext(){
-
         String companyName = manager.getTransporterName();
         String path = manager.getKeyStorePath();
+        String pass = manager.getPassword();
         MessageContext messageContext = wsContext.getMessageContext();
         messageContext.put(AuthenticationHandler.INVOKER_PROPERTY, companyName);
         messageContext.put(AuthenticationHandler.KSPATH_PROPERTY, path);
-        messageContext.put(AuthenticationHandler.PASSWORD_PROPERTY, "pass"+companyName);
+        messageContext.put(AuthenticationHandler.PASSWORD_PROPERTY, pass);
     }
 }

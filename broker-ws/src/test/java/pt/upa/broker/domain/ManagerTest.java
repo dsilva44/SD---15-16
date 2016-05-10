@@ -35,6 +35,8 @@ public class ManagerTest {
     //Members
     private Manager manager = Manager.getInstance();
     private final String wsName = "UpaBroker";
+    private final String ksPath = "src/main/resources/UpaBroker.jks";
+    private final String password = "passUpaBroker";
     private final String uddiURL = "http://localhost:9090";
     private final String wsPrimary = "http://localhost:9091/broker-ws/endpoint";
     private final String wsBackup = "http://localhost:9091/broker-ws/endpoint";
@@ -64,7 +66,7 @@ public class ManagerTest {
 
         EndpointManager endpointManager = new EndpointManager(wsBackup, wsPrimary, wsName, uddiURL);
         Broker broker = new BrokerBackup();
-        manager.init(endpointManager, broker);
+        manager.init(endpointManager, broker, ksPath, password);
     }
 
     @After

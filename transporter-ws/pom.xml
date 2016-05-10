@@ -35,6 +35,7 @@
 
         <resources.directory>src/main/resources</resources.directory>
         <resources.keyStore>${resources.directory}/${ws.name}.jks</resources.keyStore>
+        <pass>pass${ws.name}</pass>
     </properties>
 
     <dependencies>
@@ -150,6 +151,7 @@
                         <argument>${ws.name}</argument>
                         <argument>${ws.url}</argument>
                         <argument>${resources.keyStore}</argument>
+                        <argument>${pass}</argument>
                     </arguments>
                 </configuration>
             </plugin>

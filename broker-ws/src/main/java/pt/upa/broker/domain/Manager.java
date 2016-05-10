@@ -19,6 +19,9 @@ public class Manager {
     private ArrayList<TransporterClient> transporterClients;
     private ArrayList<Transport> transportsList;
 
+    private String ksPath;
+    private String password;
+
     private final ArrayList<String> knowCities = new ArrayList<>(Arrays.asList("Lisboa", "Leiria", "Santarém",
             "Castelo Branco", "Coimbra", "Aveiro", "Viseu", "Guarda","Porto", "Braga", "Viana do Castelo",
             "Vila Real", "Bragança","Setúbal", "Évora", "Portalegre", "Beja","Faro"));
@@ -30,9 +33,11 @@ public class Manager {
     }
 
     //Singleton init
-    public void init(EndpointManager endpointManager, Broker broker) {
+    public void init(EndpointManager endpointManager, Broker broker, String path, String pass ) {
         this.epm = endpointManager;
         this.currBroker = broker;
+        this.ksPath = path;
+        this.password = pass;
         broker.monitor(2000, 2000);
     }
 
@@ -78,7 +83,7 @@ public class Manager {
 
         transporterClients.clear();
         for (String url : transporterURLS) {
-            TransporterClient client = new TransporterClient(url);
+            TransporterClient client = new TransporterClient(url, epm.getWsName(), ksPath, password);
             transporterClients.add(client);
         }
 
@@ -108,7 +113,8 @@ public class Manager {
     	Transport t = getTransportById(id);
         if (t == null) throwUnknownTransportFault(id);
 
-        TransporterClient client = new TransporterClient(epm.getUddiURL(), t.getTransporterCompany());
+        TransporterClient client = new TransporterClient(epm.getUddiURL(),
+                t.getTransporterCompany(), epm.getWsName(), ksPath, password);
         JobView jobView = client.jobStatus(t.getChosenOfferID());
         t.setState(jobView);
 
@@ -199,7 +205,7 @@ public class Manager {
     private void rejectOffersAcceptBest(Transport t , JobView bestOffer) {
         for (JobView offer : t.getOffers()) {
             String companyName = offer.getCompanyName();
-            TransporterClient client = new TransporterClient(epm.getUddiURL(), companyName);
+            TransporterClient client = new TransporterClient(epm.getUddiURL(), companyName, epm.getWsName(), ksPath, password);
 
             try {
                 if (bestOffer != null && offer.getJobIdentifier().equals(bestOffer.getJobIdentifier()) ) {
