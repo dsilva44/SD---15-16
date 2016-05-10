@@ -1,6 +1,5 @@
 package pt.upa.broker.domain;
 
-import com.google.gson.Gson;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import pt.upa.broker.exception.BrokerException;
@@ -21,30 +20,6 @@ public class BrokerBackup extends Broker {
     @Override
     public void addBackupURL(String url) {
         throw new BrokerException("BackUp Cannot add backups");
-    }
-
-    @Override
-    public void updateTransport(String tSerialized) {
-        Manager manager = Manager.getInstance();
-
-        if (tSerialized == null) {
-            manager.clearTransports();
-            manager.clearTransportersClients();
-            log.debug("Cleaning...");
-        } else {
-            Transport transport = new Gson().fromJson(tSerialized, Transport.class);
-
-            Transport oldT = manager.getTransportById(transport.getId());
-
-            if (oldT == null) {
-                manager.addTransport(transport);
-                log.debug("Create: "+transport.toString());
-            }
-            else {
-                manager.replaceTransport(oldT, transport);
-                log.debug("Update: "+transport.toString());
-            }
-        }
     }
 
     @Override

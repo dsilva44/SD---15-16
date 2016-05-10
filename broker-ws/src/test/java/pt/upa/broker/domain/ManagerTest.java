@@ -79,7 +79,6 @@ public class ManagerTest {
         new Expectations() {{
             uddiNamingMock.list(transporterQuery); result = endpointsList;
         }};
-        //manager.setUddiNaming(uddiNamingMock);
 
         boolean result = manager.updateTransportersList();
 
@@ -96,7 +95,6 @@ public class ManagerTest {
         new Expectations() {{
             uddiNamingMock.list(transporterQuery); result = emptyList;
         }};
-        //manager.setUddiNaming(uddiNamingMock);
 
         boolean result = manager.updateTransportersList();
 
@@ -117,7 +115,6 @@ public class ManagerTest {
             transporterClientMock.ping("0"); result = "Pong 0!";
             transporterClientMock.ping("1"); result = "Pong 1!";
         }};
-        //manager.setUddiNaming(uddiNamingMock);
 
         int result = manager.findTransporters();
 
@@ -135,7 +132,6 @@ public class ManagerTest {
         new Expectations() {{
             uddiNamingMock.list(transporterQuery); result = emptyList;
         }};
-        //manager.setUddiNaming(uddiNamingMock);
 
         int result = manager.findTransporters();
 
@@ -154,7 +150,6 @@ public class ManagerTest {
             transporterClientMock.ping("0"); result = "Pong 0!";
             transporterClientMock.ping("1"); result = new JAXRException();
         }};
-        //manager.setUddiNaming(uddiNamingMock);
 
         int result = manager.findTransporters();
 
@@ -177,11 +172,9 @@ public class ManagerTest {
 
     @Test
 	public void successGetTransportExisting() {
-		Transport t1 = new Transport();
-		t1.setId("id1");
-		manager.addTransport(t1);
+		manager.addTransport(transport);
 
-		assertEquals(t1, manager.getTransportById("id1"));
+		assertEquals(transport.getId(), manager.getTransportById("1").getId());
 	}
 
     //-------------------------------------requestTransport(origin, destination, price)---------------------------------
@@ -453,13 +446,11 @@ public class ManagerTest {
     
     //-----------------------------------------updateTransportState(String id) -----------------------------------------
     @Test
-    public void successUpdateRequestedTransport(@Mocked TransporterClient transporterClientMock,
-                                                @Mocked UDDINaming uddiNamingMock) throws UnknownTransportFault_Exception {
+    public void successUpdateRequestedTransport(@Mocked TransporterClient transporterClientMock) throws UnknownTransportFault_Exception {
         Transport t1 = new Transport(); t1.setId("1"); t1.setState(TransportStateView.REQUESTED);
         JobView jobView = new JobView(); jobView.setJobState(JobStateView.PROPOSED);
         manager.addTransport(t1);
         t1.setChosenOfferID("1");
-        //manager.setUddiNaming(uddiNamingMock);
 
         new Expectations() {{
             transporterClientMock.jobStatus("1"); result = jobView;
@@ -541,7 +532,7 @@ public class ManagerTest {
 
     @Test
     public void successUpdateBookedToCompletedTransport(@Mocked TransporterClient transporterClientMock) throws UnknownTransportFault_Exception {
-        Transport t1 = new Transport(); t1.setId("1"); t1.setState(TransportStateView.BOOKED);
+        Transport t1 = new Transport();t1.setId("1"); t1.setState(TransportStateView.BOOKED);
         JobView jobView = new JobView(); jobView.setJobState(JobStateView.COMPLETED);
         t1.setChosenOfferID("1");
         manager.addTransport(t1);
@@ -597,5 +588,24 @@ public class ManagerTest {
         }};
 
         assertEquals("not update transport status", TransportStateView.COMPLETED, t1.getState());
+    }
+
+    //-----------------------------------------updateTransport(...) -----------------------------------------
+    @Test
+    public void successUpdateNotExistentTransport() {
+        manager.updateTransport(transport.toTransportView(), "1");
+
+        assertNotNull("Transport not added", manager.getTransportById(transport.getId()));
+    }
+
+    @Test
+    public void successUpdateExistentTransport() {
+        manager.addTransport(transport);
+        assertEquals(manager.getTransportById("1").getState(), TransportStateView.REQUESTED);
+
+        Transport newT = new Transport(); newT.setId("1"); newT.setState(TransportStateView.COMPLETED);
+        manager.updateTransport(newT.toTransportView(), "1");
+        assertEquals("Not update",TransportStateView.COMPLETED, manager.getTransportById("1").getState());
+        assertEquals("Not update", "1", manager.getTransportById("1").getChosenOfferID());
     }
 }

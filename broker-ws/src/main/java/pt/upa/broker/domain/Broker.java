@@ -15,14 +15,11 @@ public abstract class Broker {
     public String getPrimaryURL() { return primaryURL; }
     public List<String> getBackupURLs() { return backupURLs; }
 
-    public void setPrimaryURL(String primaryURL) { this.primaryURL = primaryURL; }
-
     public void addBackupURL(String url) {
         if (!backupURLs.contains(url))
             backupURLs.add(url);
     }
 
-    public abstract void updateTransport(String tSerialized);
     public abstract void goNext();
     public abstract void monitor(long delay, long period);
 }
