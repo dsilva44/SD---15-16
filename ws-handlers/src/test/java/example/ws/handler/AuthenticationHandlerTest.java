@@ -49,7 +49,6 @@ public class AuthenticationHandlerTest extends AbstractHandlerTest {
         KeyPair keypair = generate();
         final PrivateKey key = keypair.getPrivate();
 
-        //FIXME: use broker strings and generate keys to test
         new StrictExpectations(handler) {{
             soapMessageContext.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY);
             result = soapOutbound;

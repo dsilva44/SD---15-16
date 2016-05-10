@@ -37,7 +37,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 
     public static long MaxWaitTime = 10;
 
-    private static int ID_COUNTER = 0;
+    private static long ID_COUNTER = 0;
 
     public Set<QName> getHeaders() {
         return null;
@@ -57,7 +57,6 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
     }
 
     public boolean handleFault(SOAPMessageContext smc) {
-        //FIXME: handleMessage(SOAPMessageContext smc);
         return true;
     }
 
@@ -72,13 +71,13 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 
         SOAPHeader sh = se.getHeader();
         if (sh == null) sh = se.addHeader();
-        String dateTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").format(new Date()); //FIXME: xml date format
+        String dateTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").format(new Date());
 
         Name name = se.createName("Freshness", "fresh", "http://freshness");
         SOAPElement freshnessElement = sh.addChildElement(name);
 
         name = se.createName("Identifier", "id", "http://identifier");
-        freshnessElement.addChildElement(name).addTextNode(Integer.toString(ID_COUNTER++));
+        freshnessElement.addChildElement(name).addTextNode(Long.toString(ID_COUNTER++));
 
         name = se.createName("Date", "time", "http://date");
         freshnessElement.addChildElement(name).addTextNode(dateTime);
@@ -86,14 +85,6 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         String invoker = (String) smc.get(INVOKER_PROPERTY);
         String path = (String) smc.get(KSPATH_PROPERTY);
         String pass = (String) smc.get(PASSWORD_PROPERTY);
-
-
-
-        System.out.println("INVOKER:" + invoker);
-        System.out.println("KSPATH:" + path);
-        System.out.println("PASS:" + pass);
-
-
 
         KeyStore ks = readKeyStoreFile(path, pass.toCharArray());
         PrivateKey privateKey = (PrivateKey) ks.getKey(invoker, pass.toCharArray());
@@ -178,17 +169,14 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
     public static byte[] makeDigitalSignature(byte[] bytes,
                                               Key privateKey) throws Exception {
 
-        // get a message digest object using the MD5 algorithm
         MessageDigest messageDigest = MessageDigest.getInstance("SHA-1");
-        // calculate the digest and print it out
         messageDigest.update(bytes);
         byte[] digest = messageDigest.digest();
-        // get an RSA cipher object
         Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
-        // encrypt the plaintext using the private key
         cipher.init(Cipher.ENCRYPT_MODE, privateKey);
         byte[] cipherDigest = cipher.doFinal(digest);
         return cipherDigest;
+
     }
 
     public static boolean verifyDigitalSignature(byte[] cipherDigest,
@@ -218,9 +206,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
                 return false;
         return true;
     }
-
-
-    //FIXME - Exceptions
+    
      /*-----------------------------------------------additional methods-----------------------------------------------*/
 
 
