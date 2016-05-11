@@ -5,7 +5,6 @@ import org.apache.logging.log4j.Logger;
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
 import pt.upa.broker.exception.BrokerEndpointException;
 import pt.upa.broker.exception.BrokerUddiNamingException;
-import pt.upa.broker.domain.Manager;
 
 import javax.xml.registry.JAXRException;
 import javax.xml.ws.BindingProvider;
@@ -23,8 +22,7 @@ public class EndpointManager {
 
     private Endpoint endpoint = null;
     private UDDINaming uddiNaming = null;
-    private String wsURL1;
-    private String wsURL2;
+    private String wsURL;
     private String wsName;
     private String uddiURL;
 
@@ -32,17 +30,15 @@ public class EndpointManager {
     private boolean isAwaitConnection = false;
     private boolean isRegister = false;
 
-    public EndpointManager(String wsURL1, String wsURL2, String wsName, String uddiURL) {
+    public EndpointManager(String wsURL, String wsName, String uddiURL) {
         String urlRegex = "^(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]";
-        boolean validWsURL1 = Pattern.matches(urlRegex, wsURL1);
-        boolean validWsURL2 = Pattern.matches(urlRegex, wsURL2);
+        boolean validWsURL = Pattern.matches(urlRegex, wsURL);
         boolean validUddiURL = Pattern.matches(urlRegex, uddiURL);
 
-        if(!validWsURL1 || !validWsURL2 || !validUddiURL)
+        if(!validWsURL || !validUddiURL)
             throw new IllegalArgumentException("Must be the form - http://host:port format!");
 
-        this.wsURL1 = wsURL1;
-        this.wsURL2 = wsURL2;
+        this.wsURL = wsURL;
         this.wsName = wsName;
         this.uddiURL = uddiURL;
 
@@ -59,12 +55,12 @@ public class EndpointManager {
     public void start() {
         try {
             // publish endpoint
-            log.info("Starting: " + wsURL1);
-            endpoint.publish(wsURL1);
-            createStub(wsURL1, 2000, 2000);
+            log.info("Starting: " + wsURL);
+            endpoint.publish(wsURL);
+            createStub(wsURL, 2000, 2000);
         } catch (Exception e) {
-            log.error("Error publish endpoint: " + wsURL1, e);
-            throw new BrokerEndpointException("Error publish endpoint: " + wsURL1);
+            log.error("Error publish endpoint: " + wsURL, e);
+            throw new BrokerEndpointException("Error publish endpoint: " + wsURL);
         }
         isPublish = true;
     }
@@ -73,7 +69,7 @@ public class EndpointManager {
         try {
             // publish to UDDI
             log.info("Publishing '"+ wsName + "' to UDDI at "+ uddiURL);
-            uddiNaming.rebind(wsName, wsURL1);
+            uddiNaming.rebind(wsName, wsURL);
         } catch (Exception e) {
             log.error("Error on uddiNaming rebind", e);
             throw new BrokerUddiNamingException("Error on rebind");
@@ -81,7 +77,22 @@ public class EndpointManager {
         isRegister = true;
     }
 
-    public Collection<String> findInUddi(String query) {
+    public String uddiLookup(String wsName) {
+        String wsURL;
+        try {
+            log.info("Contacting UDDI at " + uddiURL);
+
+            log.info("Looking for 'UpaBroker'");
+            wsURL = uddiNaming.lookup(wsName);
+
+        } catch (Exception e) {
+            String msg = String.format("Client failed lookup on UDDI at %s!", uddiURL);
+            throw new BrokerUddiNamingException(msg);
+        }
+        return wsURL;
+    }
+
+    public Collection<String> uddiList(String query) {
         Collection<String> result = null;
 
         try {
@@ -102,7 +113,7 @@ public class EndpointManager {
                 if (endpoint.isPublished()) {
                     // stop endpoint
                     endpoint.stop();
-                    log.info("Stopped " + wsURL1);
+                    log.info("Stopped " + wsURL);
                 }
             } catch (Exception e) {
                 log.error("Caught exception when stopping", e);
@@ -159,8 +170,7 @@ public class EndpointManager {
     }
 
     Endpoint getEndpoint() { return endpoint; }
-    public String getWsURL1() { return wsURL1; }
-    public String getWsURL2() { return wsURL2; }
+    public String getWsURL() { return wsURL; }
     public String getWsName() { return wsName; }
     public String getUddiURL() { return uddiURL; }
     boolean isPublish() { return isPublish; }

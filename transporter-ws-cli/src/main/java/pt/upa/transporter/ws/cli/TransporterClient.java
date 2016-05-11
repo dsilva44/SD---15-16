@@ -80,7 +80,7 @@ public class TransporterClient implements TransporterPortType {
 
 	@Override
 	public String ping(String name) {
-		//setupMessageContext();
+		setupMessageContext();
 		return port.ping(name);
 	}
 
