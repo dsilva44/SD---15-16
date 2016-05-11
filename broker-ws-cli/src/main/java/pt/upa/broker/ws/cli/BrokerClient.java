@@ -119,21 +119,12 @@ public class BrokerClient implements BrokerPortType {
 
     @Override
     public String registerBackup(String wsURL) {
-        //TODO
-        return port.registerBackup(wsURL);
+        throw new BrokerClientException("Cannot use this operation");
     }
 
     @Override
     public String updateTransport(TransportView transport, String bestOfferID) {
-        for(int i = NUM_TRIES; i > 0; i--) {
-            try {
-                port.updateTransport(transport, bestOfferID);
-            } catch (WebServiceException wse) {
-                log.error("updateTransport: "+wse.getMessage());
-                retry();
-            }
-        }
-        throw new BrokerClientException("Cannot contact server!!!");
+        throw new BrokerClientException("Cannot use this operation");
     }
 
     @Override

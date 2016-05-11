@@ -148,7 +148,7 @@ public class Transport {
 	@Override
 	public String toString() {
 		String string = getId()+" "+getOrigin()+" "+getDestination()+" "+getPrice()+" "+getTransporterCompany()+" "+
-				getState()+ "chosen id: "+getChosenOfferID();
+				getState()+ " chosen id: "+getChosenOfferID();
 		return string;
 	}
 }
