@@ -14,9 +14,9 @@ public class RepeatedMessageClientHandler implements SOAPHandler<SOAPMessageCont
     private static final Logger log = LogManager.getRootLogger();
 
     public static final String OPR_ID_PROPERTY = "my.operationID.property";
-    public static final String OPR_ID_HEADER = "myOprIDHeader";
-    public static final String OPR_ID_NS = "urn:oprid";
-    public static final String OPR_ID_PREFIX = "oprID";
+    private static final String OPR_ID_HEADER = "myOprIDHeader";
+    private static final String OPR_ID_NS = "urn:oprid";
+    private static final String OPR_ID_PREFIX = "oprID";
 
     @Override
     public Set<QName> getHeaders() {
@@ -40,7 +40,8 @@ public class RepeatedMessageClientHandler implements SOAPHandler<SOAPMessageCont
                 SOAPHeaderElement element = soapHeader.addHeaderElement(name);
 
                 // add header element value
-                element.addTextNode(operationID);
+                if (operationID != null)
+                    element.addTextNode(operationID);
 
             } catch (SOAPException e) {
                 log.error("Failed to add SOAP header because of %s%n", e);

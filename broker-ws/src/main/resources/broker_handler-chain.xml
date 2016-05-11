@@ -5,9 +5,9 @@
         <!--handler>
             <handler-class>example.ws.handler.LoggingHandler</handler-class>
         </handler-->
-        <!--handler>
+        <handler>
             <handler-class>example.ws.handler.RepeatedMessageServerHandler</handler-class>
-        </handler-->
+        </handler>
         <!--handler>
             <handler-class>example.ws.handler.LoggingHandler</handler-class>
         </handler-->

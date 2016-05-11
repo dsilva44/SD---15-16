@@ -95,12 +95,11 @@ public class BrokerClient implements BrokerPortType {
     /*-----------------------------------------------remote invocation methods----------------------------------------*/
     @Override
     public String ping(String name) {
-        setupMessageContext();
         for(int i = NUM_TRIES; i > 0; i--) {
             try {
                 return port.ping(name);
             } catch (WebServiceException wse) {
-                log.error("ping: "+wse.getMessage());
+                log.error("ping: "+wse);
                 retry();
             }
         }
@@ -111,12 +110,12 @@ public class BrokerClient implements BrokerPortType {
     public String requestTransport(String origin, String destination, int price)
             throws InvalidPriceFault_Exception, UnavailableTransportFault_Exception,
             UnavailableTransportPriceFault_Exception, UnknownLocationFault_Exception {
-        setupMessageContext();
+        setupMessageContext(OPR_NUM++);
         for(int i = NUM_TRIES; i > 0; i--) {
             try {
                 return port.requestTransport(origin, destination, price);
             } catch (WebServiceException wse) {
-                log.error("requestTransport: ", wse);
+                log.error("requestTransport: "+ wse);
                 retry();
             }
         }
@@ -135,12 +134,11 @@ public class BrokerClient implements BrokerPortType {
 
     @Override
     public TransportView viewTransport(String id) throws UnknownTransportFault_Exception {
-        setupMessageContext();
         for(int i = NUM_TRIES; i > 0; i--) {
             try {
                 return port.viewTransport(id);
             } catch (WebServiceException wse) {
-                log.error("viewTransport: ", wse);
+                log.error("viewTransport: "+ wse);
                 retry();
             }
         }
@@ -149,12 +147,11 @@ public class BrokerClient implements BrokerPortType {
 
     @Override
     public List<TransportView> listTransports() {
-        setupMessageContext();
         for(int i = NUM_TRIES; i > 0; i--) {
             try {
                 return port.listTransports();
             } catch (WebServiceException wse) {
-                log.error("listTransports: "+wse.getMessage());
+                log.error("listTransports: "+wse);
                 retry();
             }
         }
@@ -163,13 +160,12 @@ public class BrokerClient implements BrokerPortType {
 
     @Override
     public void clearTransports() {
-        setupMessageContext();
         for(int i = NUM_TRIES; i > 0; i--) {
             try {
                 port.clearTransports();
                 return;
             } catch (WebServiceException wse) {
-                log.error("listTransports: "+wse.getMessage());
+                log.error("listTransports: " + wse);
                 retry();
             }
         }
@@ -181,6 +177,7 @@ public class BrokerClient implements BrokerPortType {
             Thread.sleep(SLEEP_TIME);
             uddiLookup();
             createStub();
+            setupMessageContext(OPR_NUM); // new stub, new redefine message context
         }  catch (InterruptedException e) {
             log.error("retry: "+ e);
         } catch (BrokerClientException e) {
@@ -188,11 +185,10 @@ public class BrokerClient implements BrokerPortType {
         }
     }
 
-    private void setupMessageContext() {
-
+    private void setupMessageContext(int oprNum) {
         BindingProvider bindingProvider = (BindingProvider) port;
         Map<String, Object> requestContext = bindingProvider.getRequestContext();
-        requestContext.put(RepeatedMessageClientHandler.OPR_ID_PROPERTY, Integer.toString(OPR_NUM++));
+        requestContext.put(RepeatedMessageClientHandler.OPR_ID_PROPERTY, Integer.toString(oprNum));
     }
 }
 

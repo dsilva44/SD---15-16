@@ -46,12 +46,10 @@ public class BrokerPort implements BrokerPortType {
 
 
 		String res = manager.getTransportResponses().get(getOprID());
-		/*
 		if (res != null) {
 			log.debug(getOprID() + " is repeated: " + res);
 			return res;
 		}
-		*/
 
 
 		try {
@@ -164,7 +162,6 @@ public class BrokerPort implements BrokerPortType {
 
 	private String getOprID() {
 		MessageContext messageContext = webServiceContext.getMessageContext();
-
 		return (String) messageContext.get(RepeatedMessageServerHandler.OPR_ID_PROPERTY);
 	}
 }

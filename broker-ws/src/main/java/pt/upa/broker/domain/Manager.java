@@ -44,7 +44,7 @@ public class Manager {
     }
 
     //State pattern
-    public void goNext() {
+    void goNext() {
         currBroker.goNext();
     }
 
@@ -59,7 +59,7 @@ public class Manager {
     public Broker getCurrBroker() {return currBroker;}
     public EndpointManager getEndPointManager() { return epm; }
 
-    public void setCurrBroker(Broker currBroker) { this.currBroker = currBroker; }
+    void setCurrBroker(Broker currBroker) { this.currBroker = currBroker; }
 
     Transport getTransportById(String id) {
         for (Transport t : transportsList)
@@ -191,7 +191,8 @@ public class Manager {
             log.debug("Create: "+newTransport.toString());
         }
 
-        getTransportResponses().put(oprID, res);
+        if (oprID != null)
+            getTransportResponses().put(oprID, res);
     }
 
     //-------------------------------------------Aux methods------------------------------------------------------------
