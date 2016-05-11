@@ -57,6 +57,10 @@ git clone -b R_1 https://github.com/tecnico-distsys/T_27-project.git
 cd uddi-naming
 mvn clean install
 ```
+```
+cd ws-handlers
+mvn clean install
+```
 
 
 
@@ -109,4 +113,23 @@ mvn clean verify
 ```
 
 -------------------------------------------------------------------------------
+
+### Serviço CA
+
+[1] Construir e executar **servidor**
+
+```
+cd ca-ws
+mvn clean install 
+mvn exec:java
+```
+
+[2] Construir **cliente** e executar testes
+
+```
+cd ca-ws-cli
+mvn clean install
+```
+
+
 **FIM**

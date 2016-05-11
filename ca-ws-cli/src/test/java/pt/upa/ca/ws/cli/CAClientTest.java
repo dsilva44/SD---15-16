@@ -19,13 +19,8 @@ public class CAClientTest {
 
 	// static members
 
-	private static final String alias = "UpaCAClient";
 	private static final String uddiURL = "http://localhost:9090";
 	private static final String wsName = "UpaCA";
-	private static final String wsURL = "http://localhost:8079/ca-ws/endpoint";
-	private static final String keyStorePath = "src/test/resources/UpaCAClient.jks";
-	private static final String pass = "passUpaCAClient";
-	private static final String certPath = "src/test/resources/UpaCAClient.cer";
 
 	// one-time initialization and clean-up
 
@@ -181,48 +176,6 @@ public class CAClientTest {
 
 		// Additional verification code, if any, either here or before the
 		// verification block.
-	}
-
-	@Test
-	public void successReadKeyStoreFile() throws Exception {
-		CAClient client = new CAClient();
-
-		KeyStore keyStore = client.readKeyStoreFile(keyStorePath, pass.toCharArray());
-		assertTrue(keyStore.containsAlias("UpaCAClient"));
-
-	}
-
-	@Test
-	public void successReadCertificateFile() throws Exception {
-		CAClient client = new CAClient();
-
-		Certificate certificate = client.readCertificateFile(certPath);
-
-		assertNotNull(certificate);
-	}
-
-	@Test
-	public void successGetPrivateKeyFromKeyStore() throws Exception {
-		CAClient client = new CAClient();
-
-		KeyStore keyStore = client.readKeyStoreFile(keyStorePath, pass.toCharArray());
-		PrivateKey privateKey = client.getPrivateKeyFromKeyStore(keyStore, alias, pass.toCharArray());
-
-		assertNotNull(privateKey);
-	}
-
-	@Test(expected = CAClientException.class)
-	public void invalidPathKeyStore() throws Exception {
-		CAClient client = new CAClient();
-
-		client.readKeyStoreFile("invalidPath", pass.toCharArray());
-	}
-
-	@Test(expected = CAClientException.class)
-	public void invalidPathCertificate() throws Exception {
-		CAClient client = new CAClient();
-
-		client.readCertificateFile("InvalidPath");
 	}
 
 }

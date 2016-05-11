@@ -6,7 +6,10 @@ import pt.upa.broker.domain.Broker;
 import pt.upa.broker.domain.BrokerBackup;
 import pt.upa.broker.domain.BrokerPrimary;
 import pt.upa.broker.domain.Manager;
+import pt.upa.broker.ws.BrokerPortType;
 import pt.upa.broker.ws.EndpointManager;
+
+import javax.xml.ws.WebServiceException;
 import java.io.IOException;
 
 public class BrokerApplication {
@@ -14,35 +17,39 @@ public class BrokerApplication {
 
 	public static void main(String[] args) throws Exception {
 		// Check arguments
-		if (args.length < 5) {
+		if (args.length < 3) {
 			log.error("Argument(s) missing!");
-			log.error("Usage: java "+ BrokerApplication.class.getName() +" + wsPrimary wsBackup wsType wsName uddiURL");
+			log.error("Usage: java "+ BrokerApplication.class.getName() +" + wsURL wsName uddiURL");
 			return;
 		}
 
-		String wsPrimary = args[0];
-		String wsBackup = args[1];
-		String wsType = args[2];
-		String wsName = args[3];
-		String uddiURL = args[4];
-		String ksPath = args[5];
-		String password = args[6];
+		String wsURL = args[0];
+		String wsName = args[1];
+		String uddiURL = args[2];
 
-		EndpointManager endpointManager;
 		Broker broker;
-		if (Integer.parseInt(wsType) == 1) {
-			endpointManager = new EndpointManager(wsPrimary, wsBackup, wsName, uddiURL);
-			broker = new BrokerPrimary();
-			endpointManager.registerUddi();
+		EndpointManager emp =  new EndpointManager(wsURL, wsName, uddiURL);
+		String primaryURL = emp.uddiLookup(wsName);
+
+		if (primaryURL == null) {
+			broker = new BrokerPrimary(wsURL);
+			emp.registerUddi();
 		} else {
-			endpointManager = new EndpointManager(wsBackup, wsPrimary, wsName, uddiURL);
-			broker = new BrokerBackup();
+			BrokerPortType primaryStub = emp.createStub(primaryURL, 2000, 2000);
+			try {
+				primaryStub.registerBackup(wsURL);
+				broker = new BrokerBackup(primaryURL);
+			} catch (WebServiceException wse) {
+				log.info("Primary is down "+wse.getMessage());
+				broker = new BrokerPrimary(wsURL);
+				emp.registerUddi();
+			}
 		}
 
-		endpointManager.start();
 		Manager.getInstance().init(endpointManager, broker, ksPath, password);
+		emp.start();
 
-		if (endpointManager.awaitConnections()) {
+		if (emp.awaitConnections()) {
 			try {
 				System.out.println("Press enter to shutdown");
 
@@ -51,7 +58,7 @@ public class BrokerApplication {
 				log.error("Error:: ", e);
 			}
 		}
-		endpointManager.stop();
+		emp.stop();
 	}
 
 }

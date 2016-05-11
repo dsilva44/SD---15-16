@@ -64,7 +64,8 @@
 
             <xs:complexType name="updateTransport">
                 <xs:sequence>
-                    <xs:element name="transport" type="xs:string"/>
+                    <xs:element name="transport" type="tns:transportView"/>
+                    <xs:element name="bestOfferID" type="xs:string" minOccurs="0"/>
                 </xs:sequence>
             </xs:complexType>
             <xs:element name="updateTransport" type="tns:updateTransport" />
@@ -75,6 +76,20 @@
                 </xs:sequence>
             </xs:complexType>
             <xs:element name="updateTransportResponse" type="tns:updateTransportResponse" />
+
+            <xs:complexType name="registerBackup">
+                <xs:sequence>
+                    <xs:element name="wsURL" type="xs:string"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:element name="registerBackup" type="tns:registerBackup" />
+
+            <xs:complexType name="registerBackupResponse">
+                <xs:sequence>
+                    <xs:element name="acknowledge" type="xs:string" minOccurs="0" />
+                </xs:sequence>
+            </xs:complexType>
+            <xs:element name="registerBackupResponse" type="tns:registerBackupResponse" />
 
             <xs:complexType name="requestTransport">
                 <xs:sequence>
@@ -186,6 +201,13 @@
         <part name="parameters" element="tns:updateTransportResponse" />
     </message>
 
+    <message name="registerBackup">
+        <part name="parameters" element="tns:registerBackup" />
+    </message>
+    <message name="registerBackupResponse">
+        <part name="parameters" element="tns:registerBackupResponse" />
+    </message>
+
     <message name="requestTransport">
         <part name="parameters" element="tns:requestTransport" />
     </message>
@@ -245,6 +267,13 @@
                    message="tns:updateTransport" />
             <output wsam:Action="http://ws.broker.upa.pt/BrokerPort/updateTransport"
                     message="tns:updateTransportResponse" />
+        </operation>
+
+        <operation name="registerBackup">
+            <input wsam:Action="http://ws.broker.upa.pt/BrokerPort/registerBackup"
+                   message="tns:registerBackup" />
+            <output wsam:Action="http://ws.broker.upa.pt/BrokerPort/registerBackup"
+                    message="tns:registerBackupResponse" />
         </operation>
 
         <operation name="requestTransport">
@@ -332,6 +361,16 @@
                 <soap:fault name="UnavailableTransportPriceFault"
                             use="literal" />
             </fault>
+        </operation>
+
+        <operation name="registerBackup">
+            <soap:operation soapAction="" />
+            <input>
+                <soap:body use="literal" />
+            </input>
+            <output>
+                <soap:body use="literal" />
+            </output>
         </operation>
 
         <operation name="updateTransport">

@@ -79,7 +79,7 @@ public class Manager {
 
     boolean updateTransportersList() {
         String query = "UpaTransporter%";
-        ArrayList<String> transporterURLS = (ArrayList<String>) epm.findInUddi(query);
+        ArrayList<String> transporterURLS = (ArrayList<String>) epm.uddiList(query);
 
         transporterClients.clear();
         for (String url : transporterURLS) {
@@ -178,6 +178,19 @@ public class Manager {
         transporterClients.clear();
     }
 
+    public void updateTransport(TransportView transportView, String chosenOfferID) {
+        Transport newTransport = new Transport(transportView, chosenOfferID);
+        Transport oldTransport = manager.getTransportById(newTransport.getId());
+
+        if (oldTransport != null) {
+            manager.replaceTransport(oldTransport, newTransport);
+            log.debug("Update: " + newTransport.toString());
+        } else {
+            manager.addTransport(newTransport);
+            log.debug("Create: "+newTransport.toString());
+        }
+    }
+
     //-------------------------------------------Aux methods------------------------------------------------------------
     private boolean containsCaseInsensitive(String s, List<String> l) {
         for (String string : l){
@@ -217,6 +230,7 @@ public class Manager {
                 throw new BrokerBadJobException(e.getMessage() + " -- id: " + e.getFaultInfo().getId());
             }
         }
+        t.clearOffers();
     }
 
     //-------------------------------------------create Faults----------------------------------------------------------

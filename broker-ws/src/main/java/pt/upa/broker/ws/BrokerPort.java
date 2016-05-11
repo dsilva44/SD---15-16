@@ -1,6 +1,5 @@
 package pt.upa.broker.ws;
 
-import com.google.gson.Gson;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import pt.upa.broker.domain.Manager;
@@ -11,6 +10,7 @@ import pt.upa.transporter.ws.BadPriceFault_Exception;
 import javax.jws.WebService;
 import javax.xml.ws.WebServiceException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 
@@ -41,7 +41,7 @@ public class BrokerPort implements BrokerPortType{
 			transport = manager.requestTransport(origin, destination, price);
 			manager.decideBestOffer(transport);
 
-			updateBackup(transport);
+			updateBackup(transport.toTransportView(), transport.getChosenOfferID());
 
 		} catch (BadLocationFault_Exception e) {
 			manager.throwUnknownLocationFault(e.getMessage()); return null;
@@ -53,8 +53,16 @@ public class BrokerPort implements BrokerPortType{
 	}
 
 	@Override
-	public String updateTransport(String tSerialized) {
-		manager.getCurrBroker().updateTransport(tSerialized);
+	public String registerBackup(String wsURL) {
+		//TODO - Throw exception if invalid wsURL
+		manager.getCurrBroker().addBackupURL(wsURL);
+
+		return "OK";
+	}
+
+	@Override
+	public String updateTransport(TransportView transportView, String bestOfferID) {
+		manager.updateTransport(transportView, bestOfferID);
 
 		return "OK";
 	}
@@ -64,7 +72,7 @@ public class BrokerPort implements BrokerPortType{
 		Transport transport = manager.updateTransportState(id);
 		if (transport == null) manager.throwUnknownTransportFault(id);
 
-		updateBackup(transport);
+		updateBackup(transport.toTransportView(), transport.getChosenOfferID());
 
 		return transport.toTransportView();
 	}
@@ -81,7 +89,7 @@ public class BrokerPort implements BrokerPortType{
 		manager.clearTransports();
 		manager.clearTransportersClients();
 
-		updateBackup(null);
+		clearBackups();
 	}
 
 	private List<TransportView> transportListToTransportViewList(ArrayList<Transport> transports){
@@ -96,18 +104,36 @@ public class BrokerPort implements BrokerPortType{
 		return views;
 	}
 
-	private String updateBackup(Transport transport) {
-		String tSerialized = null;
-		if (transport != null) {
-			log.debug("Backup: "+transport.toString());
-			tSerialized = new Gson().toJson(transport);
+	private void updateBackup(TransportView transportView, String chosenID) {
+		Transport transport = new Transport(transportView, chosenID); // just for debug
+		log.debug("Backup: "+transport.toString());
+
+		EndpointManager endpointManager = manager.getEndPointManager();
+		Iterator<String> iterator = manager.getCurrBroker().getBackupURLs().iterator();
+		while(iterator.hasNext()) {
+			try {
+				BrokerPortType brokerStub = endpointManager.createStub(iterator.next(), 2000, 2000);
+				brokerStub.updateTransport(transportView, chosenID);
+			} catch (WebServiceException e) {
+				log.error("Backup endpoint down");
+				iterator.remove();
+			}
 		}
-		try {
-			EndpointManager epm = manager.getEndPointManager();
-			BrokerPortType brokerStub = epm.createStub(epm.getWsURL2(), 2000, 2000);
-			return brokerStub.updateTransport(tSerialized);
-		} catch (WebServiceException wse) {
-			return null;
+	}
+
+	private void clearBackups() {
+		log.debug("Clear...");
+
+		EndpointManager endpointManager = manager.getEndPointManager();
+		Iterator<String> iterator = manager.getCurrBroker().getBackupURLs().iterator();
+		while(iterator.hasNext()) {
+			try {
+				BrokerPortType brokerStub = endpointManager.createStub(iterator.next(), 2000, 2000);
+				brokerStub.clearTransports();
+			} catch (WebServiceException e) {
+				log.error("Backup endpoint down");
+				iterator.remove();
+			}
 		}
 	}
 }

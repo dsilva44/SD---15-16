@@ -118,16 +118,13 @@ public class BrokerClient implements BrokerPortType {
     }
 
     @Override
-    public String updateTransport(String tSerialized) {
-        for(int i = NUM_TRIES; i > 0; i--) {
-            try {
-                port.updateTransport(tSerialized);
-            } catch (WebServiceException wse) {
-                log.error("updateTransport: "+wse.getMessage());
-                retry();
-            }
-        }
-        throw new BrokerClientException("Cannot contact server!!!");
+    public String registerBackup(String wsURL) {
+        throw new BrokerClientException("Cannot use this operation");
+    }
+
+    @Override
+    public String updateTransport(TransportView transport, String bestOfferID) {
+        throw new BrokerClientException("Cannot use this operation");
     }
 
     @Override
