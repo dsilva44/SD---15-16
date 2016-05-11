@@ -86,6 +86,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         String path = (String) smc.get(KSPATH_PROPERTY);
         String pass = (String) smc.get(PASSWORD_PROPERTY);
 
+        //FIXME - This may generate null pointer exception
         KeyStore ks = readKeyStoreFile(path, pass.toCharArray());
         PrivateKey privateKey = (PrivateKey) ks.getKey(invoker, pass.toCharArray());
 

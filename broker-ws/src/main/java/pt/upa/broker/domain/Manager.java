@@ -75,8 +75,6 @@ public class Manager {
     void addTransport(Transport t){
         transportsList.add(t);
     }
-    void addTransportResponse(String id, String res) { transportResponses.put(id, res); }
-
 
     void replaceTransport(Transport oldT, Transport newT) {
         int index = transportsList.indexOf(oldT);
