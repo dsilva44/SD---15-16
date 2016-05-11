@@ -17,39 +17,41 @@ public class BrokerApplication {
 
 	public static void main(String[] args) throws Exception {
 		// Check arguments
-		if (args.length < 3) {
+		if (args.length < 5) {
 			log.error("Argument(s) missing!");
-			log.error("Usage: java "+ BrokerApplication.class.getName() +" + wsURL wsName uddiURL");
+			log.error("Usage: java "+ BrokerApplication.class.getName() +" + wsURL wsName uddiURL ksPath password");
 			return;
 		}
 
 		String wsURL = args[0];
 		String wsName = args[1];
 		String uddiURL = args[2];
+		String ksPath = args[3];
+		String password = args[4];
 
 		Broker broker;
-		EndpointManager emp =  new EndpointManager(wsURL, wsName, uddiURL);
-		String primaryURL = emp.uddiLookup(wsName);
+		EndpointManager epm =  new EndpointManager(wsURL, wsName, uddiURL);
+		String primaryURL = epm.uddiLookup(wsName);
 
 		if (primaryURL == null) {
 			broker = new BrokerPrimary(wsURL);
-			emp.registerUddi();
+			epm.registerUddi();
 		} else {
-			BrokerPortType primaryStub = emp.createStub(primaryURL, 2000, 2000);
+			BrokerPortType primaryStub = epm.createStub(primaryURL, 2000, 2000);
 			try {
 				primaryStub.registerBackup(wsURL);
 				broker = new BrokerBackup(primaryURL);
 			} catch (WebServiceException wse) {
 				log.info("Primary is down "+wse.getMessage());
 				broker = new BrokerPrimary(wsURL);
-				emp.registerUddi();
+				epm.registerUddi();
 			}
 		}
 
-		Manager.getInstance().init(endpointManager, broker, ksPath, password);
-		emp.start();
+		Manager.getInstance().init(epm, broker, ksPath, password);
+		epm.start();
 
-		if (emp.awaitConnections()) {
+		if (epm.awaitConnections()) {
 			try {
 				System.out.println("Press enter to shutdown");
 
@@ -58,7 +60,7 @@ public class BrokerApplication {
 				log.error("Error:: ", e);
 			}
 		}
-		emp.stop();
+		epm.stop();
 	}
 
 }
