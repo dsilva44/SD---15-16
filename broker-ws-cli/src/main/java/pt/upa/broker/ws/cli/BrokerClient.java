@@ -1,5 +1,6 @@
 package pt.upa.broker.ws.cli;
 
+import example.ws.handler.RepeatedMessageClientHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
@@ -16,6 +17,8 @@ import static javax.xml.ws.BindingProvider.ENDPOINT_ADDRESS_PROPERTY;
 
 public class BrokerClient implements BrokerPortType {
     private static final Logger log = LogManager.getRootLogger();
+
+    private static int OPR_NUM = 0;
 
     private final int CONN_TIME_OUT = 4000;
     private final int RECV_TIME_OUT = 4000;
@@ -64,6 +67,7 @@ public class BrokerClient implements BrokerPortType {
         log.info("Setting endpoint address ...");
         BindingProvider bindingProvider = (BindingProvider) port;
         Map<String, Object> requestContext = bindingProvider.getRequestContext();
+
         requestContext.put(ENDPOINT_ADDRESS_PROPERTY, wsURL);
 
         // The connection timeout property has different names in different versions of JAX-WS
@@ -91,6 +95,7 @@ public class BrokerClient implements BrokerPortType {
     /*-----------------------------------------------remote invocation methods----------------------------------------*/
     @Override
     public String ping(String name) {
+        setupMessageContext();
         for(int i = NUM_TRIES; i > 0; i--) {
             try {
                 return port.ping(name);
@@ -106,6 +111,7 @@ public class BrokerClient implements BrokerPortType {
     public String requestTransport(String origin, String destination, int price)
             throws InvalidPriceFault_Exception, UnavailableTransportFault_Exception,
             UnavailableTransportPriceFault_Exception, UnknownLocationFault_Exception {
+        setupMessageContext();
         for(int i = NUM_TRIES; i > 0; i--) {
             try {
                 return port.requestTransport(origin, destination, price);
@@ -129,6 +135,7 @@ public class BrokerClient implements BrokerPortType {
 
     @Override
     public TransportView viewTransport(String id) throws UnknownTransportFault_Exception {
+        setupMessageContext();
         for(int i = NUM_TRIES; i > 0; i--) {
             try {
                 return port.viewTransport(id);
@@ -142,6 +149,7 @@ public class BrokerClient implements BrokerPortType {
 
     @Override
     public List<TransportView> listTransports() {
+        setupMessageContext();
         for(int i = NUM_TRIES; i > 0; i--) {
             try {
                 return port.listTransports();
@@ -155,6 +163,7 @@ public class BrokerClient implements BrokerPortType {
 
     @Override
     public void clearTransports() {
+        setupMessageContext();
         for(int i = NUM_TRIES; i > 0; i--) {
             try {
                 port.clearTransports();
@@ -173,10 +182,17 @@ public class BrokerClient implements BrokerPortType {
             uddiLookup();
             createStub();
         }  catch (InterruptedException e) {
-            log.error(e);
+            log.error("retry: "+ e);
         } catch (BrokerClientException e) {
             log.error(e.getMessage()+": "+e.getCause());
         }
+    }
+
+    private void setupMessageContext() {
+
+        BindingProvider bindingProvider = (BindingProvider) port;
+        Map<String, Object> requestContext = bindingProvider.getRequestContext();
+        requestContext.put(RepeatedMessageClientHandler.OPR_ID_PROPERTY, Integer.toString(OPR_NUM++));
     }
 }
 

@@ -51,7 +51,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
             //verify signature
             else handleInboundMessage(smc);
         } catch (Exception e) {
-            log.error(e);
+            log.error("AuthenticationHandler: ", e);
         }
         return true;
     }
