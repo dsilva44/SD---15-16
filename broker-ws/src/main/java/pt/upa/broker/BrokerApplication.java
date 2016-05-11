@@ -42,7 +42,7 @@ public class BrokerApplication {
 				primaryStub.registerBackup(wsURL);
 				broker = new BrokerBackup(primaryURL);
 			} catch (WebServiceException wse) {
-				log.info("Primary is down "+wse.getMessage());
+				log.error("Primary is down " + wse.getMessage());
 				broker = new BrokerPrimary(wsURL);
 				epm.registerUddi();
 			}

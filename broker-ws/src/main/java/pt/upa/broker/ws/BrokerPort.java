@@ -1,6 +1,6 @@
 package pt.upa.broker.ws;
 
-import example.ws.handler.RepeatedMessageHandler;
+import example.ws.handler.RepeatedMessageServerHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import pt.upa.broker.domain.Manager;
@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-
 @WebService(
 		endpointInterface = "pt.upa.broker.ws.BrokerPortType",
 		wsdlLocation = "broker.2_0.wsdl",
@@ -27,7 +26,7 @@ import java.util.List;
 		serviceName = "BrokerService"
 )
 @HandlerChain(file = "/broker_handler-chain.xml")
-public class BrokerPort implements BrokerPortType{
+public class BrokerPort implements BrokerPortType {
 	static private final Logger log = LogManager.getRootLogger();
 
 	@Resource
@@ -37,8 +36,6 @@ public class BrokerPort implements BrokerPortType{
 	
 	@Override
 	public String ping(String name) {
-		log.debug("oprID = "+getOprID());
-
 		return "pong "+name+"!!!";
 	}
 
@@ -46,14 +43,25 @@ public class BrokerPort implements BrokerPortType{
 	public String requestTransport(String origin, String destination, int price)
 			throws InvalidPriceFault_Exception, UnavailableTransportFault_Exception,
 			UnavailableTransportPriceFault_Exception, UnknownLocationFault_Exception {
-		log.debug("oprID = "+getOprID());
 
-		Transport transport;
+
+		String res = manager.getTransportResponses().get(getOprID());
+		/*
+		if (res != null) {
+			log.debug(getOprID() + " is repeated: " + res);
+			return res;
+		}
+		*/
+
+
 		try {
-			transport = manager.requestTransport(origin, destination, price);
+			Transport transport = manager.requestTransport(origin, destination, price);
 			manager.decideBestOffer(transport);
+			res = transport.getId();
 
-			updateBackup(transport.toTransportView(), transport.getChosenOfferID());
+			manager.getTransportResponses().put(getOprID(), res);
+
+			updateBackup(transport.toTransportView(), transport.getChosenOfferID(), getOprID(), res);
 
 		} catch (BadLocationFault_Exception e) {
 			manager.throwUnknownLocationFault(e.getMessage()); return null;
@@ -61,7 +69,7 @@ public class BrokerPort implements BrokerPortType{
 			manager.throwInvalidPriceFault(e.getFaultInfo().getPrice()); return null;
 		}
 
-		return transport.getId();
+		return res;
 	}
 
 	@Override
@@ -73,16 +81,13 @@ public class BrokerPort implements BrokerPortType{
 	}
 
 	@Override
-	public String updateTransport(TransportView transportView, String bestOfferID) {
-		manager.updateTransport(transportView, bestOfferID);
-
+	public String updateTransport(TransportView transportView, String bestOfferID, String oprID, String response) {
+		manager.updateTransport(transportView, bestOfferID, oprID, response);
 		return "OK";
 	}
 
 	@Override
 	public TransportView viewTransport(String id) throws UnknownTransportFault_Exception {
-		log.debug("oprID = "+getOprID());
-
 		Transport transport = manager.updateTransportState(id);
 		if (transport == null) manager.throwUnknownTransportFault(id);
 
@@ -94,17 +99,14 @@ public class BrokerPort implements BrokerPortType{
 
 	@Override
 	public List<TransportView> listTransports() {
-		log.debug("oprID = "+getOprID());
-
 		ArrayList<Transport> transports = (ArrayList<Transport>) manager.getTransportsList();
 		return transportListToTransportViewList(transports);
 	}
 
 	@Override
 	public void clearTransports() {
-		log.debug("oprID = "+getOprID());
-
-		manager.clearTransports();
+		manager.getTransportsList().clear();
+		manager.getTransportResponses().clear();
 		manager.clearTransportersClients();
 
 		clearBackups();
@@ -124,7 +126,7 @@ public class BrokerPort implements BrokerPortType{
 		return views;
 	}
 
-	private void updateBackup(TransportView transportView, String chosenID) {
+	private void updateBackup(TransportView transportView, String chosenID, String oprID, String res) {
 		Transport transport = new Transport(transportView, chosenID); // just for debug
 		log.debug("Backup: "+transport.toString());
 
@@ -133,12 +135,15 @@ public class BrokerPort implements BrokerPortType{
 		while(iterator.hasNext()) {
 			try {
 				BrokerPortType brokerStub = endpointManager.createStub(iterator.next(), 2000, 2000);
-				brokerStub.updateTransport(transportView, chosenID);
+				brokerStub.updateTransport(transportView, chosenID, res, oprID);
 			} catch (WebServiceException e) {
 				log.error("Backup endpoint down");
 				iterator.remove();
 			}
 		}
+	}
+	private void updateBackup(TransportView transportView, String chosenID) {
+		updateBackup(transportView, chosenID, null, null);
 	}
 
 	private void clearBackups() {
@@ -160,6 +165,6 @@ public class BrokerPort implements BrokerPortType{
 	private String getOprID() {
 		MessageContext messageContext = webServiceContext.getMessageContext();
 
-		return (String) messageContext.get(RepeatedMessageHandler.OPR_ID_PROPERTY);
+		return (String) messageContext.get(RepeatedMessageServerHandler.OPR_ID_PROPERTY);
 	}
 }

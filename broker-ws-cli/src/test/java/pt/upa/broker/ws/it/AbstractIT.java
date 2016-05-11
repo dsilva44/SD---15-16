@@ -51,6 +51,7 @@ public abstract class AbstractIT {
         String clientBackupURL = "http://localhost:9092/broker-ws/endpoint";
 
         CLIENT = new BrokerClient(uddiURL, "UpaBroker");
+        CLIENT.clearTransports();
     }
 
     @AfterClass

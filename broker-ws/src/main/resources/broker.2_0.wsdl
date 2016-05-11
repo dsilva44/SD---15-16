@@ -64,8 +64,10 @@
 
             <xs:complexType name="updateTransport">
                 <xs:sequence>
-                    <xs:element name="transport" type="tns:transportView"/>
+                    <xs:element name="transportView" type="tns:transportView"/>
                     <xs:element name="bestOfferID" type="xs:string" minOccurs="0"/>
+                    <xs:element name="oprID" type="xs:string" minOccurs="0"/>
+                    <xs:element name="response" type="xs:string" minOccurs="0"/>
                 </xs:sequence>
             </xs:complexType>
             <xs:element name="updateTransport" type="tns:updateTransport" />

@@ -595,19 +595,24 @@ public class ManagerTest {
     //-----------------------------------------updateTransport(...) -----------------------------------------
     @Test
     public void successUpdateNotExistentTransport() {
-        manager.updateTransport(transport.toTransportView(), "1");
+        manager.updateTransport(transport.toTransportView(), "UpaTransporter_1", "tID_1", "oprID_1");
 
         assertNotNull("Transport not added", manager.getTransportById(transport.getId()));
+        assertEquals("Res not added", manager.getTransportResponses().get("oprID_1"), "tID_1");
     }
 
     @Test
     public void successUpdateExistentTransport() {
         manager.addTransport(transport);
-        assertEquals(manager.getTransportById("1").getState(), TransportStateView.REQUESTED);
+        manager.getTransportResponses().put("oprID_1", "tID_1");
+
+        assertEquals(TransportStateView.REQUESTED, manager.getTransportById("1").getState());
 
         Transport newT = new Transport(); newT.setId("1"); newT.setState(TransportStateView.COMPLETED);
-        manager.updateTransport(newT.toTransportView(), "1");
+        manager.updateTransport(newT.toTransportView(), "UpaTransporter_1", "oprID_2" ,"tID_1");
+
         assertEquals("Not update",TransportStateView.COMPLETED, manager.getTransportById("1").getState());
-        assertEquals("Not update", "1", manager.getTransportById("1").getChosenOfferID());
+        assertEquals("Chosen offer not update", "UpaTransporter_1", manager.getTransportById("1").getChosenOfferID());
+        assertEquals("Res not added", manager.getTransportResponses().get("oprID_2"), "tID_1");
     }
 }

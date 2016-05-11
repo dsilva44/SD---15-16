@@ -16,13 +16,14 @@ public class Manager {
 
     private EndpointManager epm;
     private Broker currBroker;
-    private ArrayList<TransporterClient> transporterClients;
-    private ArrayList<Transport> transportsList;
+    private List<TransporterClient> transporterClients;
+    private List<Transport> transportsList;
+    private Map<String, String> transportResponses;
 
     private String ksPath;
     private String password;
 
-    private final ArrayList<String> knowCities = new ArrayList<>(Arrays.asList("Lisboa", "Leiria", "Santarém",
+    private final List<String> knowCities = new ArrayList<>(Arrays.asList("Lisboa", "Leiria", "Santarém",
             "Castelo Branco", "Coimbra", "Aveiro", "Viseu", "Guarda","Porto", "Braga", "Viana do Castelo",
             "Vila Real", "Bragança","Setúbal", "Évora", "Portalegre", "Beja","Faro"));
 
@@ -30,6 +31,7 @@ public class Manager {
     private Manager() {
         transporterClients = new ArrayList<>();
         transportsList = new ArrayList<>();
+        transportResponses = new HashMap<>();
     }
 
     //Singleton init
@@ -48,10 +50,12 @@ public class Manager {
 
     //getters
     public static Manager getInstance() { return manager; }
-    ArrayList<TransporterClient> getTransporterClients() { return transporterClients; }
+    List<TransporterClient> getTransporterClients() { return transporterClients; }
     public List<Transport> getTransportsList() {
         return transportsList;
     }
+    public Map<String, String> getTransportResponses() { return transportResponses; }
+
     public Broker getCurrBroker() {return currBroker;}
     public EndpointManager getEndPointManager() { return epm; }
 
@@ -71,6 +75,8 @@ public class Manager {
     void addTransport(Transport t){
         transportsList.add(t);
     }
+    void addTransportResponse(String id, String res) { transportResponses.put(id, res); }
+
 
     void replaceTransport(Transport oldT, Transport newT) {
         int index = transportsList.indexOf(oldT);
@@ -168,17 +174,12 @@ public class Manager {
         return transport;
     }
 
-    public void clearTransports(){
-
-        transportsList.clear();
-    }
-
     public void clearTransportersClients(){
         transporterClients.forEach(TransporterClient::clearJobs);
         transporterClients.clear();
     }
 
-    public void updateTransport(TransportView transportView, String chosenOfferID) {
+    public void updateTransport(TransportView transportView, String chosenOfferID, String oprID, String res) {
         Transport newTransport = new Transport(transportView, chosenOfferID);
         Transport oldTransport = manager.getTransportById(newTransport.getId());
 
@@ -189,6 +190,8 @@ public class Manager {
             manager.addTransport(newTransport);
             log.debug("Create: "+newTransport.toString());
         }
+
+        getTransportResponses().put(oprID, res);
     }
 
     //-------------------------------------------Aux methods------------------------------------------------------------

@@ -22,7 +22,7 @@ public class UpdateTransportIT extends AbstractIT {
         String tID_9 = CLIENT.requestTransport(CENTER_1, CENTER_2, PRICE_SMALLEST_LIMIT-9);
 
         log.debug("####################################### KILL Primary #############################################");
-        Thread.sleep(1000);
+        Thread.sleep(3000);
 
         TransportView tView_0 = CLIENT.viewTransport(tID_0);
         TransportView tView_1 = CLIENT.viewTransport(tID_1);

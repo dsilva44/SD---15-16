@@ -1,6 +1,6 @@
 package pt.upa.broker.ws.cli;
 
-import example.ws.handler.RepeatedMessageHandler;
+import example.ws.handler.RepeatedMessageClientHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
@@ -116,7 +116,7 @@ public class BrokerClient implements BrokerPortType {
             try {
                 return port.requestTransport(origin, destination, price);
             } catch (WebServiceException wse) {
-                log.error("requestTransport: "+wse.getMessage());
+                log.error("requestTransport: ", wse);
                 retry();
             }
         }
@@ -129,8 +129,8 @@ public class BrokerClient implements BrokerPortType {
     }
 
     @Override
-    public String updateTransport(TransportView transport, String bestOfferID) {
-        throw new BrokerClientException("Cannot use this operation");
+    public String updateTransport(TransportView transportView, String bestOfferID, String oprID, String response) {
+        throw new BrokerClientException("updateTransport: Cannot use this operation");
     }
 
     @Override
@@ -140,7 +140,7 @@ public class BrokerClient implements BrokerPortType {
             try {
                 return port.viewTransport(id);
             } catch (WebServiceException wse) {
-                log.error("viewTransport: "+wse.getMessage());
+                log.error("viewTransport: ", wse);
                 retry();
             }
         }
@@ -192,7 +192,7 @@ public class BrokerClient implements BrokerPortType {
 
         BindingProvider bindingProvider = (BindingProvider) port;
         Map<String, Object> requestContext = bindingProvider.getRequestContext();
-        requestContext.put(RepeatedMessageHandler.OPR_ID_PROPERTY, Integer.toString(OPR_NUM++));
+        requestContext.put(RepeatedMessageClientHandler.OPR_ID_PROPERTY, Integer.toString(OPR_NUM++));
     }
 }
 
