@@ -1,6 +1,6 @@
 package pt.upa.broker.ws;
 
-import example.ws.handler.RepeatedMessageServerHandler;
+import example.ws.handler.RepeatedMessageHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import pt.upa.broker.domain.Manager;
@@ -160,6 +160,6 @@ public class BrokerPort implements BrokerPortType{
 	private String getOprID() {
 		MessageContext messageContext = webServiceContext.getMessageContext();
 
-		return (String) messageContext.get(RepeatedMessageServerHandler.OPR_ID_PROPERTY);
+		return (String) messageContext.get(RepeatedMessageHandler.OPR_ID_PROPERTY);
 	}
 }

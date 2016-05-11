@@ -11,7 +11,7 @@ import javax.xml.ws.handler.soap.SOAPMessageContext;
 import java.util.Iterator;
 import java.util.Set;
 
-public class RepeatedMessageServerHandler implements SOAPHandler<SOAPMessageContext> {
+public class RepeatedMessageHandler implements SOAPHandler<SOAPMessageContext> {
     private static final Logger log = LogManager.getRootLogger();
 
     public static final String OPR_ID_PROPERTY = "my.operationID.property";
@@ -27,7 +27,27 @@ public class RepeatedMessageServerHandler implements SOAPHandler<SOAPMessageCont
     @Override
     public boolean handleMessage(SOAPMessageContext context) {
         Boolean outbound = (Boolean) context.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY);
-        if (!outbound) {
+        if (outbound) {
+            String operationID = (String) context.get(OPR_ID_PROPERTY);
+            try {
+                SOAPEnvelope envelope = getSOAEnvelop(context);
+
+                // add header
+                SOAPHeader soapHeader = envelope.getHeader();
+                if (soapHeader == null) soapHeader = envelope.addHeader();
+
+                // add header element (name, namespace prefix, namespace)
+                Name name = envelope.createName(OPR_ID_HEADER, OPR_ID_PREFIX, OPR_ID_NS);
+                SOAPHeaderElement element = soapHeader.addHeaderElement(name);
+
+                // add header element value
+                element.addTextNode(operationID);
+
+            } catch (SOAPException e) {
+                log.error("Failed to add SOAP header because of %s%n", e);
+            }
+
+        } else {
             try {
                 SOAPEnvelope envelope = getSOAEnvelop(context);
 
@@ -45,6 +65,7 @@ public class RepeatedMessageServerHandler implements SOAPHandler<SOAPMessageCont
                 log.error("Failed to add SOAP header because of %s%n", e);
             }
         }
+
         return true;
     }
 

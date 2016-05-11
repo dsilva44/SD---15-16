@@ -1,6 +1,6 @@
 package pt.upa.broker.ws.cli;
 
-import example.ws.handler.RepeatedMessageClientHandler;
+import example.ws.handler.RepeatedMessageHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
@@ -192,7 +192,7 @@ public class BrokerClient implements BrokerPortType {
 
         BindingProvider bindingProvider = (BindingProvider) port;
         Map<String, Object> requestContext = bindingProvider.getRequestContext();
-        requestContext.put(RepeatedMessageClientHandler.OPR_ID_PROPERTY, Integer.toString(OPR_NUM++));
+        requestContext.put(RepeatedMessageHandler.OPR_ID_PROPERTY, Integer.toString(OPR_NUM++));
     }
 }
 
