@@ -136,7 +136,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         String invoker = (String) smc.get(INVOKER_PROPERTY);
         CAClient caClient = new CAClient("http://localhost:9090");
         byte[] certificateEncoded = caClient.requestCertificateFile(invoker);
-        Certificate cert = caClient.toCertificate(certificateEncoded);
+        Certificate cert = toCertificate(certificateEncoded);
 
         try{
             cert.verify(CAPublicKey);
