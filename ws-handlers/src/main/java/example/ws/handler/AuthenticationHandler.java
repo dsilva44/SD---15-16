@@ -22,10 +22,8 @@ import javax.xml.ws.handler.soap.SOAPHandler;
 import javax.xml.ws.handler.soap.SOAPMessageContext;
 import java.io.*;
 import java.security.*;
+import java.security.cert.*;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -104,19 +102,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         System.arraycopy(freshBytes, 0, allBytes, bodyBytes.length, freshBytes.length);
 
         byte[] msgDigSig = makeDigitalSignature(allBytes, privateKey);
-
-        System.out.println("BytesBEFOREencode:"+msgDigSig+"\n");
-
-        //String mSigStr = Base64.getEncoder().encodeToString(msgDigSig);
-        //String mSigStr = DatatypeConverter.printBase64Binary(msgDigSig);
-        //String mSigStr = printBase64Binary(msgDigSig);
-        BASE64Encoder encoder = new BASE64Encoder();
-        String mSigStr = encoder.encode(msgDigSig);
-        //mSigStr.trim();
-        System.out.println("StringSENT:"+mSigStr+"\n");
-        System.out.println("StringSENTSIZE:"+mSigStr.length()+"\n");
-
-
+        String mSigStr = DatatypeConverter.printBase64Binary(msgDigSig);
 
         name = se.createName("MessageSignature", "mSig", "http://messageSignature");
         sh.addChildElement(name).addTextNode(mSigStr);
@@ -132,18 +118,10 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         //get hashed bytes from <MessageSignature> element
         SOAPElement element = getElement(se,"MessageSignature", "mSig", "http://messageSignature");
         String strReceived = element.getValue().trim();
-
-        System.out.println("StringReceived:"+strReceived+"\n");
-        System.out.println("StringReceivedSize:"+strReceived.length()+"\n");
-        //byte[] hashedBytes = Base64.getDecoder().decode(strReceived);
-        //byte[] hashedBytes = DatatypeConverter.parseBase64Binary(strReceived);
-        //byte[] hashedBytes = parseBase64Binary(strReceived);
-        BASE64Decoder decoder = new BASE64Decoder();
-        byte[] hashedBytes = decoder.decodeBuffer(strReceived);
-        System.out.println("BytesAFTERDecode:"+hashedBytes+"\n");
+        byte[] hashedBytes = DatatypeConverter.parseBase64Binary(strReceived);
 
         SOAPElement elementFresh = getElement(se,"Freshness", "fresh", "http://freshness");
-
+        //fixme SOAPElement elementName = getElement(se,IDENTITY_NAME);
         byte[] allBytes = joinElementsInBytes(se.getBody(),elementFresh);
 
         List<SOAPElement> elementsInFresh= getElements(elementFresh);
@@ -157,7 +135,6 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         String invoker = (String) smc.get(INVOKER_PROPERTY);
         CAClient caClient = new CAClient("http://localhost:9090");
         byte[] certificateEncoded = caClient.requestCertificateFile(invoker);
-        System.out.println("never give up");
         Certificate cert = caClient.toCertificate(certificateEncoded);
 
         try{
@@ -165,44 +142,50 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         }
         catch(Exception e){
             log.warn("Verify certificate failed");
-            return;
+            throw new Exception();
         }
 
-        Date certLimitDate = ((X509Certificate) cert).getNotBefore();
-        Date now = new Date();
-
-        if (now.after(certLimitDate)){
-            log.warn("invalid certificate date");
-            return;
+        try {
+            isValidCertDate(cert);
         }
+        catch(CertificateNotYetValidException| CertificateExpiredException c){
+            log.warn("Invalid certificate date");
+            throw new Exception();
+        }
+
         //fixme testar getCApublicKey
 
         PublicKey publicKey = cert.getPublicKey();
-/*
+
         Boolean isValidSignature = verifyDigitalSignature(hashedBytes,allBytes,publicKey);
-        System.out.println("verify didnt blow up");
         if(!isValidSignature) {
-            System.out.println("Digital signature is NOT VALID!");
-            return;
+            log.warn("Invalid signature");
+            throw new Exception();
         }
-*/
 
-        Boolean isValidIdentifier = checkIdentifier(elementId);
+        String stringId = elementId.getValue();
+        Boolean isValidIdentifier = checkIdentifier(stringId);
         if (!isValidIdentifier){
-            return;
+            log.warn("Invalid identifier");
+            throw new Exception();
         }
 
-        Boolean isValidTimestamp = checkTimestamp(elementDate);
+        String timeInStringFormat = elementDate.getValue();
+        Boolean isValidTimestamp = checkTimestamp(timeInStringFormat);
         if(!isValidTimestamp){
-            return;
+            log.warn("Invalid date");
+            throw new Exception();
         }
-
-        System.out.println("ALL VALID");
+        System.out.println("ALLVALID");
+        log.warn("ALL VALID");
 
     }
 
+    protected void isValidCertDate(Certificate cert) throws CertificateNotYetValidException, CertificateExpiredException {
+        ((X509Certificate) cert).checkValidity();
+    }
 
-    private PublicKey getCAPublicKey(SOAPMessageContext smc) throws Exception {
+    protected PublicKey getCAPublicKey(SOAPMessageContext smc) throws Exception {
         //fixme uninitialized keystore
         /*KeyStore ks = KeyStore.getInstance("JKS");
         Certificate certCA = ks.getCertificate("UpaCA");
@@ -210,7 +193,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         Certificate certCA = readCertificateFile("/home/dziergwa/Desktop/SD/T_27-project/transporter-ws/src/main/resources/UpaCA.cer");
         return certCA.getPublicKey();
     }
-    private byte[] joinElementsInBytes(SOAPElement elemBody,SOAPElement elemFresh) throws Exception{
+    protected byte[] joinElementsInBytes(SOAPElement elemBody,SOAPElement elemFresh) throws Exception{
 
         byte[] bodyBytes = SOAPElementToByteArray(elemBody);
         byte[] freshBytes = SOAPElementToByteArray(elemFresh);
@@ -241,14 +224,15 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         Iterator iterator = se.getHeader().getChildElements(name);
 
         if (!iterator.hasNext()) {
+            log.warn(a+" Not found");
             return null;
         }
         return (SOAPElement) iterator.next();
     }
 
 
-    protected boolean checkTimestamp(SOAPElement elem) throws ParseException {
-        String timeInStringFormat = elem.getValue();
+    protected boolean checkTimestamp(String timeInStringFormat) throws ParseException {
+
         DateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
         Date date = format.parse(timeInStringFormat);
 
@@ -260,8 +244,8 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         return true;
     }
 
-    protected boolean checkIdentifier(SOAPElement elem){
-        String stringId = elem.getValue();
+    protected boolean checkIdentifier(String stringId){
+
         int id = Integer.parseInt(stringId);
 
         if (id != ID_COUNTER_EXPECTED){
