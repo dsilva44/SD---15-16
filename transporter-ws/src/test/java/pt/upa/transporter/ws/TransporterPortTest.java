@@ -1,6 +1,11 @@
 package pt.upa.transporter.ws;
 
+import mockit.Expectations;
+import mockit.Mocked;
 import org.junit.*;
+
+import javax.xml.ws.WebServiceContext;
+
 import static org.junit.Assert.*;
 
 /**
@@ -15,13 +20,13 @@ public class TransporterPortTest {
     // one-time initialization and clean-up
     @BeforeClass
     public static void oneTimeSetUp() {
+
     }
 
     @AfterClass
     public static void oneTimeTearDown() {
 
     }
-
 
     // members
 
@@ -37,8 +42,13 @@ public class TransporterPortTest {
 
     // tests
     @Test
-    public void successPingShouldNotReturnNull() {
+    public void successPingShouldNotReturnNull(@Mocked WebServiceContext wsContext) {
+        new Expectations(){{
+            wsContext.getMessageContext();
+        }};
+
         TransporterPort port = new TransporterPort();
+        port.setWsContext(wsContext);
         assertNotNull("Ping return null", port.ping("friend"));
     }
 

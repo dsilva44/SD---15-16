@@ -372,4 +372,13 @@ public class RequestTransportIT extends AbstractIT {
     public void testRequestUnavailableLocation() throws Exception {
         CLIENT.requestTransport(SOUTH_1, NORTH_1, PRICE_SMALLEST_LIMIT);
     }
+
+
+    // ------------------------- DEMONSTRATION TESTS -------------------------
+
+    @Test//(expected = SecurityException.class)
+    public void testEnableTamperingHandler() throws Exception {
+        CLIENT.requestTransport(CENTER_1, CENTER_2, 5);      //FIXME: MAX NUMBER ?
+    }
+
 }

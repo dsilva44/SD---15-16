@@ -2,13 +2,11 @@ package example.ws.handler;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.message.*;
-import sun.misc.BASE64Encoder;
 
 import javax.crypto.Cipher;
+import javax.xml.bind.DatatypeConverter;
 import javax.xml.namespace.QName;
 import javax.xml.soap.*;
-import javax.xml.soap.MessageFactory;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -64,6 +62,10 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 
     public void handleOutboundMessage(SOAPMessageContext smc) throws Exception{
 
+        String invoker = (String) smc.get(INVOKER_PROPERTY);
+        String path = (String) smc.get(KSPATH_PROPERTY);
+        String pass = (String) smc.get(PASSWORD_PROPERTY);
+
         SOAPMessage message = smc.getMessage();
         SOAPPart sp = message.getSOAPPart();
         SOAPEnvelope se = sp.getEnvelope();
@@ -82,9 +84,8 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         name = se.createName("Date", "time", "http://date");
         freshnessElement.addChildElement(name).addTextNode(dateTime);
 
-        String invoker = (String) smc.get(INVOKER_PROPERTY);
-        String path = (String) smc.get(KSPATH_PROPERTY);
-        String pass = (String) smc.get(PASSWORD_PROPERTY);
+        name = se.createName("SenderName", "sname", "http://senderName");
+        sh.addChildElement(name).addTextNode(invoker);
 
         KeyStore ks = readKeyStoreFile(path, pass.toCharArray());
         PrivateKey privateKey = (PrivateKey) ks.getKey(invoker, pass.toCharArray());
@@ -98,9 +99,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 
         byte[] msgDigSig = makeDigitalSignature(allBytes, privateKey);
 
-        BASE64Encoder encoder = new BASE64Encoder();
-        String mSigStr = encoder.encode(msgDigSig);
-
+        String mSigStr = DatatypeConverter.printBase64Binary(msgDigSig);
         name = se.createName("MessageSignature", "mSig", "http://messageSignature");
         sh.addChildElement(name).addTextNode(mSigStr);
     }
@@ -167,22 +166,24 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
     }
 
     public static byte[] makeDigitalSignature(byte[] bytes,
-                                              Key privateKey) throws Exception {
-
-        MessageDigest messageDigest = MessageDigest.getInstance("SHA-1");
-        messageDigest.update(bytes);
-        byte[] digest = messageDigest.digest();
-        Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
-        cipher.init(Cipher.ENCRYPT_MODE, privateKey);
-        byte[] cipherDigest = cipher.doFinal(digest);
-        return cipherDigest;
-
+                                              Key privateKey){
+        try {
+            MessageDigest messageDigest = MessageDigest.getInstance("SHA-1");
+            messageDigest.update(bytes);
+            byte[] digest = messageDigest.digest();
+            Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+            cipher.init(Cipher.ENCRYPT_MODE, privateKey);
+            byte[] cipherDigest = cipher.doFinal(digest);
+            return cipherDigest;
+        }catch(Exception e){
+            throw new SecurityException("Security Error!");
+        }
     }
 
     public static boolean verifyDigitalSignature(byte[] cipherDigest,
                                                  byte[] text,
                                                  Key publicKey) throws Exception {
-
+        //FIXME: THROW SECURITYEXCEPTION
         // get a message digest object using the MD5 algorithm
         MessageDigest messageDigest = MessageDigest.getInstance("SHA-1");
 
@@ -206,7 +207,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
                 return false;
         return true;
     }
-    
+
      /*-----------------------------------------------additional methods-----------------------------------------------*/
 
 

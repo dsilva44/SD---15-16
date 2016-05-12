@@ -72,59 +72,45 @@ public class TransporterClient implements TransporterPortType {
 
 		BindingProvider bindingProvider = (BindingProvider) port;
 		Map<String, Object> requestContext = bindingProvider.getRequestContext();
+		requestContext.put(AuthenticationHandler.INVOKER_PROPERTY, brokerName);
+		requestContext.put(AuthenticationHandler.KSPATH_PROPERTY, brokerKSPath);
+		requestContext.put(AuthenticationHandler.PASSWORD_PROPERTY, brokerPass);
+
 		requestContext.put(ENDPOINT_ADDRESS_PROPERTY, wsURL);
 	}
 
 	/*-----------------------------------------------remote invocation methods----------------------------------------*/
 
-
 	@Override
 	public String ping(String name) {
-		//setupMessageContext();
 		return port.ping(name);
 	}
 
 	@Override
 	public JobView requestJob(String origin, String destination, int price)
 			throws BadLocationFault_Exception, BadPriceFault_Exception {
-		setupMessageContext();
 		return port.requestJob(origin, destination, price);
 	}
 
 	@Override
 	public JobView decideJob(String id, boolean accept) throws BadJobFault_Exception {
-		setupMessageContext();
 		return port.decideJob(id, accept);
 	}
 
 	@Override
 	public JobView jobStatus(String id) {
-		setupMessageContext();
 		return port.jobStatus(id);
 	}
 
 	@Override
 	public List<JobView> listJobs() {
-		setupMessageContext();
 		return port.listJobs();
 	}
 
 	@Override
 	public void clearJobs() {
-		setupMessageContext();
 		port.clearJobs();
 	}
 
-	private void setupMessageContext(){
-
-		BindingProvider bindingProvider = (BindingProvider) port;
-		Map<String, Object> requestContext = bindingProvider.getRequestContext();
-		requestContext.put(AuthenticationHandler.INVOKER_PROPERTY, brokerName);
-		requestContext.put(AuthenticationHandler.KSPATH_PROPERTY, brokerKSPath);
-		requestContext.put(AuthenticationHandler.PASSWORD_PROPERTY, brokerPass);
-
-		//FIXME ENDPOINT_ADDRESS_PROPERTY
-		requestContext.put(ENDPOINT_ADDRESS_PROPERTY, wsURL);
-	}
 
 }

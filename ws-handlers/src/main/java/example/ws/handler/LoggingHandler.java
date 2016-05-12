@@ -1,5 +1,8 @@
 package example.ws.handler;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.Set;
 
 import javax.xml.namespace.QName;
@@ -12,6 +15,7 @@ import javax.xml.ws.handler.soap.SOAPMessageContext;
  * This SOAPHandler outputs the contents of inbound and outbound messages.
  */
 public class LoggingHandler implements SOAPHandler<SOAPMessageContext> {
+    static final Logger log = LogManager.getRootLogger();
 
     public Set<QName> getHeaders() {
         return null;
@@ -42,17 +46,17 @@ public class LoggingHandler implements SOAPHandler<SOAPMessageContext> {
                 .get(MessageContext.MESSAGE_OUTBOUND_PROPERTY);
 
         if (outbound) {
-            System.out.println("Outbound SOAP message:");
+            log.debug("Outbound SOAP message:");
         } else {
-            System.out.println("Inbound SOAP message:");
+            log.debug("Inbound SOAP message:");
         }
 
         SOAPMessage message = smc.getMessage();
         try {
             message.writeTo(System.out);
-            System.out.println(); // just to add a newline to output
+            log.debug(message.toString());
         } catch (Exception e) {
-            System.out.printf("Exception in handler: %s%n", e);
+            log.debug("Exception in handler", e);
         }
     }
 
