@@ -48,8 +48,8 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
             if (outboundElement) handleOutboundMessage(smc);
                 //verify signature
             else handleInboundMessage(smc);
-        } catch (Exception e) {
-            log.error("AuthenticationHandler: ", e);
+        } catch (Exception e) { //FIXME - todas as mensagens vao ser apanhadas, secalhar não é isso que queremos !!!
+            log.warn(e.getMessage());
         }
         return true;
     }
@@ -327,8 +327,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         try {
             fis = new FileInputStream(keyStoreFilePath);
         } catch (FileNotFoundException e) {
-            log.warn("Keystore file <" + keyStoreFilePath + "> not fount.");
-            throw new Exception("Keystore file <" + keyStoreFilePath + "> not fount.");
+            throw new Exception("Keystore file <" + keyStoreFilePath + "> not fount."); // FIXME Change exception
         }
         KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
         keystore.load(fis, keyStorePassword);
@@ -348,8 +347,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         try {
             fis = new FileInputStream(certificateFilePath);
         } catch (FileNotFoundException e) {
-            log.warn("Certificate file <" + certificateFilePath + "> not fount.");
-            throw new Exception("Certificate file <" + certificateFilePath + "> not fount.");
+            throw new Exception("Certificate file <" + certificateFilePath + "> not fount."); // FIXME Change exception
         }
         BufferedInputStream bis = new BufferedInputStream(fis);
 
