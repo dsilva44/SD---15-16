@@ -330,31 +330,21 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
     public KeyStore readKeyStoreFile(String keyStoreFilePath, char[] keyStorePassword)  {
         ClassLoader classLoader = getClass().getClassLoader();
 
-        URL url = classLoader.getResource(keyStoreFilePath);
-        if (url == null) return null;
-        FileInputStream fis = null;
-        try {
-            fis = new FileInputStream(url.getFile());
-        } catch (FileNotFoundException e) {
-            log.debug("FileInputStream", e);
-        }
-
-        log.debug(url);
-
         KeyStore keystore = null;
         try {
+            URL url = classLoader.getResource(keyStoreFilePath);
+            if (url == null)
+                return null;
+            FileInputStream fis = new FileInputStream(url.getFile());
             keystore = KeyStore.getInstance(KeyStore.getDefaultType());
-        } catch (KeyStoreException e) {
-            log.debug("keystore instance", e);
-            return null;
-        }
-
-        try {
             keystore.load(fis, keyStorePassword);
-        } catch (IOException | CertificateException | NoSuchAlgorithmException e) {
-            log.debug("keystore load", e);
-        }
 
+            return keystore;
+        } catch (FileNotFoundException e) {
+            log.debug("FileInputStream", e);
+        } catch (CertificateException | NoSuchAlgorithmException | KeyStoreException | IOException e) {
+            e.printStackTrace();
+        }
         return keystore;
     }
 
