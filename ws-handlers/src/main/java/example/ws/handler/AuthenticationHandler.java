@@ -32,7 +32,6 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 
     private static long MaxWaitTimeInMs = 1*1000*60;  //1 minute margin
 
-
     private static int ID_COUNTER_EXPECTED = 0;
 
     private static long ID_COUNTER = 0;
@@ -48,6 +47,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
             if (outboundElement) handleOutboundMessage(smc);
                 //verify signature
             else handleInboundMessage(smc);
+
         } catch (Exception e) { //FIXME - todas as mensagens vao ser apanhadas, secalhar não é isso que queremos !!!
             log.warn(e.getMessage());
         }
