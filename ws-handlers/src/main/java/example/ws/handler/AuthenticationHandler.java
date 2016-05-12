@@ -37,18 +37,6 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 
     private static long ID_COUNTER = 0;
 
-    private static HashMap<String,Integer> id_pairs_to_send= new HashMap<String,Integer>(){{
-        put("UpaBroker",0);
-        put("UpaTransporter1",0);
-        put("UpaTransporter2",0);
-    }};
-
-
-    private static HashMap<String,Integer> id_pairs_Expected= new HashMap<String,Integer>(){{
-        put("UpaBroker",0);
-        put("UpaTransporter1",0);
-        put("UpaTransporter2",0);
-    }};
 
     public Set<QName> getHeaders() {
         return null;
@@ -118,9 +106,13 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         System.arraycopy(freshBytes, 0, allBytes, bodyBytes.length, freshBytes.length);
         System.arraycopy(senderBytes, 0, allBytes, bodyBytes.length+freshBytes.length, senderBytes.length);
 
+        //System.out.println("byteCreated1:"+Arrays.toString(allBytes)+"\n");
+
         byte[] msgDigSig = makeDigitalSignature(allBytes, privateKey);
 
+
         String mSigStr = DatatypeConverter.printBase64Binary(msgDigSig);
+
 
         name = se.createName("MessageSignature", "mSig", "http://messageSignature");
         sh.addChildElement(name).addTextNode(mSigStr);
@@ -142,13 +134,14 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         SOAPElement elementName = getElement(se,"SenderName", "sname", "http://senderName");
         byte[] allBytes = joinElementsInBytes(se.getBody(),elementFresh,elementName);
 
+
         List<SOAPElement> elementsInFresh= getElements(elementFresh);
 
         SOAPElement elementId = elementsInFresh.get(0);
         SOAPElement elementDate = elementsInFresh.get(1);
 
         //fixme dinamically
-        PublicKey CAPublicKey = getCAPublicKey(elementName);
+        PublicKey CAPublicKey = getCAPublicKey();
 
         //get INVOKER certificate
         String invoker = (String) smc.get(INVOKER_PROPERTY);
@@ -172,7 +165,6 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
             throw new Exception();
         }
 
-
         PublicKey publicKey = cert.getPublicKey();
         Boolean isValidSignature = verifyDigitalSignature(hashedBytes,allBytes,publicKey);
         if(!isValidSignature) {
@@ -194,8 +186,6 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
             log.warn("Invalid date");
             throw new Exception();
         }
-        //FIXME systemOuts
-        System.out.println("ALLVALID");
         log.warn("ALL VALID");
 
     }
@@ -204,26 +194,9 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         ((X509Certificate) cert).checkValidity();
     }
 
-    protected PublicKey getCAPublicKey(SOAPElement elem) throws Exception {
+    protected PublicKey getCAPublicKey() throws Exception {
 
-        String destinationName= elem.getValue();
-        //String destinationName = "UpaBroker";
-        String begin = "../../T_27-project/";
-        String pasta = null;
-
-        switch(destinationName){
-            case "UpaTransporter1": pasta = "transporter-ws";
-                break;
-            case "UpaTransporter2": pasta = "transporter-ws";
-                break;
-            case "UpaBroker": pasta = "broker-ws";
-                break;
-        }
-
-        String path = begin + pasta +"/src/main/resources/"+destinationName+".jks";
-        String pass = "pass"+destinationName;
-        KeyStore ks = readKeyStoreFile(path, pass.toCharArray());
-        Certificate certCA = ks.getCertificate("UpaCA");
+        Certificate certCA = readCertificateFile("UpaCA.cer");
         return certCA.getPublicKey();
     }
     protected byte[] joinElementsInBytes(SOAPElement elemBody,SOAPElement elemFresh, SOAPElement elemName) throws Exception{
@@ -259,7 +232,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 
         if (!iterator.hasNext()) {
             log.warn(a+" Not found");
-            return null;
+            throw new Exception();
         }
         return (SOAPElement) iterator.next();
     }
@@ -282,7 +255,6 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 
         int id = Integer.parseInt(stringId);
 
-        Integer id_expected
         if (id != ID_COUNTER_EXPECTED){
             return false;
         }
@@ -374,7 +346,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
             log.debug("FileInputStream", e);
         }
 
-        log.debug(url);
+
 
         KeyStore keystore = null;
         try {
@@ -390,6 +362,9 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
             log.debug("keystore load", e);
         }
 
+        if(keystore==null){
+            log.warn("Keystore is null");
+        }
         return keystore;
     }
 
@@ -399,26 +374,29 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
      * @return The read Certificate
      * @throws Exception
      */
-    public Certificate readCertificateFile(String certificateFilePath) throws Exception {
-        FileInputStream fis;
+    public Certificate readCertificateFile(String certificateFilePath) {
+        ClassLoader classLoader = getClass().getClassLoader();
 
-        try {
-            fis = new FileInputStream(certificateFilePath);
-        } catch (FileNotFoundException e) {
-            throw new Exception("Certificate file <" + certificateFilePath + "> not fount."); // FIXME Change exception
+        try{
+            URL url = classLoader.getResource(certificateFilePath);
+            if(url==null)
+                return null;
+            FileInputStream fis = new FileInputStream(url.getFile());
+            BufferedInputStream bis = new BufferedInputStream(fis);
+            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+
+            if (bis.available() > 0) {
+                return cf.generateCertificate(bis);
+            }
+
+            bis.close();
+            fis.close();
+            log.warn("Nothing to read");
+            log.error("Nothing to read");
+        } catch (Exception e) {
+            log.error(e);
         }
-        BufferedInputStream bis = new BufferedInputStream(fis);
-
-        CertificateFactory cf = CertificateFactory.getInstance("X.509");
-
-        if (bis.available() > 0) {
-            return cf.generateCertificate(bis);
-        }
-
-        bis.close();
-        fis.close();
-        log.warn("Nothing to read");
-        throw new Exception("Nothing to read");
+        return null;
     }
 
 
