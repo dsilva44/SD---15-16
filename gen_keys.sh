@@ -10,8 +10,10 @@ declare -A SERVERS # works only on bash-4.0
 caClientFolder=./ca-ws-cli/src/test/resources/
 brokerFolder=./broker-ws/src/main/resources/
 transporterFolder=./transporter-ws/src/main/resources/
+transporterCli=./transporter-ws-cli/src/test/resources/
 
-SERVERS=( ["UpaCAClient"]=${caClientFolder} ["UpaBroker"]=${brokerFolder} ["UpaTransporter1"]=${transporterFolder} ["UpaTransporter2"]=${transporterFolder})
+SERVERS=( ["UpaCAClient"]=${caClientFolder} ["UpaBroker"]=${brokerFolder} ["UpaTransporter1"]=${transporterFolder} \
+          ["UpaTransporter2"]=${transporterFolder} ["UpaTransporterCli"]=${transporterCli} )
 
 caFolder=./ca-ws/src/main/resources/
 # CA alias
