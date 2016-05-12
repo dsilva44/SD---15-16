@@ -19,6 +19,7 @@ import javax.xml.ws.handler.MessageContext;
 import javax.xml.ws.handler.MessageContext.Scope;
 import javax.xml.ws.handler.soap.SOAPMessageContext;
 
+import mockit.Expectations;
 import org.junit.Test;
 
 import mockit.Mocked;
@@ -108,7 +109,7 @@ public class AuthenticationHandlerTest extends AbstractHandlerTest {
     }
 
 
-    /*@Test
+    @Test
     public void testAuthenticationHandlerInbound(
             @Mocked final SOAPMessageContext soapMessageContext
             //@Mocked final CAClient client,
@@ -126,7 +127,8 @@ public class AuthenticationHandlerTest extends AbstractHandlerTest {
         final PublicKey CAkey = keypair.getPublic();
 
         //fixme must mock CAClient
-        new StrictExpectations(handler) {{
+        new Expectations(handler) {
+            {
             soapMessageContext.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY);
             result = soapOutbound;
 
@@ -144,15 +146,15 @@ public class AuthenticationHandlerTest extends AbstractHandlerTest {
             result = true;
 
 /*
-            new CAClient("http://localhost:9090");
+           // new CAClient("http://localhost:9090");
             client.requestCertificateFile("UpaTransporter1");
             result = fakeArray;
 
 
-            client.toCertificate(fakeArray);
+            handler.toCertificate(fakeArray);
             result = certificate;
 
-            handler.getCAPublicKey(soapMessageContext);
+            handler.getCAPublicKey(soapMessageContext.getMessage().getSOAPPart().getEnvelope());
             result = CAkey;
 
             certificate.verify(CAkey);
@@ -161,14 +163,14 @@ public class AuthenticationHandlerTest extends AbstractHandlerTest {
             handler.isValidCertDate(certificate);
             result = null;
 
-
+*/
         }};
 
         boolean handleResult = handler.handleMessage(soapMessageContext);
         assertTrue(handleResult);
 
     }
-*/
+
 
     /** auxiliary method to generate KeyPair */
     public static KeyPair generate() throws Exception {

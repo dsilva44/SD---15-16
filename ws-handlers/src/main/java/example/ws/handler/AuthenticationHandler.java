@@ -130,7 +130,8 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         SOAPElement elementId = elementsInFresh.get(0);
         SOAPElement elementDate = elementsInFresh.get(1);
 
-        PublicKey CAPublicKey = getCAPublicKey(smc);
+        //fixme dinamically
+        PublicKey CAPublicKey = getCAPublicKey(se);
 
         //get INVOKER certificate
         String invoker = (String) smc.get(INVOKER_PROPERTY);
@@ -154,10 +155,8 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
             throw new Exception();
         }
 
-        //fixme testar getCApublicKey
 
         PublicKey publicKey = cert.getPublicKey();
-
         Boolean isValidSignature = verifyDigitalSignature(hashedBytes,allBytes,publicKey);
         if(!isValidSignature) {
             log.warn("Invalid signature");
@@ -186,12 +185,28 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         ((X509Certificate) cert).checkValidity();
     }
 
-    protected PublicKey getCAPublicKey(SOAPMessageContext smc) throws Exception {
-        //fixme uninitialized keystore
-        /*KeyStore ks = KeyStore.getInstance("JKS");
-        Certificate certCA = ks.getCertificate("UpaCA");
+    protected PublicKey getCAPublicKey(SOAPEnvelope se) throws Exception {
+        //fixme dinamically
+        /*SOAPElement elementDestination = getElement(se,)
+        String destinationName= elementDestination.getValue();
         */
-        Certificate certCA = readCertificateFile("/home/dziergwa/Desktop/SD/T_27-project/transporter-ws/src/main/resources/UpaCA.cer");
+        String destinationName = "UpaBroker";
+        String begin = "../../T_27-project/";
+        String pasta = null;
+
+        switch(destinationName){
+            case "UpaTransporter1": pasta = "transporter-ws";
+                break;
+            case "UpaTransporter2": pasta = "transporter-ws";
+                break;
+            case "UpaBroker": pasta = "broker-ws";
+                break;
+        }
+
+        String path = begin + pasta +"/src/main/resources/"+destinationName+".jks";
+        String pass = "pass"+destinationName;
+        KeyStore ks = readKeyStoreFile(path, pass.toCharArray());
+        Certificate certCA = ks.getCertificate("UpaCA");
         return certCA.getPublicKey();
     }
     protected byte[] joinElementsInBytes(SOAPElement elemBody,SOAPElement elemFresh) throws Exception{
