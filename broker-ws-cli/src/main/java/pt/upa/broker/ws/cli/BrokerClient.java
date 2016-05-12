@@ -9,6 +9,7 @@ import pt.upa.broker.ws.*;
 
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.WebServiceException;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -20,10 +21,10 @@ public class BrokerClient implements BrokerPortType {
 
     private static int OPR_NUM = 0;
 
-    private final int CONN_TIME_OUT = 4000;
-    private final int RECV_TIME_OUT = 4000;
-    private final int SLEEP_TIME = 2000;
-    private final int NUM_TRIES = 3;
+    private final int CONN_TIME_OUT = 1000; // 30s
+    private final int RECV_TIME_OUT = 1000; // 2m
+    private final int SLEEP_TIME = 4000; // 10s
+    private final int NUM_TRIES = 1000; // wait to connect time = (10s*3) = 30s
 
     private BrokerPortType port;
     private String wsURL;
@@ -95,31 +96,24 @@ public class BrokerClient implements BrokerPortType {
     /*-----------------------------------------------remote invocation methods----------------------------------------*/
     @Override
     public String ping(String name) {
-        for(int i = NUM_TRIES; i > 0; i--) {
-            try {
-                return port.ping(name);
-            } catch (WebServiceException wse) {
-                log.error("ping: "+wse);
-                retry();
-            }
-        }
-        throw new BrokerClientException("Cannot contact server!!!");
+        return port.ping(name);
     }
 
     @Override
     public String requestTransport(String origin, String destination, int price)
             throws InvalidPriceFault_Exception, UnavailableTransportFault_Exception,
             UnavailableTransportPriceFault_Exception, UnknownLocationFault_Exception {
-        setupMessageContext(OPR_NUM++);
+        OPR_NUM++;
         for(int i = NUM_TRIES; i > 0; i--) {
+            setupMessageContext(OPR_NUM);
             try {
                 return port.requestTransport(origin, destination, price);
             } catch (WebServiceException wse) {
-                log.error("requestTransport: "+ wse);
+                if (isSocketTimeoutException(wse)) break;
                 retry();
             }
         }
-        throw new BrokerClientException("Cannot contact server!!!");
+        throw new BrokerClientException("Cannot contact server: " + wsName);
     }
 
     @Override
@@ -129,59 +123,44 @@ public class BrokerClient implements BrokerPortType {
 
     @Override
     public String updateTransport(TransportView transportView, String bestOfferID, String oprID, String response) {
-        throw new BrokerClientException("updateTransport: Cannot use this operation");
+        throw new BrokerClientException("Cannot use this operation");
     }
 
     @Override
     public TransportView viewTransport(String id) throws UnknownTransportFault_Exception {
+        OPR_NUM++;
         for(int i = NUM_TRIES; i > 0; i--) {
+            setupMessageContext(OPR_NUM);
             try {
                 return port.viewTransport(id);
             } catch (WebServiceException wse) {
-                log.error("viewTransport: "+ wse);
+                if (isSocketTimeoutException(wse)) break;
                 retry();
             }
         }
-        throw new BrokerClientException("Cannot contact server!!!");
+        throw new BrokerClientException("Cannot contact server: " + wsName);
     }
 
     @Override
     public List<TransportView> listTransports() {
-        for(int i = NUM_TRIES; i > 0; i--) {
-            try {
-                return port.listTransports();
-            } catch (WebServiceException wse) {
-                log.error("listTransports: "+wse);
-                retry();
-            }
-        }
-        throw new BrokerClientException("Cannot contact server!!!");
+        return port.listTransports();
     }
 
     @Override
     public void clearTransports() {
-        for(int i = NUM_TRIES; i > 0; i--) {
-            try {
-                port.clearTransports();
-                return;
-            } catch (WebServiceException wse) {
-                log.error("listTransports: " + wse);
-                retry();
-            }
-        }
-        throw new BrokerClientException("Cannot contact server!!!");
+        port.clearTransports();
     }
 
+    /*-----------------------------------------------aux methods------------------------------------------------------*/
     private void retry() {
         try {
             Thread.sleep(SLEEP_TIME);
             uddiLookup();
             createStub();
-            setupMessageContext(OPR_NUM); // new stub, new redefine message context
         }  catch (InterruptedException e) {
-            log.error("retry: "+ e);
+            log.error(e);
         } catch (BrokerClientException e) {
-            log.error(e.getMessage()+": "+e.getCause());
+            log.info("...Fail to connect");
         }
     }
 
@@ -189,6 +168,16 @@ public class BrokerClient implements BrokerPortType {
         BindingProvider bindingProvider = (BindingProvider) port;
         Map<String, Object> requestContext = bindingProvider.getRequestContext();
         requestContext.put(RepeatedMessageClientHandler.OPR_ID_PROPERTY, Integer.toString(oprNum));
+    }
+
+    private boolean isSocketTimeoutException(Throwable wse) {
+        Throwable cause = wse.getCause();
+        log.error("Caught: " + wse);
+        if (cause != null && cause instanceof SocketTimeoutException) {
+            log.error("The cause was a timeout exception: " + cause);
+            return true;
+        }
+        return false;
     }
 }
 
