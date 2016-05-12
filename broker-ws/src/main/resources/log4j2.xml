@@ -7,20 +7,23 @@
         <RollingFile name="RollingFile" fileName="logs/log.out"
                      filePattern="logs/$${date:yyyy-MM}/app-%d{MM-dd-yyyy}-%i.log.gz">
             <PatternLayout>
-                <Pattern>%d{dd-MM-yyyy HH:mm:ss} %p %c{1.} [%t] %m%n</Pattern>
+                <Pattern>%d{dd-MM-yyyy HH:mm:ss} %p [%C{1}.%M] %m%n</Pattern>
             </PatternLayout>
             <Policies>
                 <TimeBasedTriggeringPolicy />
-                <SizeBasedTriggeringPolicy size="250 MB"/>
+                <SizeBasedTriggeringPolicy size="10 MB"/>
             </Policies>
             <DefaultRolloverStrategy max="20"/>
         </RollingFile>
     </Appenders>
     <Loggers>
         <!--Root level="info"-->
-        <Root level="DEBUG">
+        <Root level="trace">
             <AppenderRef ref="RollingFile"/>
             <AppenderRef ref="Console"/>
         </Root>
+        <Logger name="file" level="trace" additivity="false">
+            <AppenderRef ref="RollingFile"/>
+        </Logger>
     </Loggers>
 </Configuration>

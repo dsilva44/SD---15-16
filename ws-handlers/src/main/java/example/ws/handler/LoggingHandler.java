@@ -2,20 +2,22 @@ package example.ws.handler;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.util.Set;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.logging.log4j.spi.LoggerContext;
 
 import javax.xml.namespace.QName;
 import javax.xml.soap.SOAPMessage;
 import javax.xml.ws.handler.MessageContext;
 import javax.xml.ws.handler.soap.SOAPHandler;
 import javax.xml.ws.handler.soap.SOAPMessageContext;
+import java.util.Set;
 
 /**
  * This SOAPHandler outputs the contents of inbound and outbound messages.
  */
 public class LoggingHandler implements SOAPHandler<SOAPMessageContext> {
-    static final Logger log = LogManager.getRootLogger();
+    private static final Logger log = LogManager.getLogger("file");
 
     public Set<QName> getHeaders() {
         return null;
@@ -42,8 +44,7 @@ public class LoggingHandler implements SOAPHandler<SOAPMessageContext> {
      * IOException
      */
     private void logToSystemOut(SOAPMessageContext smc) {
-        Boolean outbound = (Boolean) smc
-                .get(MessageContext.MESSAGE_OUTBOUND_PROPERTY);
+        Boolean outbound = (Boolean) smc.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY);
 
         if (outbound) {
             log.debug("Outbound SOAP message:");
@@ -53,10 +54,11 @@ public class LoggingHandler implements SOAPHandler<SOAPMessageContext> {
 
         SOAPMessage message = smc.getMessage();
         try {
-            message.writeTo(System.out);
-            log.debug(message.toString());
+            java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+            message.writeTo(out);
+            log.debug(out);
         } catch (Exception e) {
-            log.debug("Exception in handler", e);
+            log.error("Exception in handler", e);
         }
     }
 
