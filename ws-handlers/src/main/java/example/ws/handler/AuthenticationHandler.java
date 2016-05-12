@@ -2,7 +2,7 @@ package example.ws.handler;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
+import pt.upa.ca.ws.cli.CAClient;
 import javax.crypto.Cipher;
 import javax.xml.bind.DatatypeConverter;
 import javax.xml.namespace.QName;
@@ -14,16 +14,13 @@ import javax.xml.ws.handler.MessageContext;
 import javax.xml.ws.handler.soap.SOAPHandler;
 import javax.xml.ws.handler.soap.SOAPMessageContext;
 import java.io.*;
-import java.security.Key;
-import java.security.KeyStore;
-import java.security.MessageDigest;
-import java.security.PrivateKey;
+import java.security.*;
+import java.security.cert.*;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Set;
+import java.util.*;
 
 
 public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
@@ -33,7 +30,10 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
     public static final String KSPATH_PROPERTY = "my.kspath.property";
     public static final String PASSWORD_PROPERTY = "my.password.property";
 
-    public static long MaxWaitTime = 10;
+    private static long MaxWaitTimeInMs = 1*1000*60;  //1 minute margin
+
+
+    private static int ID_COUNTER_EXPECTED = 0;
 
     private static long ID_COUNTER = 0;
 
@@ -46,10 +46,10 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         try {
             //sign outbound message
             if (outboundElement) handleOutboundMessage(smc);
-            //verify signature
+                //verify signature
             else handleInboundMessage(smc);
         } catch (Exception e) {
-            log.error(e);
+            log.error("AuthenticationHandler: ", e);
         }
         return true;
     }
@@ -87,6 +87,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         name = se.createName("SenderName", "sname", "http://senderName");
         sh.addChildElement(name).addTextNode(invoker);
 
+        //FIXME - This may generate null pointer exception
         KeyStore ks = readKeyStoreFile(path, pass.toCharArray());
         PrivateKey privateKey = (PrivateKey) ks.getKey(invoker, pass.toCharArray());
 
@@ -100,59 +101,159 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         byte[] msgDigSig = makeDigitalSignature(allBytes, privateKey);
 
         String mSigStr = DatatypeConverter.printBase64Binary(msgDigSig);
+
         name = se.createName("MessageSignature", "mSig", "http://messageSignature");
         sh.addChildElement(name).addTextNode(mSigStr);
     }
 
-    public boolean handleInboundMessage(SOAPMessageContext smc) throws Exception{
-        /*
+    public void handleInboundMessage(SOAPMessageContext smc) throws Exception{
+/*
+        //FIXME systemOuts
         SOAPMessage msg = smc.getMessage();
         SOAPPart sp = msg.getSOAPPart();
         SOAPEnvelope se = sp.getEnvelope();
-        SOAPHeader sh = se.getHeader();
 
-        // check header
-        if (sh == null) {
-            System.out.println("Header not found.");
-            return true;
+        //get hashed bytes from <MessageSignature> element
+        SOAPElement element = getElement(se,"MessageSignature", "mSig", "http://messageSignature");
+        String strReceived = element.getValue().trim();
+        byte[] hashedBytes = DatatypeConverter.parseBase64Binary(strReceived);
+
+        SOAPElement elementFresh = getElement(se,"Freshness", "fresh", "http://freshness");
+        //fixme SOAPElement elementName = getElement(se,IDENTITY_NAME);
+        byte[] allBytes = joinElementsInBytes(se.getBody(),elementFresh);
+
+        List<SOAPElement> elementsInFresh= getElements(elementFresh);
+
+        SOAPElement elementId = elementsInFresh.get(0);
+        SOAPElement elementDate = elementsInFresh.get(1);
+
+        PublicKey CAPublicKey = getCAPublicKey(smc);
+
+        //get INVOKER certificate
+        String invoker = (String) smc.get(INVOKER_PROPERTY);
+        CAClient caClient = new CAClient("http://localhost:9090");
+        byte[] certificateEncoded = caClient.requestCertificateFile(invoker);
+        Certificate cert = toCertificate(certificateEncoded);
+
+        try{
+            cert.verify(CAPublicKey);
         }
-        byte[] originalBytes = getSOAPBodyContent(msg);
-
-            //header = hash;
-            //body=m1;
-
-        Name name = se.createName("assinatura", "assinatura", "http://demo");
-        Iterator it = sh.getChildElements(name);
-        // check header element
-        if (!it.hasNext()) {
-            System.out.println("Header element not found.");
-            return true;
+        catch(Exception e){
+            log.warn("Verify certificate failed");
+            throw new Exception();
         }
-        SOAPElement element = (SOAPElement) it.next();
-        String timeInStringFormat = element.getValue();
-        Time t = new Time(0);
-        t.valueOf(timeInStringFormat);
 
-        Date minutesAgo = new Date();
-        minutesAgo.setTime(minutesAgo.getTime()-MaxWaitTime);
-        if (t.before(minutesAgo)){
+        try {
+            isValidCertDate(cert);
+        }
+        catch(CertificateNotYetValidException| CertificateExpiredException c){
+            log.warn("Invalid certificate date");
+            throw new Exception();
+        }
+
+        //fixme testar getCApublicKey
+
+        PublicKey publicKey = cert.getPublicKey();
+
+        Boolean isValidSignature = verifyDigitalSignature(hashedBytes,allBytes,publicKey);
+        if(!isValidSignature) {
+            log.warn("Invalid signature");
+            throw new Exception();
+        }
+
+        String stringId = elementId.getValue();
+        Boolean isValidIdentifier = checkIdentifier(stringId);
+        if (!isValidIdentifier){
+            log.warn("Invalid identifier");
+            throw new Exception();
+        }
+
+        String timeInStringFormat = elementDate.getValue();
+        Boolean isValidTimestamp = checkTimestamp(timeInStringFormat);
+        if(!isValidTimestamp){
+            log.warn("Invalid date");
+            throw new Exception();
+        }
+        System.out.println("ALLVALID");
+        log.warn("ALL VALID");
+*/
+    }
+
+    protected void isValidCertDate(Certificate cert) throws CertificateNotYetValidException, CertificateExpiredException {
+        ((X509Certificate) cert).checkValidity();
+    }
+
+    protected PublicKey getCAPublicKey(SOAPMessageContext smc) throws Exception {
+        //fixme uninitialized keystore
+        /*KeyStore ks = KeyStore.getInstance("JKS");
+        Certificate certCA = ks.getCertificate("UpaCA");
+        */
+        Certificate certCA = readCertificateFile("/home/dziergwa/Desktop/SD/T_27-project/transporter-ws/src/main/resources/UpaCA.cer");
+        return certCA.getPublicKey();
+    }
+    protected byte[] joinElementsInBytes(SOAPElement elemBody,SOAPElement elemFresh) throws Exception{
+
+        byte[] bodyBytes = SOAPElementToByteArray(elemBody);
+        byte[] freshBytes = SOAPElementToByteArray(elemFresh);
+        byte[] allBytes = new byte[bodyBytes.length + freshBytes.length];
+
+        System.arraycopy(bodyBytes, 0, allBytes, 0, bodyBytes.length);
+        System.arraycopy(freshBytes, 0, allBytes, bodyBytes.length, freshBytes.length);
+
+        return allBytes;
+
+    }
+
+
+    protected List<SOAPElement> getElements(SOAPElement elem) throws Exception{
+        List<SOAPElement> list = new ArrayList();
+
+        Iterator iterator = elem.getChildElements();
+
+        while (iterator.hasNext()) {
+            SOAPElement newElem = (SOAPElement)iterator.next();
+            list.add(newElem);
+        }
+        return list;
+    }
+
+    protected SOAPElement getElement(SOAPEnvelope se,String a, String b, String c) throws Exception{
+        Name name = se.createName(a, b, c);
+        Iterator iterator = se.getHeader().getChildElements(name);
+
+        if (!iterator.hasNext()) {
+            log.warn(a+" Not found");
+            return null;
+        }
+        return (SOAPElement) iterator.next();
+    }
+
+
+    protected boolean checkTimestamp(String timeInStringFormat) throws ParseException {
+
+        DateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+        Date date = format.parse(timeInStringFormat);
+
+        Date limit = new Date();
+        limit.setTime(limit.getTime()-MaxWaitTimeInMs);
+        if (date.before(limit)){
             return false;
         }
-
-
-
-            byte[] hashedBytesCyphered = sh.getValue().getBytes();
-
-            SOAPHeader sh = se.getHeader();//how to get url?
-            String url = "";
-            Key publicKey = CA.getCertificate(url).getPublicKey();
-
-        return true;
-        //return verifyDigitalSignature(hashedBytesCyphered,originalBytes,publicKey);
-    */
         return true;
     }
 
+    protected boolean checkIdentifier(String stringId){
+
+        int id = Integer.parseInt(stringId);
+
+        if (id != ID_COUNTER_EXPECTED){
+            return false;
+        }
+        else{
+            ID_COUNTER_EXPECTED++;
+        }
+        return true;
+    }
 
     private static byte[] SOAPElementToByteArray(SOAPElement elem) throws Exception {
 

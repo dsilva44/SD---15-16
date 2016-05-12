@@ -16,13 +16,14 @@ public class Manager {
 
     private EndpointManager epm;
     private Broker currBroker;
-    private ArrayList<TransporterClient> transporterClients;
-    private ArrayList<Transport> transportsList;
+    private List<TransporterClient> transporterClients;
+    private List<Transport> transportsList;
+    private Map<String, String> transportResponses;
 
     private String ksPath;
     private String password;
 
-    private final ArrayList<String> knowCities = new ArrayList<>(Arrays.asList("Lisboa", "Leiria", "Santarém",
+    private final List<String> knowCities = new ArrayList<>(Arrays.asList("Lisboa", "Leiria", "Santarém",
             "Castelo Branco", "Coimbra", "Aveiro", "Viseu", "Guarda","Porto", "Braga", "Viana do Castelo",
             "Vila Real", "Bragança","Setúbal", "Évora", "Portalegre", "Beja","Faro"));
 
@@ -30,6 +31,7 @@ public class Manager {
     private Manager() {
         transporterClients = new ArrayList<>();
         transportsList = new ArrayList<>();
+        transportResponses = new HashMap<>();
     }
 
     //Singleton init
@@ -42,20 +44,22 @@ public class Manager {
     }
 
     //State pattern
-    public void goNext() {
+    void goNext() {
         currBroker.goNext();
     }
 
     //getters
     public static Manager getInstance() { return manager; }
-    ArrayList<TransporterClient> getTransporterClients() { return transporterClients; }
+    List<TransporterClient> getTransporterClients() { return transporterClients; }
     public List<Transport> getTransportsList() {
         return transportsList;
     }
+    public Map<String, String> getTransportResponses() { return transportResponses; }
+
     public Broker getCurrBroker() {return currBroker;}
     public EndpointManager getEndPointManager() { return epm; }
 
-    public void setCurrBroker(Broker currBroker) { this.currBroker = currBroker; }
+    void setCurrBroker(Broker currBroker) { this.currBroker = currBroker; }
 
     Transport getTransportById(String id) {
         for (Transport t : transportsList)
@@ -79,7 +83,7 @@ public class Manager {
 
     boolean updateTransportersList() {
         String query = "UpaTransporter%";
-        ArrayList<String> transporterURLS = (ArrayList<String>) epm.findInUddi(query);
+        ArrayList<String> transporterURLS = (ArrayList<String>) epm.uddiList(query);
 
         transporterClients.clear();
         for (String url : transporterURLS) {
@@ -168,14 +172,25 @@ public class Manager {
         return transport;
     }
 
-    public void clearTransports(){
-
-        transportsList.clear();
-    }
-
     public void clearTransportersClients(){
         transporterClients.forEach(TransporterClient::clearJobs);
         transporterClients.clear();
+    }
+
+    public void updateTransport(TransportView transportView, String chosenOfferID, String oprID, String res) {
+        Transport newTransport = new Transport(transportView, chosenOfferID);
+        Transport oldTransport = manager.getTransportById(newTransport.getId());
+
+        if (oldTransport != null) {
+            manager.replaceTransport(oldTransport, newTransport);
+            log.debug("Update: " + newTransport.toString());
+        } else {
+            manager.addTransport(newTransport);
+            log.debug("Create: "+newTransport.toString());
+        }
+
+        if (oprID != null)
+            getTransportResponses().put(oprID, res);
     }
 
     //-------------------------------------------Aux methods------------------------------------------------------------
@@ -217,6 +232,7 @@ public class Manager {
                 throw new BrokerBadJobException(e.getMessage() + " -- id: " + e.getFaultInfo().getId());
             }
         }
+        t.clearOffers();
     }
 
     //-------------------------------------------create Faults----------------------------------------------------------

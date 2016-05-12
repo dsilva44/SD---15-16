@@ -19,10 +19,19 @@ public class Transport {
 	private List<JobView> offers = new ArrayList<>();
 	private String chosenOfferID = null;
 	 
-	public Transport () {
+	Transport () {}
+
+	public Transport (TransportView transportView, String chosenOfferID) {
+		this.id = transportView.getId();
+		this.origin = transportView.getOrigin();
+		this.destination = transportView.getDestination();
+		this.price = transportView.getPrice();
+		this.transporterCompany = transportView.getTransporterCompany();
+		this.state = transportView.getState();
+		this.chosenOfferID = chosenOfferID;
 	}
 	
-	public Transport(String id, String origin, String destination, int price, String transporterCompany, TransportStateView state) {
+	Transport(String id, String origin, String destination, int price, String transporterCompany, TransportStateView state) {
 	    this.id = id;
 	    this.origin = origin;
 	    this.destination = destination;
@@ -31,13 +40,9 @@ public class Transport {
 	    this.state = state;
 	}
 
-	public JobView getOfferByID(String id) {
-		for (JobView offer : offers)
-			if (offer.getJobIdentifier().equals(id))
-				return offer;
-		return null;
+	public void clearOffers() {
+		offers.clear();
 	}
-	
 	
 	public String getId() {
 			return id;
@@ -143,7 +148,7 @@ public class Transport {
 	@Override
 	public String toString() {
 		String string = getId()+" "+getOrigin()+" "+getDestination()+" "+getPrice()+" "+getTransporterCompany()+" "+
-				getState()+" offers: "+offers.size()+" chosen id: "+getChosenOfferID();
+				getState()+ " chosen id: "+getChosenOfferID();
 		return string;
 	}
 }

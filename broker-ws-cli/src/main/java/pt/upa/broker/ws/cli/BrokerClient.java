@@ -1,5 +1,6 @@
 package pt.upa.broker.ws.cli;
 
+import example.ws.handler.RepeatedMessageClientHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
@@ -16,6 +17,8 @@ import static javax.xml.ws.BindingProvider.ENDPOINT_ADDRESS_PROPERTY;
 
 public class BrokerClient implements BrokerPortType {
     private static final Logger log = LogManager.getRootLogger();
+
+    private static int OPR_NUM = 0;
 
     private final int CONN_TIME_OUT = 4000;
     private final int RECV_TIME_OUT = 4000;
@@ -64,6 +67,7 @@ public class BrokerClient implements BrokerPortType {
         log.info("Setting endpoint address ...");
         BindingProvider bindingProvider = (BindingProvider) port;
         Map<String, Object> requestContext = bindingProvider.getRequestContext();
+
         requestContext.put(ENDPOINT_ADDRESS_PROPERTY, wsURL);
 
         // The connection timeout property has different names in different versions of JAX-WS
@@ -95,7 +99,7 @@ public class BrokerClient implements BrokerPortType {
             try {
                 return port.ping(name);
             } catch (WebServiceException wse) {
-                log.error("ping: "+wse.getMessage());
+                log.error("ping: "+wse);
                 retry();
             }
         }
@@ -106,11 +110,12 @@ public class BrokerClient implements BrokerPortType {
     public String requestTransport(String origin, String destination, int price)
             throws InvalidPriceFault_Exception, UnavailableTransportFault_Exception,
             UnavailableTransportPriceFault_Exception, UnknownLocationFault_Exception {
+        setupMessageContext(OPR_NUM++);
         for(int i = NUM_TRIES; i > 0; i--) {
             try {
                 return port.requestTransport(origin, destination, price);
             } catch (WebServiceException wse) {
-                log.error("requestTransport: "+wse.getMessage());
+                log.error("requestTransport: "+ wse);
                 retry();
             }
         }
@@ -118,16 +123,13 @@ public class BrokerClient implements BrokerPortType {
     }
 
     @Override
-    public String updateTransport(String tSerialized) {
-        for(int i = NUM_TRIES; i > 0; i--) {
-            try {
-                port.updateTransport(tSerialized);
-            } catch (WebServiceException wse) {
-                log.error("updateTransport: "+wse.getMessage());
-                retry();
-            }
-        }
-        throw new BrokerClientException("Cannot contact server!!!");
+    public String registerBackup(String wsURL) {
+        throw new BrokerClientException("Cannot use this operation");
+    }
+
+    @Override
+    public String updateTransport(TransportView transportView, String bestOfferID, String oprID, String response) {
+        throw new BrokerClientException("updateTransport: Cannot use this operation");
     }
 
     @Override
@@ -136,7 +138,7 @@ public class BrokerClient implements BrokerPortType {
             try {
                 return port.viewTransport(id);
             } catch (WebServiceException wse) {
-                log.error("viewTransport: "+wse.getMessage());
+                log.error("viewTransport: "+ wse);
                 retry();
             }
         }
@@ -149,7 +151,7 @@ public class BrokerClient implements BrokerPortType {
             try {
                 return port.listTransports();
             } catch (WebServiceException wse) {
-                log.error("listTransports: "+wse.getMessage());
+                log.error("listTransports: "+wse);
                 retry();
             }
         }
@@ -163,7 +165,7 @@ public class BrokerClient implements BrokerPortType {
                 port.clearTransports();
                 return;
             } catch (WebServiceException wse) {
-                log.error("listTransports: "+wse.getMessage());
+                log.error("listTransports: " + wse);
                 retry();
             }
         }
@@ -175,11 +177,18 @@ public class BrokerClient implements BrokerPortType {
             Thread.sleep(SLEEP_TIME);
             uddiLookup();
             createStub();
+            setupMessageContext(OPR_NUM); // new stub, new redefine message context
         }  catch (InterruptedException e) {
-            log.error(e);
+            log.error("retry: "+ e);
         } catch (BrokerClientException e) {
             log.error(e.getMessage()+": "+e.getCause());
         }
+    }
+
+    private void setupMessageContext(int oprNum) {
+        BindingProvider bindingProvider = (BindingProvider) port;
+        Map<String, Object> requestContext = bindingProvider.getRequestContext();
+        requestContext.put(RepeatedMessageClientHandler.OPR_ID_PROPERTY, Integer.toString(oprNum));
     }
 }
 

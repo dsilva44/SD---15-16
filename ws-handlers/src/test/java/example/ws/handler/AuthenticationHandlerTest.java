@@ -4,10 +4,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.KeyStore;
-import java.security.PrivateKey;
+import java.security.*;
+import java.security.cert.*;
+import java.security.cert.Certificate;
 import java.util.Iterator;
 
 import javax.xml.soap.Name;
@@ -24,6 +23,8 @@ import org.junit.Test;
 
 import mockit.Mocked;
 import mockit.StrictExpectations;
+import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
+import pt.upa.ca.ws.cli.CAClient;
 
 public class AuthenticationHandlerTest extends AbstractHandlerTest {
 
@@ -32,6 +33,8 @@ public class AuthenticationHandlerTest extends AbstractHandlerTest {
     public static final String INVOKER_PROPERTY = "my.invoker.property";
     public static final String KSPATH_PROPERTY = "my.kspath.property";
     public static final String PASSWORD_PROPERTY = "my.password.property";
+
+
 
     @Test
     public void testAuthenticationHandlerOutbound(
@@ -44,6 +47,8 @@ public class AuthenticationHandlerTest extends AbstractHandlerTest {
         final String soapText = HELLO_SOAP_REQUEST;
         final SOAPMessage soapMessage = byteArrayToSOAPMessage(soapText.getBytes());
         final Boolean soapOutbound = true;
+
+
 
         // generate RSA KeyPair
         KeyPair keypair = generate();
@@ -107,12 +112,68 @@ public class AuthenticationHandlerTest extends AbstractHandlerTest {
         assertEquals("date element (from freshness) is not correct", "Date", dateElement.getLocalName());
     }
 
-    @Test
-    public void testHeaderHandlerInbound(
-        @Mocked final SOAPMessageContext soapMessageContext)
-        throws Exception {
+
+    /*@Test
+    public void testAuthenticationHandlerInbound(
+            @Mocked final SOAPMessageContext soapMessageContext
+            //@Mocked final CAClient client,
+            //@Mocked final Certificate certificate
+            )
+            throws Exception {
+
+        AuthenticationHandler handler = new AuthenticationHandler();
+        final String soapInboundText = INBOUND_MESSAGE;
+        final SOAPMessage soapMessageInbound = byteArrayToSOAPMessage(soapInboundText.getBytes());
+        final Boolean soapOutbound = false;
+        final byte[] fakeArray = new byte[0];
+
+        KeyPair keypair = generate();
+        final PublicKey CAkey = keypair.getPublic();
+
+        //fixme must mock CAClient
+        new StrictExpectations(handler) {{
+            soapMessageContext.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY);
+            result = soapOutbound;
+
+            soapMessageContext.getMessage();
+            result = soapMessageInbound;
+
+            soapMessageContext.get(INVOKER_PROPERTY);
+            result = "UpaTransporter1";
+
+
+            handler.checkIdentifier("2");
+            result = true;
+
+            handler.checkTimestamp("2016-05-11T10:24:10");
+            result = true;
+
+/*
+            new CAClient("http://localhost:9090");
+            client.requestCertificateFile("UpaTransporter1");
+            result = fakeArray;
+
+
+            client.toCertificate(fakeArray);
+            result = certificate;
+
+            handler.getCAPublicKey(soapMessageContext);
+            result = CAkey;
+
+            certificate.verify(CAkey);
+            result = null;
+
+            handler.isValidCertDate(certificate);
+            result = null;
+
+
+        }};
+
+        boolean handleResult = handler.handleMessage(soapMessageContext);
+        assertTrue(handleResult);
 
     }
+*/
 
     /** auxiliary method to generate KeyPair */
     public static KeyPair generate() throws Exception {

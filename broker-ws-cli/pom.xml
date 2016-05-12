@@ -66,6 +66,12 @@
             <artifactId>log4j-core</artifactId>
             <version>2.0-rc1</version>
         </dependency>
+        <!-- WS-Handlers -->
+        <dependency>
+            <groupId>example</groupId>
+            <artifactId>ws-handlers</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
     <build>

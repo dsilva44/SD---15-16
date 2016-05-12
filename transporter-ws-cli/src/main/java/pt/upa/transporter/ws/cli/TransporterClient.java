@@ -82,9 +82,7 @@ public class TransporterClient implements TransporterPortType {
 	/*-----------------------------------------------remote invocation methods----------------------------------------*/
 
 	@Override
-	public String ping(String name) {
-		return port.ping(name);
-	}
+	public String ping(String name) { return port.ping(name);}
 
 	@Override
 	public JobView requestJob(String origin, String destination, int price)

@@ -376,7 +376,7 @@ public class RequestTransportIT extends AbstractIT {
 
     // ------------------------- DEMONSTRATION TESTS -------------------------
 
-    @Test//(expected = SecurityException.class)
+    @Test//(expected = SecurityException.class)//FIXME: CHANGE WHEN VERIFY DONE
     public void testEnableTamperingHandler() throws Exception {
         CLIENT.requestTransport(CENTER_1, CENTER_2, 5);      //FIXME: MAX NUMBER ?
     }

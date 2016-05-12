@@ -41,6 +41,30 @@ public abstract class AbstractHandlerTest {
     "</ns2:sayHelloResponse>" +
     "</S:Body></S:Envelope>";
 
+
+    protected static final String INBOUND_MESSAGE="<S:Envelope "+
+    "xmlns:S=\"http://schemas.xmlsoap.org/soap/envelope/\" "+
+    "xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\">"+
+            "<SOAP-ENV:Header>"+
+            "<fresh:Freshness xmlns:fresh=\"http://freshness\">"+
+                "<id:Identifier xmlns:id=\"http://identifier\">2</id:Identifier>"+
+                "<time:Date xmlns:time=\"http://date\">2016-05-11T10:24:10</time:Date></fresh:Freshness>"+
+            "<mSig:MessageSignature xmlns:mSig=\"http://messageSignature\">"+
+                "Wb4LDJR11A3PPbQoRx9Suowwz63f1PvqF2umUGeEWslRLprGOSUt2IYSt2jc/ydPc1PmtH9+brNZ"+
+                "4AOU93yZfYqtC0L1YMst6nAaRO6C4Tp52CgAnPwjLkUARoDpXpJxjK/XmHBtqp4VPvfwagaxPDpTV"+
+                "QhogCHO0cEZT9Cuz6l8mjH4c/AJMXLzIA7+pCVf/FAaX3GiPefPG3tFnCrjpkTraazfoRfewcigByu"+
+                "f2MWa3uDTMOUiFKk5oGkTC/qwsUoONkc/NuLIstH5Tx/dSGvPWHQNkPZXXVO8ZV9d08kvGjn5l1G0LXZ"+
+                "0nnsBThi6BK0omcBPE586YV1KBS7CRg==</mSig:MessageSignature>"+
+            "</SOAP-ENV:Header><S:Body>"+
+            "<ns2:requestJobResponse xmlns:ns2=\"http://ws.transporter.upa.pt/\">"+
+            "<return><companyName>UpaTransporter1</companyName>"+
+            "<jobIdentifier>UpaTransporter1_0</jobIdentifier>"+
+            "<jobOrigin>Lisboa</jobOrigin>"+
+            "<jobDestination>Coimbra</jobDestination>"+
+            "<jobPrice>4</jobPrice>"+
+            "<jobState>PROPOSED</jobState></return>"+
+            "</ns2:requestJobResponse></S:Body></S:Envelope>";
+
     /** SOAP message factory */
     protected static final MessageFactory MESSAGE_FACTORY;
 

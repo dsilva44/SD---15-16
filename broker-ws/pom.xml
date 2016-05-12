@@ -26,9 +26,7 @@
         <!-- instance number - redefine using -D option - e.g. mvn -Dws.i=2 exec:java -->
         <ws.i>1</ws.i>
 
-        <ws.primary>http://localhost:9091/broker-ws/endpoint</ws.primary>
-        <ws.backup>http://localhost:9092/broker-ws/endpoint</ws.backup>
-        <ws.type>${ws.i}</ws.type>
+        <ws.url>http://localhost:909${ws.i}/broker-ws/endpoint</ws.url>
         <ws.name>UpaBroker</ws.name>
         <uddi.url>http://localhost:9090</uddi.url>
 
@@ -89,12 +87,6 @@
             <artifactId>ca-ws-cli</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
-        <!-- Gson -->
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>2.6.2</version>
-        </dependency>
 
     </dependencies>
 
@@ -154,9 +146,7 @@
                     <killAfter>-1</killAfter>
                     <mainClass>${mainclass}</mainClass>
                     <arguments>
-                        <argument>${ws.primary}</argument>
-                        <argument>${ws.backup}</argument>
-                        <argument>${ws.type}</argument>
+                        <argument>${ws.url}</argument>
                         <argument>${ws.name}</argument>
                         <argument>${uddi.url}</argument>
                         <argument>${resources.keyStore}</argument>
