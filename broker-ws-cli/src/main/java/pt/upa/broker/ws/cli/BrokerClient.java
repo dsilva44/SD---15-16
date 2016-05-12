@@ -21,10 +21,10 @@ public class BrokerClient implements BrokerPortType {
 
     private static int OPR_NUM = 0;
 
-    private final int CONN_TIME_OUT = 1000; // 30s
-    private final int RECV_TIME_OUT = 1000; // 2m
-    private final int SLEEP_TIME = 4000; // 10s
-    private final int NUM_TRIES = 1000; // wait to connect time = (10s*3) = 30s
+    private final int CONN_TIME_OUT = 30*1000; // 30s
+    private final int RECV_TIME_OUT = 2*1000*60; // 2m
+    private final int SLEEP_TIME = 10*1000; // 10s
+    private final int NUM_TRIES = 3; // wait to connect time = (10s*3) = 30s
 
     private BrokerPortType port;
     private String wsURL;
@@ -109,7 +109,7 @@ public class BrokerClient implements BrokerPortType {
             try {
                 return port.requestTransport(origin, destination, price);
             } catch (WebServiceException wse) {
-                if (isSocketTimeoutException(wse)) break;
+                //if (isSocketTimeoutException(wse)) break;
                 retry();
             }
         }
@@ -134,7 +134,7 @@ public class BrokerClient implements BrokerPortType {
             try {
                 return port.viewTransport(id);
             } catch (WebServiceException wse) {
-                if (isSocketTimeoutException(wse)) break;
+                //if (isSocketTimeoutException(wse)) break;
                 retry();
             }
         }

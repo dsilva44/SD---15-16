@@ -191,6 +191,8 @@ public class Manager {
 
         if (oprID != null)
             getTransportResponses().put(oprID, res);
+
+        log.debug("Backup: NumT: " +transportsList.size());
     }
 
     //-------------------------------------------Aux methods------------------------------------------------------------

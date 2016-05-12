@@ -47,10 +47,9 @@ public class BrokerPort implements BrokerPortType {
 
 		String res = manager.getTransportResponses().get(getOprID());
 		if (res != null) {
-			log.debug(getOprID() + " is repeated: " + res);
+			log.debug("OprID: "+ getOprID() + " repeated!!, response: " + res);
 			return res;
 		}
-
 
 		try {
 			Transport transport = manager.requestTransport(origin, destination, price);
@@ -58,8 +57,9 @@ public class BrokerPort implements BrokerPortType {
 			res = transport.getId();
 
 			manager.getTransportResponses().put(getOprID(), res);
-
 			updateBackup(transport.toTransportView(), transport.getChosenOfferID(), getOprID(), res);
+
+			log.debug("Primary: NumT: " + manager.getTransportsList().size());
 
 		} catch (BadLocationFault_Exception e) {
 			manager.throwUnknownLocationFault(e.getMessage()); return null;

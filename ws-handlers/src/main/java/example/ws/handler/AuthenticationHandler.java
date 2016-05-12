@@ -7,6 +7,8 @@ import javax.crypto.Cipher;
 import javax.xml.bind.DatatypeConverter;
 import javax.xml.namespace.QName;
 import javax.xml.soap.*;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -47,8 +49,9 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
             //sign outbound message
             if (outboundElement) handleOutboundMessage(smc);
                 //verify signature
-            else handleInboundMessage(smc);
-        } catch (Exception e) { //FIXME - todas as mensagens vao ser apanhadas, secalhar não é isso que queremos !!!
+            //else handleInboundMessage(smc);
+        } catch (IOException | SOAPException | KeyStoreException | UnrecoverableKeyException |
+                NoSuchAlgorithmException | CertificateException | TransformerException e) {
             log.warn(e.getMessage());
         }
         return true;
@@ -60,7 +63,9 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 
     public void close(MessageContext messageContext) {   }
 
-    public void handleOutboundMessage(SOAPMessageContext smc) throws Exception{
+    public void handleOutboundMessage(SOAPMessageContext smc)
+            throws SOAPException, CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException,
+            UnrecoverableKeyException, TransformerException {
 
         String invoker = (String) smc.get(INVOKER_PROPERTY);
         String path = (String) smc.get(KSPATH_PROPERTY);
@@ -191,7 +196,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         Certificate certCA = readCertificateFile("/home/dziergwa/Desktop/SD/T_27-project/transporter-ws/src/main/resources/UpaCA.cer");
         return certCA.getPublicKey();
     }
-    protected byte[] joinElementsInBytes(SOAPElement elemBody,SOAPElement elemFresh) throws Exception{
+    protected byte[] joinElementsInBytes(SOAPElement elemBody,SOAPElement elemFresh) throws TransformerException {
 
         byte[] bodyBytes = SOAPElementToByteArray(elemBody);
         byte[] freshBytes = SOAPElementToByteArray(elemFresh);
@@ -205,7 +210,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
     }
 
 
-    protected List<SOAPElement> getElements(SOAPElement elem) throws Exception{
+    protected List<SOAPElement> getElements(SOAPElement elem) {
         List<SOAPElement> list = new ArrayList();
 
         Iterator iterator = elem.getChildElements();
@@ -217,7 +222,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         return list;
     }
 
-    protected SOAPElement getElement(SOAPEnvelope se,String a, String b, String c) throws Exception{
+    protected SOAPElement getElement(SOAPEnvelope se,String a, String b, String c) throws Exception {
         Name name = se.createName(a, b, c);
         Iterator iterator = se.getHeader().getChildElements(name);
 
@@ -236,10 +241,8 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 
         Date limit = new Date();
         limit.setTime(limit.getTime()-MaxWaitTimeInMs);
-        if (date.before(limit)){
-            return false;
-        }
-        return true;
+
+        return !date.before(limit);
     }
 
     protected boolean checkIdentifier(String stringId){
@@ -255,15 +258,14 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         return true;
     }
 
-    private static byte[] SOAPElementToByteArray(SOAPElement elem) throws Exception {
+    private static byte[] SOAPElementToByteArray(SOAPElement elem) throws TransformerException {
 
         DOMSource source = new DOMSource(elem);
         StringWriter stringResult = new StringWriter();
         TransformerFactory.newInstance().newTransformer().transform(source, new StreamResult(stringResult));
         String message = stringResult.toString();
-        byte[] soapBytes = message.getBytes();
 
-        return soapBytes;
+        return message.getBytes();
     }
 
     public static byte[] makeDigitalSignature(byte[] bytes,
@@ -274,8 +276,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
             byte[] digest = messageDigest.digest();
             Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
             cipher.init(Cipher.ENCRYPT_MODE, privateKey);
-            byte[] cipherDigest = cipher.doFinal(digest);
-            return cipherDigest;
+            return cipher.doFinal(digest);
         }catch(Exception e){
             throw new SecurityException("Security Error!");
         }
@@ -318,12 +319,13 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
      * @return The read KeyStore
      * @throws Exception
      */
-    public KeyStore readKeyStoreFile(String keyStoreFilePath, char[] keyStorePassword) throws Exception {
+    public KeyStore readKeyStoreFile(String keyStoreFilePath, char[] keyStorePassword)
+            throws CertificateException, NoSuchAlgorithmException, IOException, KeyStoreException {
         FileInputStream fis;
         try {
             fis = new FileInputStream(keyStoreFilePath);
         } catch (FileNotFoundException e) {
-            throw new Exception("Keystore file <" + keyStoreFilePath + "> not fount."); // FIXME Change exception
+            throw new RuntimeException("Keystore file <" + keyStoreFilePath + "> not fount."); // FIXME Change exception
         }
         KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
         keystore.load(fis, keyStorePassword);
@@ -337,13 +339,13 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
      * @return The read Certificate
      * @throws Exception
      */
-    public Certificate readCertificateFile(String certificateFilePath) throws Exception {
+    public Certificate readCertificateFile(String certificateFilePath) throws CertificateException, IOException {
         FileInputStream fis;
 
         try {
             fis = new FileInputStream(certificateFilePath);
         } catch (FileNotFoundException e) {
-            throw new Exception("Certificate file <" + certificateFilePath + "> not fount."); // FIXME Change exception
+            throw new RuntimeException("Certificate file <" + certificateFilePath + "> not fount."); // FIXME Change exception
         }
         BufferedInputStream bis = new BufferedInputStream(fis);
 
@@ -356,7 +358,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         bis.close();
         fis.close();
         log.warn("Nothing to read");
-        throw new Exception("Nothing to read");
+        throw new RuntimeException("Nothing to read");
     }
 
 
