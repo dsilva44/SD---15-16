@@ -28,7 +28,7 @@
 
         <password>pass${ws.name}</password>
         <resources.directory>src/main/resources</resources.directory>
-        <resources.keyStore>${resources.directory}/${ws.name}.jks</resources.keyStore>
+        <resources.keyStore>${ws.name}.jks</resources.keyStore>
     </properties>
 
     <dependencies>
@@ -87,7 +87,7 @@
         <testResources>
             <testResource>
                 <directory>src/test/resources</directory>
-                <filtering>true</filtering>
+                <filtering>false</filtering>
             </testResource>
         </testResources>
         <plugins>

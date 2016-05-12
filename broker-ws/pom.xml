@@ -31,7 +31,7 @@
         <uddi.url>http://localhost:9090</uddi.url>
 
         <resources.directory>src/main/resources</resources.directory>
-        <resources.keyStore>${resources.directory}/${ws.name}.jks</resources.keyStore>
+        <resources.keyStore>${ws.name}.jks</resources.keyStore>
         <pass>pass${ws.name}</pass>
 
     </properties>
@@ -94,13 +94,13 @@
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
-                <filtering>true</filtering>
+                <filtering>false</filtering>
             </resource>
         </resources>
         <testResources>
             <testResource>
                 <directory>src/test/resources</directory>
-                <filtering>true</filtering>
+                <filtering>false</filtering>
             </testResource>
         </testResources>
         <plugins>
