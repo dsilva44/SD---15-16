@@ -144,10 +144,10 @@ public class AuthenticationHandlerTest extends AbstractHandlerTest {
             result = "UpaTransporter1";
 
 
-            handler.checkIdentifier("2");
+            handler.checkIdentifier("41","UpaTransporter1");
             result = true;
 
-            handler.checkTimestamp("2016-05-11T10:24:10");
+            handler.checkTimestamp("2016-05-12T14:22:38");
             result = true;
 
 /*
@@ -167,8 +167,8 @@ public class AuthenticationHandlerTest extends AbstractHandlerTest {
 
             handler.isValidCertDate(certificate);
             result = null;
-
 */
+
         }};
 
         boolean handleResult = handler.handleMessage(soapMessageContext);
