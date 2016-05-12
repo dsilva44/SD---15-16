@@ -85,7 +85,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         freshnessElement.addChildElement(name).addTextNode(dateTime);
 
         name = se.createName("SenderName", "sname", "http://senderName");
-        sh.addChildElement(name).addTextNode(invoker);
+        SOAPElement senderElement = sh.addChildElement(name).addTextNode(invoker);
 
         //FIXME - This may generate null pointer exception
         KeyStore ks = readKeyStoreFile(path, pass.toCharArray());
@@ -93,10 +93,14 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 
         byte[] bodyBytes = SOAPElementToByteArray(sb);
         byte[] freshBytes = SOAPElementToByteArray(freshnessElement);
-        byte[] allBytes = new byte[bodyBytes.length + freshBytes.length];
+        byte[] senderBytes = SOAPElementToByteArray(senderElement);
+
+
+        byte[] allBytes = new byte[bodyBytes.length + freshBytes.length + senderBytes.length];
 
         System.arraycopy(bodyBytes, 0, allBytes, 0, bodyBytes.length);
         System.arraycopy(freshBytes, 0, allBytes, bodyBytes.length, freshBytes.length);
+        System.arraycopy(senderBytes, 0, allBytes, bodyBytes.length+freshBytes.length, senderBytes.length);
 
         byte[] msgDigSig = makeDigitalSignature(allBytes, privateKey);
 
