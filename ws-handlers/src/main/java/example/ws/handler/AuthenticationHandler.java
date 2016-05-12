@@ -3,7 +3,11 @@ package example.ws.handler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import pt.upa.ca.ws.cli.CAClient;
+
+import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.xml.bind.DatatypeConverter;
 import javax.xml.namespace.QName;
 import javax.xml.soap.*;
@@ -90,7 +94,9 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 
         //FIXME - This may generate null pointer exception
         KeyStore ks = readKeyStoreFile(path, pass.toCharArray());
+        log.debug("KEYSTORE: " + ks);
         PrivateKey privateKey = (PrivateKey) ks.getKey(invoker, pass.toCharArray());
+        log.debug("PRIVKEY: " + privateKey);
 
         byte[] bodyBytes = SOAPElementToByteArray(sb);
         byte[] freshBytes = SOAPElementToByteArray(freshnessElement);
@@ -272,8 +278,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
     }
 
     public static byte[] makeDigitalSignature(byte[] bytes,
-                                              Key privateKey){
-        try {
+                                              Key privateKey) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
             MessageDigest messageDigest = MessageDigest.getInstance("SHA-1");
             messageDigest.update(bytes);
             byte[] digest = messageDigest.digest();
@@ -281,9 +286,6 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
             cipher.init(Cipher.ENCRYPT_MODE, privateKey);
             byte[] cipherDigest = cipher.doFinal(digest);
             return cipherDigest;
-        }catch(Exception e){
-            throw new SecurityException("Security Error!");
-        }
     }
 
     public static boolean verifyDigitalSignature(byte[] cipherDigest,
