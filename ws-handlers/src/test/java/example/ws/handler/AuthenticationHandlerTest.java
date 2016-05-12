@@ -56,11 +56,9 @@ public class AuthenticationHandlerTest extends AbstractHandlerTest {
         final PrivateKey key = keypair.getPrivate();
 
         new StrictExpectations(handler) {{
+
             soapMessageContext.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY);
             result = soapOutbound;
-
-            soapMessageContext.getMessage();
-            result = soapMessage;
 
             soapMessageContext.get(INVOKER_PROPERTY);
             result = "UpaBroker";
@@ -70,6 +68,9 @@ public class AuthenticationHandlerTest extends AbstractHandlerTest {
 
             soapMessageContext.get(PASSWORD_PROPERTY);
             result = "passUpaBroker";
+
+            soapMessageContext.getMessage();
+            result = soapMessage;
 
             handler.readKeyStoreFile("broker-ws/src/main/resources/UpaBroker.jks",
                     "passUpaBroker".toCharArray());
@@ -92,6 +93,10 @@ public class AuthenticationHandlerTest extends AbstractHandlerTest {
 
         SOAPElement freshElement = (SOAPElement) headerIt.next();
         assertEquals("Freshness element is not correct", "Freshness", freshElement.getLocalName());
+
+        assertTrue(headerIt.hasNext());
+        SOAPElement senderElement = (SOAPElement) headerIt.next();
+        assertEquals("SenderName element is not correct", "SenderName", senderElement.getLocalName());
 
         assertTrue(headerIt.hasNext());
         SOAPElement sigElement = (SOAPElement) headerIt.next();

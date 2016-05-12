@@ -31,7 +31,7 @@ public class TransporterPort implements TransporterPortType {
 
     @Override
     public String ping(String name) {
-        //setupMessageContext();
+        setupMessageContext();
         log.debug("ping:");
         return "Pong " + name + "!";
     }
@@ -42,7 +42,6 @@ public class TransporterPort implements TransporterPortType {
 
         setupMessageContext();
         Job offerJob = manager.decideResponse(origin, destination, price);
-
         log.debug("requestJob:");
         if (offerJob != null) return offerJob.toJobView();
 
@@ -65,7 +64,6 @@ public class TransporterPort implements TransporterPortType {
         setupMessageContext();
         Job job = manager.getJobById(id);
 
-
     	if (job==null) {
             log.debug("jobStatus:");
     		return null;
@@ -78,11 +76,8 @@ public class TransporterPort implements TransporterPortType {
 
     @Override
     public List<JobView> listJobs() {
-
         setupMessageContext();
-
         ArrayList<Job> jobs = manager.getJobs();
-
         log.debug("listJobs:");
 
         return jobListToJobViewList(jobs);
@@ -119,4 +114,14 @@ public class TransporterPort implements TransporterPortType {
         messageContext.put(AuthenticationHandler.KSPATH_PROPERTY, path);
         messageContext.put(AuthenticationHandler.PASSWORD_PROPERTY, pass);
     }
+
+    void setWsContext(WebServiceContext wsContext){
+        this.wsContext = wsContext;
+    }
+
+
+
+
+
+
 }

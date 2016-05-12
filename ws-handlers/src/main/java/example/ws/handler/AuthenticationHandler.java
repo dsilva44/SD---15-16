@@ -2,18 +2,11 @@ package example.ws.handler;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.message.*;
 import pt.upa.ca.ws.cli.CAClient;
-import sun.misc.BASE64Decoder;
-import sun.misc.BASE64Encoder;
-import static javax.xml.bind.DatatypeConverter.parseBase64Binary;
-import static javax.xml.bind.DatatypeConverter.printBase64Binary;
-
 import javax.crypto.Cipher;
 import javax.xml.bind.DatatypeConverter;
 import javax.xml.namespace.QName;
 import javax.xml.soap.*;
-import javax.xml.soap.MessageFactory;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -55,8 +48,8 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
             if (outboundElement) handleOutboundMessage(smc);
                 //verify signature
             else handleInboundMessage(smc);
-        } catch (Exception e) {
-            log.error("AuthenticationHandler: ", e);
+        } catch (Exception e) { //FIXME - todas as mensagens vao ser apanhadas, secalhar não é isso que queremos !!!
+            log.warn(e.getMessage());
         }
         return true;
     }
@@ -68,6 +61,10 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
     public void close(MessageContext messageContext) {   }
 
     public void handleOutboundMessage(SOAPMessageContext smc) throws Exception{
+
+        String invoker = (String) smc.get(INVOKER_PROPERTY);
+        String path = (String) smc.get(KSPATH_PROPERTY);
+        String pass = (String) smc.get(PASSWORD_PROPERTY);
 
         SOAPMessage message = smc.getMessage();
         SOAPPart sp = message.getSOAPPart();
@@ -87,9 +84,8 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         name = se.createName("Date", "time", "http://date");
         freshnessElement.addChildElement(name).addTextNode(dateTime);
 
-        String invoker = (String) smc.get(INVOKER_PROPERTY);
-        String path = (String) smc.get(KSPATH_PROPERTY);
-        String pass = (String) smc.get(PASSWORD_PROPERTY);
+        name = se.createName("SenderName", "sname", "http://senderName");
+        sh.addChildElement(name).addTextNode(invoker);
 
         //FIXME - This may generate null pointer exception
         KeyStore ks = readKeyStoreFile(path, pass.toCharArray());
@@ -103,6 +99,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         System.arraycopy(freshBytes, 0, allBytes, bodyBytes.length, freshBytes.length);
 
         byte[] msgDigSig = makeDigitalSignature(allBytes, privateKey);
+
         String mSigStr = DatatypeConverter.printBase64Binary(msgDigSig);
 
         name = se.createName("MessageSignature", "mSig", "http://messageSignature");
@@ -110,7 +107,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
     }
 
     public void handleInboundMessage(SOAPMessageContext smc) throws Exception{
-
+/*
         //FIXME systemOuts
         SOAPMessage msg = smc.getMessage();
         SOAPPart sp = msg.getSOAPPart();
@@ -178,7 +175,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         }
         System.out.println("ALLVALID");
         log.warn("ALL VALID");
-
+*/
     }
 
     protected void isValidCertDate(Certificate cert) throws CertificateNotYetValidException, CertificateExpiredException {
@@ -285,22 +282,24 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
     }
 
     public static byte[] makeDigitalSignature(byte[] bytes,
-                                              Key privateKey) throws Exception {
-
-        MessageDigest messageDigest = MessageDigest.getInstance("SHA-1");
-        messageDigest.update(bytes);
-        byte[] digest = messageDigest.digest();
-        Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
-        cipher.init(Cipher.ENCRYPT_MODE, privateKey);
-        byte[] cipherDigest = cipher.doFinal(digest);
-        return cipherDigest;
-
+                                              Key privateKey){
+        try {
+            MessageDigest messageDigest = MessageDigest.getInstance("SHA-1");
+            messageDigest.update(bytes);
+            byte[] digest = messageDigest.digest();
+            Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+            cipher.init(Cipher.ENCRYPT_MODE, privateKey);
+            byte[] cipherDigest = cipher.doFinal(digest);
+            return cipherDigest;
+        }catch(Exception e){
+            throw new SecurityException("Security Error!");
+        }
     }
 
     public static boolean verifyDigitalSignature(byte[] cipherDigest,
                                                  byte[] text,
                                                  Key publicKey) throws Exception {
-
+        //FIXME: THROW SECURITYEXCEPTION
         // get a message digest object using the MD5 algorithm
         MessageDigest messageDigest = MessageDigest.getInstance("SHA-1");
 
@@ -339,8 +338,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         try {
             fis = new FileInputStream(keyStoreFilePath);
         } catch (FileNotFoundException e) {
-            log.warn("Keystore file <" + keyStoreFilePath + "> not fount.");
-            throw new Exception("Keystore file <" + keyStoreFilePath + "> not fount.");
+            throw new Exception("Keystore file <" + keyStoreFilePath + "> not fount."); // FIXME Change exception
         }
         KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
         keystore.load(fis, keyStorePassword);
@@ -360,8 +358,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         try {
             fis = new FileInputStream(certificateFilePath);
         } catch (FileNotFoundException e) {
-            log.warn("Certificate file <" + certificateFilePath + "> not fount.");
-            throw new Exception("Certificate file <" + certificateFilePath + "> not fount.");
+            throw new Exception("Certificate file <" + certificateFilePath + "> not fount."); // FIXME Change exception
         }
         BufferedInputStream bis = new BufferedInputStream(fis);
 
