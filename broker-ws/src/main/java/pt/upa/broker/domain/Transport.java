@@ -21,13 +21,8 @@ public class Transport {
 	 
 	Transport () {}
 
-	public Transport (TransportView transportView, String chosenOfferID) {
-		this.id = transportView.getId();
-		this.origin = transportView.getOrigin();
-		this.destination = transportView.getDestination();
-		this.price = transportView.getPrice();
-		this.transporterCompany = transportView.getTransporterCompany();
-		this.state = transportView.getState();
+	public Transport (TransportView t, String chosenOfferID) {
+		this(t.getId(), t.getOrigin(), t.getDestination(), t.getPrice(), t.getTransporterCompany(), t.getState());
 		this.chosenOfferID = chosenOfferID;
 	}
 	
