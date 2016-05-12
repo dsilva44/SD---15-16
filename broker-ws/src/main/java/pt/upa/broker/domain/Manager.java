@@ -8,8 +8,6 @@ import pt.upa.broker.ws.*;
 import pt.upa.transporter.ws.*;
 import pt.upa.transporter.ws.cli.TransporterClient;
 
-import pt.upa.broker.exception.BrokerBadJobException;
-
 public class Manager {
 	static private final Logger log = LogManager.getRootLogger();
     private static Manager manager = new Manager();
@@ -229,7 +227,7 @@ public class Manager {
                 }
                 else client.decideJob(offer.getJobIdentifier(), false);
             } catch (BadJobFault_Exception e) {
-                throw new BrokerBadJobException(e.getMessage() + " -- id: " + e.getFaultInfo().getId());
+                log.warn(e.getMessage() + " -- id: " + e.getFaultInfo().getId());
             }
         }
         t.clearOffers();

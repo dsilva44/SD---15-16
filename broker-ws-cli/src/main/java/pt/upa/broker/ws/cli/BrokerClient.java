@@ -23,7 +23,7 @@ public class BrokerClient implements BrokerPortType {
     private final int CONN_TIME_OUT = 4000;
     private final int RECV_TIME_OUT = 4000;
     private final int SLEEP_TIME = 2000;
-    private final int NUM_TRIES = 3;
+    private final int NUM_TRIES = 5;
 
     private BrokerPortType port;
     private String wsURL;

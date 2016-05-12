@@ -32,7 +32,6 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 
     private static long MaxWaitTimeInMs = 1*1000*60;  //1 minute margin
 
-
     private static int ID_COUNTER_EXPECTED = 0;
 
     private static long ID_COUNTER = 0;
@@ -61,6 +60,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
             if (outboundElement) handleOutboundMessage(smc);
                 //verify signature
             else handleInboundMessage(smc);
+
         } catch (Exception e) { //FIXME - todas as mensagens vao ser apanhadas, secalhar não é isso que queremos !!!
             log.warn(e.getMessage());
         }
@@ -100,7 +100,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         freshnessElement.addChildElement(name).addTextNode(dateTime);
 
         name = se.createName("SenderName", "sname", "http://senderName");
-        sh.addChildElement(name).addTextNode(invoker);
+        SOAPElement senderElement = sh.addChildElement(name).addTextNode(invoker);
 
         //FIXME - This may generate null pointer exception
         KeyStore ks = readKeyStoreFile(path, pass.toCharArray());
@@ -108,10 +108,14 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 
         byte[] bodyBytes = SOAPElementToByteArray(sb);
         byte[] freshBytes = SOAPElementToByteArray(freshnessElement);
-        byte[] allBytes = new byte[bodyBytes.length + freshBytes.length];
+        byte[] senderBytes = SOAPElementToByteArray(senderElement);
+
+
+        byte[] allBytes = new byte[bodyBytes.length + freshBytes.length + senderBytes.length];
 
         System.arraycopy(bodyBytes, 0, allBytes, 0, bodyBytes.length);
         System.arraycopy(freshBytes, 0, allBytes, bodyBytes.length, freshBytes.length);
+        System.arraycopy(senderBytes, 0, allBytes, bodyBytes.length+freshBytes.length, senderBytes.length);
 
         byte[] msgDigSig = makeDigitalSignature(allBytes, privateKey);
 
