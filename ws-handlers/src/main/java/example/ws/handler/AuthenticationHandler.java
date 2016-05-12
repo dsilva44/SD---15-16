@@ -14,6 +14,7 @@ import javax.xml.ws.handler.MessageContext;
 import javax.xml.ws.handler.soap.SOAPHandler;
 import javax.xml.ws.handler.soap.SOAPMessageContext;
 import java.io.*;
+import java.net.URL;
 import java.security.*;
 import java.security.cert.*;
 import java.security.cert.Certificate;
@@ -49,7 +50,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
             else handleInboundMessage(smc);
 
         } catch (Exception e) { //FIXME - todas as mensagens vao ser apanhadas, secalhar não é isso que queremos !!!
-            log.warn(e.getMessage());
+            log.warn(e);
         }
         return true;
     }
@@ -322,15 +323,34 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
      * @return The read KeyStore
      * @throws Exception
      */
-    public KeyStore readKeyStoreFile(String keyStoreFilePath, char[] keyStorePassword) throws Exception {
-        FileInputStream fis;
+    public KeyStore readKeyStoreFile(String keyStoreFilePath, char[] keyStorePassword)  {
+        ClassLoader classLoader = getClass().getClassLoader();
+
+        URL url = classLoader.getResource(keyStoreFilePath);
+        if (url == null)
+            return null;
+        FileInputStream fis = null;
         try {
-            fis = new FileInputStream(keyStoreFilePath);
+            fis = new FileInputStream(url.getFile());
         } catch (FileNotFoundException e) {
-            throw new Exception("Keystore file <" + keyStoreFilePath + "> not fount."); // FIXME Change exception
+            log.debug("FileInputStream", e);
         }
-        KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
-        keystore.load(fis, keyStorePassword);
+
+        log.debug(url);
+
+        KeyStore keystore = null;
+        try {
+            keystore = KeyStore.getInstance(KeyStore.getDefaultType());
+        } catch (KeyStoreException e) {
+            log.debug("keystore instance", e);
+            return null;
+        }
+
+        try {
+            keystore.load(fis, keyStorePassword);
+        } catch (IOException | CertificateException | NoSuchAlgorithmException e) {
+            log.debug("keystore load", e);
+        }
 
         return keystore;
     }
