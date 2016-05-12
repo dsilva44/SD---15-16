@@ -37,6 +37,19 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 
     private static long ID_COUNTER = 0;
 
+    private static HashMap<String,Integer> id_pairs_to_send= new HashMap<String,Integer>(){{
+        put("UpaBroker",0);
+        put("UpaTransporter1",0);
+        put("UpaTransporter2",0);
+    }};
+
+
+    private static HashMap<String,Integer> id_pairs_Expected= new HashMap<String,Integer>(){{
+        put("UpaBroker",0);
+        put("UpaTransporter1",0);
+        put("UpaTransporter2",0);
+    }};
+
     public Set<QName> getHeaders() {
         return null;
     }
@@ -79,7 +92,9 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         SOAPElement freshnessElement = sh.addChildElement(name);
 
         name = se.createName("Identifier", "id", "http://identifier");
+        //Integer id = id_pairs_to_send.get(destination);
         freshnessElement.addChildElement(name).addTextNode(Long.toString(ID_COUNTER++));
+        //id_pairs_to_send.put(invoker, id_pairs_to_send.get(invoker) + 1);
 
         name = se.createName("Date", "time", "http://date");
         freshnessElement.addChildElement(name).addTextNode(dateTime);
@@ -107,8 +122,8 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
     }
 
     public void handleInboundMessage(SOAPMessageContext smc) throws Exception{
-/*
-        //FIXME systemOuts
+
+
         SOAPMessage msg = smc.getMessage();
         SOAPPart sp = msg.getSOAPPart();
         SOAPEnvelope se = sp.getEnvelope();
@@ -119,8 +134,8 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         byte[] hashedBytes = DatatypeConverter.parseBase64Binary(strReceived);
 
         SOAPElement elementFresh = getElement(se,"Freshness", "fresh", "http://freshness");
-        //fixme SOAPElement elementName = getElement(se,IDENTITY_NAME);
-        byte[] allBytes = joinElementsInBytes(se.getBody(),elementFresh);
+        SOAPElement elementName = getElement(se,"SenderName", "sname", "http://senderName");
+        byte[] allBytes = joinElementsInBytes(se.getBody(),elementFresh,elementName);
 
         List<SOAPElement> elementsInFresh= getElements(elementFresh);
 
@@ -128,7 +143,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         SOAPElement elementDate = elementsInFresh.get(1);
 
         //fixme dinamically
-        PublicKey CAPublicKey = getCAPublicKey(se);
+        PublicKey CAPublicKey = getCAPublicKey(elementName);
 
         //get INVOKER certificate
         String invoker = (String) smc.get(INVOKER_PROPERTY);
@@ -161,7 +176,8 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         }
 
         String stringId = elementId.getValue();
-        Boolean isValidIdentifier = checkIdentifier(stringId);
+        String destination = elementName.getValue();
+        Boolean isValidIdentifier = checkIdentifier(stringId,invoker);
         if (!isValidIdentifier){
             log.warn("Invalid identifier");
             throw new Exception();
@@ -173,21 +189,20 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
             log.warn("Invalid date");
             throw new Exception();
         }
+        //FIXME systemOuts
         System.out.println("ALLVALID");
         log.warn("ALL VALID");
-*/
+
     }
 
     protected void isValidCertDate(Certificate cert) throws CertificateNotYetValidException, CertificateExpiredException {
         ((X509Certificate) cert).checkValidity();
     }
 
-    protected PublicKey getCAPublicKey(SOAPEnvelope se) throws Exception {
-        //fixme dinamically
-        /*SOAPElement elementDestination = getElement(se,)
-        String destinationName= elementDestination.getValue();
-        */
-        String destinationName = "UpaBroker";
+    protected PublicKey getCAPublicKey(SOAPElement elem) throws Exception {
+
+        String destinationName= elem.getValue();
+        //String destinationName = "UpaBroker";
         String begin = "../../T_27-project/";
         String pasta = null;
 
@@ -206,15 +221,16 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         Certificate certCA = ks.getCertificate("UpaCA");
         return certCA.getPublicKey();
     }
-    protected byte[] joinElementsInBytes(SOAPElement elemBody,SOAPElement elemFresh) throws Exception{
+    protected byte[] joinElementsInBytes(SOAPElement elemBody,SOAPElement elemFresh, SOAPElement elemName) throws Exception{
 
         byte[] bodyBytes = SOAPElementToByteArray(elemBody);
         byte[] freshBytes = SOAPElementToByteArray(elemFresh);
-        byte[] allBytes = new byte[bodyBytes.length + freshBytes.length];
+        byte[] nameBytes = SOAPElementToByteArray(elemName);
+        byte[] allBytes = new byte[bodyBytes.length + freshBytes.length + nameBytes.length];
 
         System.arraycopy(bodyBytes, 0, allBytes, 0, bodyBytes.length);
         System.arraycopy(freshBytes, 0, allBytes, bodyBytes.length, freshBytes.length);
-
+        System.arraycopy(nameBytes,0,allBytes,bodyBytes.length+freshBytes.length,nameBytes.length);
         return allBytes;
 
     }
@@ -257,10 +273,11 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         return true;
     }
 
-    protected boolean checkIdentifier(String stringId){
+    protected boolean checkIdentifier(String stringId, String invoker){
 
         int id = Integer.parseInt(stringId);
 
+        Integer id_expected
         if (id != ID_COUNTER_EXPECTED){
             return false;
         }
@@ -299,29 +316,35 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
     public static boolean verifyDigitalSignature(byte[] cipherDigest,
                                                  byte[] text,
                                                  Key publicKey) throws Exception {
-        //FIXME: THROW SECURITYEXCEPTION
-        // get a message digest object using the MD5 algorithm
-        MessageDigest messageDigest = MessageDigest.getInstance("SHA-1");
 
-        // calculate the digest and print it out
-        messageDigest.update(text);
-        byte[] digest = messageDigest.digest();
+        try {
+            // get a message digest object using the MD5 algorithm
+            MessageDigest messageDigest = MessageDigest.getInstance("SHA-1");
 
-        // get an RSA cipher object
-        Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+            // calculate the digest and print it out
+            messageDigest.update(text);
+            byte[] digest = messageDigest.digest();
 
-        // decrypt the ciphered digest using the public key
-        cipher.init(Cipher.DECRYPT_MODE, publicKey);
-        byte[] decipheredDigest = cipher.doFinal(cipherDigest);
+            // get an RSA cipher object
+            Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
 
-        // compare digests
-        if (digest.length != decipheredDigest.length)
-            return false;
+            // decrypt the ciphered digest using the public key
+            cipher.init(Cipher.DECRYPT_MODE, publicKey);
+            byte[] decipheredDigest = cipher.doFinal(cipherDigest);
 
-        for (int i=0; i < digest.length; i++)
-            if (digest[i] != decipheredDigest[i])
+
+            // compare digests
+            if (digest.length != decipheredDigest.length)
                 return false;
-        return true;
+
+            for (int i = 0; i < digest.length; i++)
+                if (digest[i] != decipheredDigest[i])
+                    return false;
+            return true;
+        }
+        catch(Exception e){
+            throw new SecurityException("Verify Signature Error");
+        }
     }
 
      /*-----------------------------------------------additional methods-----------------------------------------------*/
