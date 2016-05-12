@@ -2,7 +2,7 @@
 <Configuration>
     <Appenders>
         <Console name="Console">
-            <PatternLayout pattern="%-5level %logger{36} - [%C{1}.%M %L] %msg%n"/>
+            <PatternLayout pattern="%-5level %logger{36} - %msg%n"/>
         </Console>
         <RollingFile name="RollingFile" fileName="logs/log.out"
                      filePattern="logs/$${date:yyyy-MM}/app-%d{MM-dd-yyyy}-%i.log.gz">

@@ -185,6 +185,12 @@ public class AuthenticationHandlerTest extends AbstractHandlerTest {
         return key;
     }
 
+    @Test
+    public void readKeyStoreFromFile() {
+        AuthenticationHandler handler = new AuthenticationHandler();
+        handler.readKeyStoreFile("UpaBroker.jks", "passUpaBroker".toCharArray());
+    }
+
 
 
 }

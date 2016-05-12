@@ -3,7 +3,11 @@ package example.ws.handler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import pt.upa.ca.ws.cli.CAClient;
+
+import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.xml.bind.DatatypeConverter;
 import javax.xml.namespace.QName;
 import javax.xml.soap.*;
@@ -16,6 +20,7 @@ import javax.xml.ws.handler.MessageContext;
 import javax.xml.ws.handler.soap.SOAPHandler;
 import javax.xml.ws.handler.soap.SOAPMessageContext;
 import java.io.*;
+import java.net.URL;
 import java.security.*;
 import java.security.cert.*;
 import java.security.cert.Certificate;
@@ -33,7 +38,6 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
     public static final String PASSWORD_PROPERTY = "my.password.property";
 
     private static long MaxWaitTimeInMs = 1*1000*60;  //1 minute margin
-
 
     private static int ID_COUNTER_EXPECTED = 0;
 
@@ -90,7 +94,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         freshnessElement.addChildElement(name).addTextNode(dateTime);
 
         name = se.createName("SenderName", "sname", "http://senderName");
-        sh.addChildElement(name).addTextNode(invoker);
+        SOAPElement senderElement = sh.addChildElement(name).addTextNode(invoker);
 
         //FIXME - This may generate null pointer exception
         KeyStore ks = readKeyStoreFile(path, pass.toCharArray());
@@ -98,10 +102,14 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 
         byte[] bodyBytes = SOAPElementToByteArray(sb);
         byte[] freshBytes = SOAPElementToByteArray(freshnessElement);
-        byte[] allBytes = new byte[bodyBytes.length + freshBytes.length];
+        byte[] senderBytes = SOAPElementToByteArray(senderElement);
+
+
+        byte[] allBytes = new byte[bodyBytes.length + freshBytes.length + senderBytes.length];
 
         System.arraycopy(bodyBytes, 0, allBytes, 0, bodyBytes.length);
         System.arraycopy(freshBytes, 0, allBytes, bodyBytes.length, freshBytes.length);
+        System.arraycopy(senderBytes, 0, allBytes, bodyBytes.length+freshBytes.length, senderBytes.length);
 
         byte[] msgDigSig = makeDigitalSignature(allBytes, privateKey);
 
@@ -222,7 +230,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         return list;
     }
 
-    protected SOAPElement getElement(SOAPEnvelope se,String a, String b, String c) throws Exception {
+    protected SOAPElement getElement(SOAPEnvelope se,String a, String b, String c) throws Exception{
         Name name = se.createName(a, b, c);
         Iterator iterator = se.getHeader().getChildElements(name);
 
@@ -277,7 +285,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
             Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
             cipher.init(Cipher.ENCRYPT_MODE, privateKey);
             return cipher.doFinal(digest);
-        }catch(Exception e){
+        } catch(Exception e){
             throw new SecurityException("Security Error!");
         }
     }
@@ -319,16 +327,33 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
      * @return The read KeyStore
      * @throws Exception
      */
-    public KeyStore readKeyStoreFile(String keyStoreFilePath, char[] keyStorePassword)
-            throws CertificateException, NoSuchAlgorithmException, IOException, KeyStoreException {
-        FileInputStream fis;
+    public KeyStore readKeyStoreFile(String keyStoreFilePath, char[] keyStorePassword)  {
+        ClassLoader classLoader = getClass().getClassLoader();
+
+        URL url = classLoader.getResource(keyStoreFilePath);
+        if (url == null) return null;
+        FileInputStream fis = null;
         try {
-            fis = new FileInputStream(keyStoreFilePath);
+            fis = new FileInputStream(url.getFile());
         } catch (FileNotFoundException e) {
-            throw new RuntimeException("Keystore file <" + keyStoreFilePath + "> not fount."); // FIXME Change exception
+            log.debug("FileInputStream", e);
         }
-        KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
-        keystore.load(fis, keyStorePassword);
+
+        log.debug(url);
+
+        KeyStore keystore = null;
+        try {
+            keystore = KeyStore.getInstance(KeyStore.getDefaultType());
+        } catch (KeyStoreException e) {
+            log.debug("keystore instance", e);
+            return null;
+        }
+
+        try {
+            keystore.load(fis, keyStorePassword);
+        } catch (IOException | CertificateException | NoSuchAlgorithmException e) {
+            log.debug("keystore load", e);
+        }
 
         return keystore;
     }
