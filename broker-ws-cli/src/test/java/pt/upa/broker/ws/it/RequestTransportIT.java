@@ -3,6 +3,7 @@ package pt.upa.broker.ws.it;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import example.ws.exception.AuthSecurityException;
 import org.junit.Test;
 import pt.upa.broker.ws.*;
 
@@ -371,14 +372,6 @@ public class RequestTransportIT extends AbstractIT {
     @Test(expected = UnavailableTransportFault_Exception.class)
     public void testRequestUnavailableLocation() throws Exception {
         CLIENT.requestTransport(SOUTH_1, NORTH_1, PRICE_SMALLEST_LIMIT);
-    }
-
-
-    // ------------------------- DEMONSTRATION TESTS -------------------------
-
-    @Test//(expected = SecurityException.class)//FIXME: CHANGE WHEN VERIFY DONE
-    public void testEnableTamperingHandler() throws Exception {
-        CLIENT.requestTransport(CENTER_1, CENTER_2, 5);      //FIXME: MAX NUMBER ?
     }
 
 }

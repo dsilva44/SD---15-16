@@ -49,6 +49,8 @@ public class BrokerApplication {
 		}
 
 		Manager.getInstance().init(epm, broker, ksPath, password);
+
+		log.info(wsName + " is up and Running ...");
 		epm.start();
 
 		if (epm.awaitConnections()) {

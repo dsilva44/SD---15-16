@@ -1,5 +1,6 @@
 package pt.upa.broker.ws.cli;
 
+import example.ws.exception.AuthSecurityException;
 import example.ws.handler.RepeatedMessageClientHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -176,6 +177,9 @@ public class BrokerClient implements BrokerPortType {
         if (cause != null && cause instanceof SocketTimeoutException) {
             log.error("The cause was a timeout exception: " + cause);
             return true;
+        }
+        else if (cause != null && cause instanceof AuthSecurityException) {
+            throw new AuthSecurityException(wse.getMessage());
         }
         return false;
     }

@@ -55,7 +55,6 @@ public class EndpointManager {
     public void start() {
         try {
             // publish endpoint
-            log.info("Starting: " + wsURL);
             endpoint.publish(wsURL);
             createStub(wsURL, 2000, 2000);
         } catch (Exception e) {
@@ -68,7 +67,6 @@ public class EndpointManager {
     public void registerUddi() {
         try {
             // publish to UDDI
-            log.info("Publishing '"+ wsName + "' to UDDI at "+ uddiURL);
             uddiNaming.rebind(wsName, wsURL);
         } catch (Exception e) {
             log.error("Error on uddiNaming rebind", e);
@@ -80,9 +78,6 @@ public class EndpointManager {
     public String uddiLookup(String wsName) {
         String wsURL;
         try {
-            log.info("Contacting UDDI at " + uddiURL);
-
-            log.info("Looking for 'UpaBroker'");
             wsURL = uddiNaming.lookup(wsName);
 
         } catch (Exception e) {

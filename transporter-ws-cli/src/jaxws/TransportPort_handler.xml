@@ -6,9 +6,9 @@
 		<handler>
 			<handler-class>example.ws.handler.AuthenticationHandler</handler-class>
 		</handler>
-		<!--handler>
+		<handler>
 			<handler-class>example.ws.handler.TamperingHandler</handler-class>
-		</handler-->
+		</handler>
 		<handler>
 			<handler-class>example.ws.handler.LoggingHandler</handler-class>
 		</handler>

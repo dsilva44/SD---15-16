@@ -119,9 +119,4 @@ public class TransporterPort implements TransporterPortType {
         this.wsContext = wsContext;
     }
 
-
-
-
-
-
 }

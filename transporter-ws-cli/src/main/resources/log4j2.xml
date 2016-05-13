@@ -7,7 +7,7 @@
         <RollingFile name="RollingFile" fileName="logs/log.out"
                      filePattern="logs/$${date:yyyy-MM}/app-%d{MM-dd-yyyy}-%i.log.gz">
             <PatternLayout>
-                <Pattern>%d{dd-MM-yyyy HH:mm:ss} %p [%C{1}.%M] %m%n</Pattern>
+                <Pattern>%d{dd-MM-yyyy HH:mm:ss} %p %m%n</Pattern>
             </PatternLayout>
             <Policies>
                 <TimeBasedTriggeringPolicy />
@@ -18,7 +18,7 @@
     </Appenders>
     <Loggers>
         <!--Root level="info"-->
-        <Root level="trace">
+        <Root level="OFF">
             <AppenderRef ref="RollingFile"/>
             <AppenderRef ref="Console"/>
         </Root>

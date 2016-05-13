@@ -12,14 +12,14 @@ public class UpdateTransportIT extends AbstractIT {
     public void successReplication() throws Exception {
         String tID_0 = CLIENT.requestTransport(CENTER_1, CENTER_2, ZERO_PRICE);
         String tID_1 = CLIENT.requestTransport(CENTER_1, CENTER_2, UNITARY_PRICE);
-        String tID_2 = CLIENT.requestTransport(CENTER_1, CENTER_2, PRICE_SMALLEST_LIMIT-2);
-        String tID_3 = CLIENT.requestTransport(CENTER_1, CENTER_2, PRICE_SMALLEST_LIMIT-3);
-        String tID_4 = CLIENT.requestTransport(CENTER_1, CENTER_2, PRICE_SMALLEST_LIMIT-4);
-        String tID_5 = CLIENT.requestTransport(CENTER_1, CENTER_2, PRICE_SMALLEST_LIMIT-5);
-        String tID_6 = CLIENT.requestTransport(CENTER_1, CENTER_2, PRICE_SMALLEST_LIMIT-6);
-        String tID_7 = CLIENT.requestTransport(CENTER_1, CENTER_2, PRICE_SMALLEST_LIMIT-7);
-        String tID_8 = CLIENT.requestTransport(CENTER_1, CENTER_2, PRICE_SMALLEST_LIMIT-8);
-        String tID_9 = CLIENT.requestTransport(CENTER_1, CENTER_2, PRICE_SMALLEST_LIMIT-9);
+        String tID_2 = CLIENT.requestTransport(CENTER_1, CENTER_2, PRICE_SMALLEST_LIMIT);
+        String tID_3 = CLIENT.requestTransport(CENTER_1, CENTER_2, PRICE_SMALLEST_LIMIT);
+        String tID_4 = CLIENT.requestTransport(CENTER_1, CENTER_2, PRICE_SMALLEST_LIMIT);
+        String tID_5 = CLIENT.requestTransport(CENTER_1, CENTER_2, PRICE_SMALLEST_LIMIT);
+        String tID_6 = CLIENT.requestTransport(CENTER_1, CENTER_2, PRICE_SMALLEST_LIMIT);
+        String tID_7 = CLIENT.requestTransport(CENTER_1, CENTER_2, PRICE_SMALLEST_LIMIT);
+        String tID_8 = CLIENT.requestTransport(CENTER_1, CENTER_2, PRICE_SMALLEST_LIMIT);
+        String tID_9 = CLIENT.requestTransport(CENTER_1, CENTER_2, PRICE_SMALLEST_LIMIT);
 
         log.debug("####################################### KILL Primary #############################################");
         Thread.sleep(3000);

@@ -53,8 +53,6 @@ public class EndpointManager {
 
     public void start() {
         try {
-            // publish endpoint
-            log.info("Starting: " + wsURL);
             endpoint.publish(wsURL);
         } catch (Exception e) {
             log.error("Error publish endpoint: " + wsURL, e);
@@ -62,8 +60,6 @@ public class EndpointManager {
         }
 
         try {
-            // publish to UDDI
-            log.info("Publishing '"+ wsName + "' to UDDI at "+ uddiURL);
             uddiNaming.rebind(wsName, wsURL);
         } catch (Exception e) {
             log.error("Error on uddiNaming rebind", e);

@@ -27,6 +27,7 @@ public class TransporterApplication {
 
 		EndpointManager endpointManager = new EndpointManager(uddiURL, wsName, wsUrl);
 
+		log.info(wsName + " is up and Running ...");
 		endpointManager.start();
 
 		Manager.getInstance().init(wsName, keyStorePath, pass);

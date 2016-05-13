@@ -1,5 +1,6 @@
 package pt.upa.transporter.ws.it;
 
+import com.sun.xml.ws.fault.ServerSOAPFaultException;
 import org.junit.Test;
 import pt.upa.transporter.ws.BadLocationFault_Exception;
 import pt.upa.transporter.ws.BadPriceFault_Exception;
@@ -75,7 +76,7 @@ public class RequestJobIT extends AbstractIT {
     @Test
     public void priceLessThen10shouldReturnPriceLessThen10AndGreaterEqualTo0()
             throws BadLocationFault_Exception, BadPriceFault_Exception  {
-        int referencePrice = 5;
+        int referencePrice = 3;
 
         JobView returnRequestJob = CLIENT1.requestJob(CENTRO_1, CENTRO_2, referencePrice);
 
@@ -384,6 +385,13 @@ public class RequestJobIT extends AbstractIT {
         JobView jv1 = CLIENT1.requestJob(SUL_1, CENTRO_1, UNITARY_PRICE);
         final int price = jv1.getJobPrice();
         assertEquals(ZERO_PRICE, price);
+    }
+
+    // ------------------------- DEMONSTRATION TESTS -------------------------
+
+    @Test(expected = ServerSOAPFaultException.class)
+    public void testEnableTamperingHandler() throws Exception {
+        CLIENT1.requestJob(CENTRO_1, CENTRO_2, 5);
     }
 
 }

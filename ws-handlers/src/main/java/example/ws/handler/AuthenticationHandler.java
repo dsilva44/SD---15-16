@@ -1,17 +1,13 @@
 package example.ws.handler;
 
+import example.ws.exception.AuthSecurityException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import pt.upa.ca.ws.cli.CAClient;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import javax.xml.bind.DatatypeConverter;
 import javax.xml.namespace.QName;
 import javax.xml.soap.*;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
@@ -22,8 +18,8 @@ import javax.xml.ws.handler.soap.SOAPMessageContext;
 import java.io.*;
 import java.net.URL;
 import java.security.*;
-import java.security.cert.*;
 import java.security.cert.Certificate;
+import java.security.cert.*;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -43,6 +39,13 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 
     private static long ID_COUNTER = 0;
 
+    private static HashMap<String,Integer> id_pairs= new HashMap<String,Integer>(){{
+        put("UpaBroker",0);
+        put("UpaTransporter1",0);
+        put("UpaTransporter2",0);
+        put("ToSend",0);
+    }};
+
     public Set<QName> getHeaders() {
         return null;
     }
@@ -55,8 +58,10 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
                 handleOutboundMessage(smc);
             //verify signature
             else handleInboundMessage(smc);
+        } catch (AuthSecurityException e) {
+            throw new RuntimeException("Security Error", e.getCause());
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e);
         }
         return true;
     }
@@ -86,9 +91,12 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         Name name = se.createName("Freshness", "fresh", "http://freshness");
         SOAPElement freshnessElement = sh.addChildElement(name);
 
+
         name = se.createName("Identifier", "id", "http://identifier");
         SOAPElement idElement = freshnessElement.addChildElement(name);
-        idElement.addTextNode(Long.toString(ID_COUNTER++));
+        Integer id = id_pairs.get("ToSend");
+        idElement.addTextNode(Integer.toString(id));
+        id_pairs.put("ToSend", id_pairs.get("ToSend") + 1);
 
         name = se.createName("Date", "time", "http://date");
         SOAPElement dateElement = freshnessElement.addChildElement(name);
@@ -170,57 +178,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         PublicKey publicKeySender = senderCer.getPublicKey();
 
         if (!verifyDigitalSignature(hashedBytes, allBytes, publicKeySender))
-            throw new SecurityException("Security error ");
-
-        /*
-        //get INVOKER certificate
-        String invoker = (String) smc.get(INVOKER_PROPERTY);
-        CAClient caClient = new CAClient("http://localhost:9090");
-        byte[] certificateEncoded = caClient.requestCertificateFile(invoker);
-        Certificate cert = toCertificate(certificateEncoded);
-
-        try{
-            cert.verify(CAPublicKey);
-        }
-        catch(Exception e){
-            log.warn("Verify certificate failed");
-            throw new Exception();
-        }
-
-        try {
-            isValidCertDate(cert);
-        }
-        catch(CertificateNotYetValidException| CertificateExpiredException c){
-            log.warn("Invalid certificate date");
-            throw new Exception();
-        }
-
-        //fixme testar getCApublicKey
-
-        PublicKey publicKey = cert.getPublicKey();
-
-        Boolean isValidSignature = verifyDigitalSignature(hashedBytes,allBytes,publicKey);
-        if(!isValidSignature) {
-            log.warn("Invalid signature");
-            throw new Exception();
-        }
-
-        String stringId = elementId.getValue();
-        Boolean isValidIdentifier = checkIdentifier(stringId);
-        if (!isValidIdentifier){
-            log.warn("Invalid identifier");
-            throw new Exception();
-        }
-
-        String timeInStringFormat = elementDate.getValue();
-        Boolean isValidTimestamp = checkTimestamp(timeInStringFormat);
-        if(!isValidTimestamp){
-            log.warn("Invalid date");
-            throw new Exception();
-        }
-        System.out.println("ALLVALID");
-        log.warn("ALL VALID");
-        */
+            throw new AuthSecurityException("Security error");
     }
 
     /*-----------------------------------------------additional methods-----------------------------------------------*/
@@ -286,15 +244,16 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         return !date.before(limit);
     }
 
-    protected boolean checkIdentifier(String stringId){
+
+    protected boolean checkIdentifier(String stringId, String invoker){
 
         int id = Integer.parseInt(stringId);
-
-        if (id != ID_COUNTER_EXPECTED){
+        int expected = id_pairs.get(invoker);
+        if (id < expected){
             return false;
         }
         else{
-            ID_COUNTER_EXPECTED++;
+            id_pairs.put(invoker, id + 1);
         }
         return true;
     }
@@ -373,9 +332,8 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
             BufferedInputStream bis = new BufferedInputStream(fis);
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
 
-            if (bis.available() > 0) {
+            if (bis.available() > 0)
                 return cf.generateCertificate(bis);
-            }
 
             bis.close();
             fis.close();
@@ -384,8 +342,6 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         }
         return null;
     }
-
-
 
     public Certificate toCertificate(byte[] certBytes) throws CertificateException {
         CertificateFactory cf = CertificateFactory.getInstance("X.509");

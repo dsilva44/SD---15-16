@@ -41,10 +41,7 @@ public class CAClient implements CAPortType {
     /** UDDI lookup */
     private void uddiLookup() {
         try {
-            log.info("Contacting UDDI at " + uddiURL);
             UDDINaming uddiNaming = new UDDINaming(uddiURL);
-
-            log.info("Looking for 'UpaBroker'");
             wsURL = uddiNaming.lookup(wsName);
 
         } catch (Exception e) {
@@ -61,12 +58,10 @@ public class CAClient implements CAPortType {
 
     /** Stub creation and configuration */
     private void createStub() {
-        log.info("Creating stub ...");
         CAService service = new CAService();
         port = service.getCAPort();
 
         if (wsURL != null) {
-            log.info("Setting endpoint address ....");
             BindingProvider bindingProvider = (BindingProvider) port;
             Map<String, Object> requestContext = bindingProvider.getRequestContext();
             requestContext.put(ENDPOINT_ADDRESS_PROPERTY, wsURL);
