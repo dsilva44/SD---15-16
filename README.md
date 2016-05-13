@@ -53,7 +53,8 @@ cd proj
 [4] Obter código fonte do projeto (versão entregue)
 
 ```
-git clone -b R_1 https://github.com/tecnico-distsys/T_27-project.git
+git clone -b SD_R2 https://github.com/tecnico-distsys/T_27-project.git
+
 ```
 
 
