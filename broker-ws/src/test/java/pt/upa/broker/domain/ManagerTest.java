@@ -180,21 +180,30 @@ public class ManagerTest {
 	}
 
     //-------------------------------------requestTransport(origin, destination, price)---------------------------------
-    @Test(expected = UnknownLocationFault_Exception.class)
+    @Test
     public void unknownOrigin()
             throws  Exception{
         String invalidDestination = "PoTATO";
         int price = 50;
 
-        manager.requestTransport(invalidDestination, centroCity1, price);
+        try {
+            manager.requestTransport(invalidDestination, centroCity1, price);
+            fail();
+        } catch (UnknownLocationFault_Exception e) {
+            assertTrue("added to list", manager.getTransportsList().isEmpty());
+        }
     }
 
-    @Test(expected = UnknownLocationFault_Exception.class)
-    public void unknownDestination()
-            throws  Exception {
+    @Test
+    public void unknownDestination() throws  Exception {
         int price = 50;
 
-        manager.requestTransport(centroCity2, null, price);
+        try {
+            manager.requestTransport(centroCity2, null, price);
+            fail();
+        } catch (UnknownLocationFault_Exception e) {
+            assertTrue("added to list", manager.getTransportsList().isEmpty());
+        }
     }
 
     @Test(expected = InvalidPriceFault_Exception.class)
@@ -221,21 +230,18 @@ public class ManagerTest {
             result = offer1;
         }};
 
-        manager.requestTransport(centroCity1, centroCity2, referencePrice);
+        Transport transport = manager.requestTransport(centroCity1, centroCity2, referencePrice);
 
         new Verifications() {{
             uddiNamingMock.list(transporterQuery); maxTimes = 1;
             transporterClientMock.requestJob(centroCity1, centroCity2, referencePrice); maxTimes = 2;
         }};
 
-        assertEquals("transporter offer not saved, different size", 1, manager.getTransportsList().size());
-        Transport transport = manager.getTransportsList().get(0);
-
         assertEquals("state don't changed", transport.getState(), TransportStateView.BUDGETED);
         assertNotNull("transport id not set", transport.getId());
     }
 
-    @Test(expected = UnavailableTransportFault_Exception.class)
+    @Test
     public void allNullTransportersResponse(@Mocked UDDINaming uddiNamingMock, @Mocked TransporterClient transporterClientMock)
             throws  Exception{
         int referencePrice = 200;
@@ -250,21 +256,29 @@ public class ManagerTest {
 
         try {
             manager.requestTransport(centroCity1, centroCity2, referencePrice);
+            fail();
         } catch (UnavailableTransportFault_Exception e) {
 
-            assertTrue("transporter offer not saved", manager.getTransportsList().size() == 1);
-
-            for (Transport t : manager.getTransportsList()) {
-                TransportStateView state = t.getState();
-                assertEquals("wrong state", state, TransportStateView.FAILED);
-                assertNotNull("transport id not set", t.getId());
-                assertNull("transport company is wrong set", transport.getTransporterCompany());
-            }
-
-            throw new UnavailableTransportFault_Exception(null, null);
+            assertTrue("transporter offer saved", manager.getTransportsList().isEmpty());
 
         }
     }
+
+    @Test
+    public void transportNotExists()
+            throws  Exception{
+        int referencePrice = 12;
+
+        try {
+            manager.requestTransport("Beja", "Lisboa", referencePrice);
+            fail();
+        } catch (UnavailableTransportFault_Exception e) {
+
+            assertTrue("transporter offer saved", manager.getTransportsList().isEmpty());
+
+        }
+    }
+
     //-------------------------------------------decideBestOffer()------------------------------------------------------
     @Test
     public void referencePrice0ShouldReturn0(@Mocked TransporterClient transporterClientMock) throws  Exception {
@@ -284,6 +298,7 @@ public class ManagerTest {
             transporterClientMock.decideJob("2", true); maxTimes = 1;
         }};
 
+        assertTrue("not in list", manager.getTransportsList().contains(transport));
         assertEquals("wrong STATE", transport.getState(), TransportStateView.BOOKED);
         assertNotNull("transport company name not set", transport.getTransporterCompany());
         assertNotNull("chosen offer id is not set", transport.getChosenOfferID());
@@ -310,6 +325,7 @@ public class ManagerTest {
             transporterClientMock.decideJob("1", false); maxTimes = 1;
         }};
 
+        assertTrue("not in list", manager.getTransportsList().contains(transport));
         assertEquals("wrong STATE", transport.getState(), TransportStateView.BOOKED);
         assertNotNull("transport company name not set", transport.getTransporterCompany());
         assertNotNull("chosen offer id is not set", transport.getChosenOfferID());
@@ -341,6 +357,7 @@ public class ManagerTest {
             transporterClientMock.decideJob("4", false); maxTimes = 1;
         }};
 
+        assertTrue("not in list", manager.getTransportsList().contains(transport));
         assertEquals("wrong STATE", transport.getState(), TransportStateView.BOOKED);
         assertNotNull("transport company name not set", transport.getTransporterCompany());
         assertNotNull("chosen offer id is not set", transport.getChosenOfferID());
@@ -372,6 +389,7 @@ public class ManagerTest {
             transporterClientMock.decideJob("4", false); maxTimes = 1;
         }};
 
+        assertTrue("not in list", manager.getTransportsList().contains(transport));
         assertEquals("wrong STATE", transport.getState(), TransportStateView.BOOKED);
         assertNotNull("transport company name not set", transport.getTransporterCompany());
         assertNotNull("chosen offer id is not set", transport.getChosenOfferID());
@@ -439,6 +457,7 @@ public class ManagerTest {
             transporterClientMock.decideJob("4", false); maxTimes = 1;
         }};
 
+        assertTrue("not in list", manager.getTransportsList().contains(transport));
         assertEquals("wrong SATE", transport.getState(), TransportStateView.BOOKED);
         assertNotNull("transport company name not set", transport.getTransporterCompany());
         assertNotNull("chosen offer id is not set", transport.getChosenOfferID());

@@ -4,6 +4,7 @@ import java.util.*;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import pt.upa.broker.exception.BrokerException;
 import pt.upa.broker.ws.*;
 import pt.upa.transporter.ws.*;
 import pt.upa.transporter.ws.cli.TransporterClient;
@@ -70,11 +71,13 @@ public class Manager {
         return Integer.toString(getTransportsList().size());
     }
 
-    void addTransport(Transport t){
+    void addTransport(Transport t) {
+        if (getTransportById(t.getId()) != null)
+            throw new BrokerException("Transport already exists");
         transportsList.add(t);
     }
 
-    void replaceTransport(Transport oldT, Transport newT) {
+    private void replaceTransport(Transport oldT, Transport newT) {
         int index = transportsList.indexOf(oldT);
         transportsList.set(index, newT);
     }
@@ -92,7 +95,7 @@ public class Manager {
         return !transporterClients.isEmpty();
     }
 
-    public int findTransporters() {
+    int findTransporters() {
         int count = 0;
         TransporterClient client;
         if (updateTransportersList()) {
@@ -137,7 +140,6 @@ public class Manager {
 
         validateTransport(origin, destination, price);
         Transport t = new Transport(nextTransporterID(), origin, destination, price, null, TransportStateView.REQUESTED);
-        addTransport(t);
 
         findTransporters();
         boolean findT = false;
@@ -154,6 +156,7 @@ public class Manager {
             t.setState(TransportStateView.FAILED);
             throwUnavailableTransportFault(origin, destination);
         }
+
         return t;
     }
 
@@ -165,8 +168,10 @@ public class Manager {
         rejectOffersAcceptBest(transport, bestOffer);
 
         // nobody respond for reference price
-        if (bestOffer == null) throwUnavailableTransportPriceFault(bestPrice);
+        if (bestOffer == null)
+            throwUnavailableTransportPriceFault(bestPrice);
 
+        addTransport(transport);
         return transport;
     }
 
@@ -175,7 +180,7 @@ public class Manager {
         transporterClients.clear();
     }
 
-    public void updateTransport(TransportView transportView, String chosenOfferID, String oprID, String res) {
+    public String updateTransport(TransportView transportView, String chosenOfferID, String oprID, String res) {
         Transport newTransport = new Transport(transportView, chosenOfferID);
         Transport oldTransport = manager.getTransportById(newTransport.getId());
 
@@ -183,6 +188,7 @@ public class Manager {
             manager.replaceTransport(oldTransport, newTransport);
             log.debug("Update: " + newTransport.toString());
         } else {
+
             manager.addTransport(newTransport);
             log.debug("Create: "+newTransport.toString());
         }
@@ -190,7 +196,7 @@ public class Manager {
         if (oprID != null)
             getTransportResponses().put(oprID, res);
 
-        log.debug("Backup: NumT: " +transportsList.size());
+        return newTransport.getId();
     }
 
     //-------------------------------------------Aux methods------------------------------------------------------------
