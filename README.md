@@ -26,14 +26,6 @@ Linux
 
 [1] Iniciar servidores de apoio
 
-Generate keys: 
-```
-./gen_keys.sh
-
-```
-
-[2] Iniciar servidores de apoio
-
 JUDDI: 
 ```
 cd juddi-3.3.2_tomcat-7.0.64_9090/bin
@@ -41,8 +33,7 @@ cd juddi-3.3.2_tomcat-7.0.64_9090/bin
 
 ```
 
-
-[3] Criar pasta temporária
+[2] Criar pasta temporária
 
 ```
 mkdir proj
@@ -50,10 +41,19 @@ cd proj
 ```
 
 
-[4] Obter código fonte do projeto (versão entregue)
+[3] Obter código fonte do projeto (versão entregue)
 
 ```
 git clone -b SD_R2 https://github.com/tecnico-distsys/T_27-project.git
+cd T_27-project
+
+```
+
+[4] Iniciar servidores de apoio
+
+Generate keys: 
+```
+./gen_keys.sh
 
 ```
 
