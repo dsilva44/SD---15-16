@@ -51,12 +51,12 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         Boolean outboundElement = (Boolean) smc.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY);
         try {
             //sign outbound message
-            if (outboundElement) handleOutboundMessage(smc);
-                //verify signature
-            //else handleInboundMessage(smc);
-        } catch (IOException | SOAPException | KeyStoreException | UnrecoverableKeyException |
-                NoSuchAlgorithmException | CertificateException | TransformerException e) {
-            log.warn(e.getMessage());
+            if (outboundElement)
+                handleOutboundMessage(smc);
+            //verify signature
+            else handleInboundMessage(smc);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return true;
     }
@@ -68,8 +68,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
     public void close(MessageContext messageContext) {   }
 
     public void handleOutboundMessage(SOAPMessageContext smc)
-            throws SOAPException, CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException,
-            UnrecoverableKeyException, TransformerException {
+            throws Exception {
 
         String invoker = (String) smc.get(INVOKER_PROPERTY);
         String path = (String) smc.get(KSPATH_PROPERTY);
@@ -88,31 +87,30 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         SOAPElement freshnessElement = sh.addChildElement(name);
 
         name = se.createName("Identifier", "id", "http://identifier");
-        freshnessElement.addChildElement(name).addTextNode(Long.toString(ID_COUNTER++));
+        SOAPElement idElement = freshnessElement.addChildElement(name);
+        idElement.addTextNode(Long.toString(ID_COUNTER++));
 
         name = se.createName("Date", "time", "http://date");
-        freshnessElement.addChildElement(name).addTextNode(dateTime);
+        SOAPElement dateElement = freshnessElement.addChildElement(name);
+        dateElement.addTextNode(dateTime);
 
         name = se.createName("SenderName", "sname", "http://senderName");
-        SOAPElement senderElement = sh.addChildElement(name).addTextNode(invoker);
+        SOAPElement senderElement = sh.addChildElement(name);
+        senderElement.addTextNode(invoker);
 
-        //FIXME - This may generate null pointer exception
         KeyStore ks = readKeyStoreFile(path, pass.toCharArray());
         PrivateKey privateKey = (PrivateKey) ks.getKey(invoker, pass.toCharArray());
 
         byte[] bodyBytes = SOAPElementToByteArray(sb);
-        byte[] freshBytes = SOAPElementToByteArray(freshnessElement);
-        byte[] senderBytes = SOAPElementToByteArray(senderElement);
+        byte[] dateBytes = dateElement.getValue().getBytes("UTF-8");
+        byte[] idBytes = idElement.getValue().getBytes("UTF-8");
+        byte[] senderBytes = senderElement.getValue(). getBytes("UTF-8");
 
-
-        byte[] allBytes = new byte[bodyBytes.length + freshBytes.length + senderBytes.length];
-
-        System.arraycopy(bodyBytes, 0, allBytes, 0, bodyBytes.length);
-        System.arraycopy(freshBytes, 0, allBytes, bodyBytes.length, freshBytes.length);
-        System.arraycopy(senderBytes, 0, allBytes, bodyBytes.length+freshBytes.length, senderBytes.length);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        baos.write(bodyBytes); baos.write(dateBytes); baos.write(idBytes); baos.write(senderBytes);
+        byte[] allBytes = baos.toByteArray();
 
         byte[] msgDigSig = makeDigitalSignature(allBytes, privateKey);
-
         String mSigStr = DatatypeConverter.printBase64Binary(msgDigSig);
 
         name = se.createName("MessageSignature", "mSig", "http://messageSignature");
@@ -120,28 +118,61 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
     }
 
     public void handleInboundMessage(SOAPMessageContext smc) throws Exception{
-/*
-        //FIXME systemOuts
+
         SOAPMessage msg = smc.getMessage();
         SOAPPart sp = msg.getSOAPPart();
         SOAPEnvelope se = sp.getEnvelope();
+        SOAPBody sb = se.getBody();
+        SOAPHeader sh = se.getHeader();
 
         //get hashed bytes from <MessageSignature> element
         SOAPElement element = getElement(se,"MessageSignature", "mSig", "http://messageSignature");
-        String strReceived = element.getValue().trim();
+        String strReceived = element.getValue();
         byte[] hashedBytes = DatatypeConverter.parseBase64Binary(strReceived);
 
-        SOAPElement elementFresh = getElement(se,"Freshness", "fresh", "http://freshness");
-        //fixme SOAPElement elementName = getElement(se,IDENTITY_NAME);
-        byte[] allBytes = joinElementsInBytes(se.getBody(),elementFresh);
+        //SOAPElement freshElement= getElement(se,"Freshness", "fresh", "http://freshness");
 
-        List<SOAPElement> elementsInFresh= getElements(elementFresh);
+        Name name = se.createName("Freshness", "fresh", "http://freshness");
+        SOAPElement freshElement = (SOAPElement) sh.getChildElements(name).next();
 
+        name = se.createName("Identifier", "id", "http://identifier");
+        SOAPElement idElement = (SOAPElement) freshElement.getChildElements(name).next();
+
+        name = se.createName("Date", "time", "http://date");
+        SOAPElement dateElement = (SOAPElement) freshElement.getChildElements(name).next();
+
+        name = se.createName("SenderName", "sname", "http://senderName");
+        SOAPElement senderElement = (SOAPElement) sh.getChildElements(name).next();
+
+        List<SOAPElement> elementsInFresh= getElements(freshElement);
         SOAPElement elementId = elementsInFresh.get(0);
         SOAPElement elementDate = elementsInFresh.get(1);
 
-        PublicKey CAPublicKey = getCAPublicKey(smc);
+        byte[] bodyBytes = SOAPElementToByteArray(sb);
+        byte[] dateBytes = dateElement.getValue().getBytes("UTF-8");
+        byte[] idBytes = idElement.getValue().getBytes("UTF-8");
+        byte[] senderBytes = senderElement.getValue(). getBytes("UTF-8");
 
+
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        baos.write(bodyBytes); baos.write(dateBytes); baos.write(idBytes); baos.write(senderBytes);
+        byte[] allBytes = baos.toByteArray();
+
+        CAClient client = new CAClient("http://localhost:9090");
+        byte[] certBytes = client.requestCertificateFile(senderElement.getValue());
+        Certificate senderCer = toCertificate(certBytes);
+
+        Certificate caCer = readCertificateFile("UpaCA.cer");
+        if (caCer == null) return;
+        senderCer.verify(caCer.getPublicKey());
+
+        PublicKey publicKeySender = senderCer.getPublicKey();
+
+        if (!verifyDigitalSignature(hashedBytes, allBytes, publicKeySender))
+            throw new SecurityException("Security error ");
+
+        /*
         //get INVOKER certificate
         String invoker = (String) smc.get(INVOKER_PROPERTY);
         CAClient caClient = new CAClient("http://localhost:9090");
@@ -189,8 +220,10 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         }
         System.out.println("ALLVALID");
         log.warn("ALL VALID");
-*/
+        */
     }
+
+    /*-----------------------------------------------additional methods-----------------------------------------------*/
 
     protected void isValidCertDate(Certificate cert) throws CertificateNotYetValidException, CertificateExpiredException {
         ((X509Certificate) cert).checkValidity();
@@ -273,60 +306,41 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         TransformerFactory.newInstance().newTransformer().transform(source, new StreamResult(stringResult));
         String message = stringResult.toString();
 
-        return message.getBytes();
+        return DatatypeConverter.parseBase64Binary(message);
     }
 
-    public static byte[] makeDigitalSignature(byte[] bytes,
-                                              Key privateKey){
+    /** auxiliary method to calculate digest from text and cipher it */
+    public static byte[] makeDigitalSignature(byte[] bytes, PrivateKey privateKey) throws Exception {
+
+        // get a signature object using the SHA-1 and RSA combo
+        // and sign the plaintext with the private key
+        Signature sig = Signature.getInstance("SHA1WithRSA");
+        sig.initSign(privateKey);
+        sig.update(bytes);
+        byte[] signature = sig.sign();
+
+        return signature;
+    }
+
+    /**
+     * auxiliary method to calculate new digest from text and compare it to the
+     * to deciphered digest
+     */
+    public static boolean verifyDigitalSignature(byte[] cipherDigest, byte[] bytes, PublicKey publicKey) throws Exception {
+
+        // verify the signature with the public key
+        Signature sig = Signature.getInstance("SHA1WithRSA");
+        sig.initVerify(publicKey);
+        sig.update(bytes);
         try {
-            MessageDigest messageDigest = MessageDigest.getInstance("SHA-1");
-            messageDigest.update(bytes);
-            byte[] digest = messageDigest.digest();
-            Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
-            cipher.init(Cipher.ENCRYPT_MODE, privateKey);
-            return cipher.doFinal(digest);
-        } catch(Exception e){
-            throw new SecurityException("Security Error!");
+            return sig.verify(cipherDigest);
+        } catch (SignatureException se) {
+            System.err.println("Caught exception while verifying " + se);
+            return false;
         }
     }
 
-    public static boolean verifyDigitalSignature(byte[] cipherDigest,
-                                                 byte[] text,
-                                                 Key publicKey) throws Exception {
-        //FIXME: THROW SECURITYEXCEPTION
-        // get a message digest object using the MD5 algorithm
-        MessageDigest messageDigest = MessageDigest.getInstance("SHA-1");
 
-        // calculate the digest and print it out
-        messageDigest.update(text);
-        byte[] digest = messageDigest.digest();
-
-        // get an RSA cipher object
-        Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
-
-        // decrypt the ciphered digest using the public key
-        cipher.init(Cipher.DECRYPT_MODE, publicKey);
-        byte[] decipheredDigest = cipher.doFinal(cipherDigest);
-
-        // compare digests
-        if (digest.length != decipheredDigest.length)
-            return false;
-
-        for (int i=0; i < digest.length; i++)
-            if (digest[i] != decipheredDigest[i])
-                return false;
-        return true;
-    }
-
-     /*-----------------------------------------------additional methods-----------------------------------------------*/
-
-
-    /**
-     * Reads a KeyStore from a file
-     *
-     * @return The read KeyStore
-     * @throws Exception
-     */
     public KeyStore readKeyStoreFile(String keyStoreFilePath, char[] keyStorePassword)  {
         ClassLoader classLoader = getClass().getClassLoader();
 
@@ -348,33 +362,29 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
         return keystore;
     }
 
-    /**
-     * Reads a certificate from a file
-     *
-     * @return The read Certificate
-     * @throws Exception
-     */
-    public Certificate readCertificateFile(String certificateFilePath) throws CertificateException, IOException {
-        FileInputStream fis;
+    private Certificate readCertificateFile(String certificateFilePath) {
+        ClassLoader classLoader = getClass().getClassLoader();
 
-        try {
-            fis = new FileInputStream(certificateFilePath);
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException("Certificate file <" + certificateFilePath + "> not fount."); // FIXME Change exception
+        try{
+            URL url = classLoader.getResource(certificateFilePath);
+            if(url==null)
+                return null;
+            FileInputStream fis = new FileInputStream(url.getFile());
+            BufferedInputStream bis = new BufferedInputStream(fis);
+            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+
+            if (bis.available() > 0) {
+                return cf.generateCertificate(bis);
+            }
+
+            bis.close();
+            fis.close();
+        } catch (Exception e) {
+            log.error(e);
         }
-        BufferedInputStream bis = new BufferedInputStream(fis);
-
-        CertificateFactory cf = CertificateFactory.getInstance("X.509");
-
-        if (bis.available() > 0) {
-            return cf.generateCertificate(bis);
-        }
-
-        bis.close();
-        fis.close();
-        log.warn("Nothing to read");
-        throw new RuntimeException("Nothing to read");
+        return null;
     }
+
 
 
     public Certificate toCertificate(byte[] certBytes) throws CertificateException {

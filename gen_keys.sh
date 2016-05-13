@@ -10,10 +10,11 @@ declare -A SERVERS # works only on bash-4.0
 caClientFolder=./ca-ws-cli/src/test/resources/
 brokerFolder=./broker-ws/src/main/resources/
 transporterFolder=./transporter-ws/src/main/resources/
-transporterCli=./transporter-ws-cli/src/test/resources/
+transporterCliFolder=./transporter-ws-cli/src/test/resources/
+brokerCliFolder=./broker-ws/src/test/resources/
 
 SERVERS=( ["UpaCAClient"]=${caClientFolder} ["UpaBroker"]=${brokerFolder} ["UpaTransporter1"]=${transporterFolder} \
-          ["UpaTransporter2"]=${transporterFolder} ["UpaTransporterCli"]=${transporterCli} )
+          ["UpaTransporter2"]=${transporterFolder} )
 
 caFolder=./ca-ws/src/main/resources/
 # CA alias
@@ -94,8 +95,8 @@ do
     echo "Deploying to ${SERVERS[$server_name]} ..."
     cp -f ${server_name}.cer ${caFolder}/${server_name}.cer # copy server_name .cer to CA folder
     cp -f ${ca_alias}.cer ${SERVERS[$server_name]}/${ca_alias}.cer # copy CA .cer to server_name folder
-    mv -f ${server_name}.jks ${SERVERS[$server_name]}/${server_name}.jks
-    mv -f ${server_name}.cer ${SERVERS[$server_name]}/${server_name}.cer
+    cp -f ${server_name}.jks ${SERVERS[$server_name]}/${server_name}.jks
+    cp -f ${server_name}.cer ${SERVERS[$server_name]}/${server_name}.cer
     echo "Deployment completed."
 
     echo "Removing $server_name Certificate Signing Request (.csr file)..."
@@ -103,9 +104,16 @@ do
 done
 
 echo "################################################################################"
-echo "Last deployment ..."
+echo "Last deployment ..." brokerCliFolder
+cp -f ${ca_alias}.cer ${transporterCliFolder}/${ca_alias}.cer
+cp -f "UpaBroker.jks" ${transporterCliFolder}/"UpaBroker.jks"
+cp -f ${ca_alias}.cer ${brokerCliFolder}/${ca_alias}.cer
+cp -f "UpaBroker.jks" ${brokerCliFolder}/"UpaBroker.jks"
 mv -f ${ca_jks} ${caFolder}/${ca_jks}
 mv -f ${ca_alias}.cer ${caFolder}/${ca_alias}.cer
 echo "Deployment completed."
+echo "################################################################################"
+echo "clean up"
+rm -f *.jks *.cer
 echo "################################################################################"
 echo "All Done!!!"

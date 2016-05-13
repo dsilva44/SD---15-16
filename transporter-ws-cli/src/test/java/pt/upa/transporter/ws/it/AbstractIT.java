@@ -37,12 +37,12 @@ public abstract class AbstractIT {
         final String uddiURL = "http://localhost:9090";
         final String wsName1 = "UpaTransporter1";
         final String wsName2 = "UpaTransporter2";
-        final String transporterCliName = "UpaTransporterCli";
-        final String transporterKSPath = "UpaTransporterCli.jks";
-        final String transporterCliPass = "passUpaTransporterCli";
+        final String upaBrokerName = "UpaBroker";
+        final String upaBrokerKSPath = "UpaBroker.jks";
+        final String upaBrokerPass = "passUpaBroker";
 
-        CLIENT1 = new TransporterClient(uddiURL,wsName1, transporterCliName, transporterKSPath, transporterCliPass);
-        CLIENT2 = new TransporterClient(uddiURL,wsName2, transporterCliName, transporterKSPath, transporterCliPass);
+        CLIENT1 = new TransporterClient(uddiURL,wsName1, upaBrokerName, upaBrokerKSPath, upaBrokerPass);
+        CLIENT2 = new TransporterClient(uddiURL,wsName2, upaBrokerName, upaBrokerKSPath, upaBrokerPass);
     }
 
     @AfterClass

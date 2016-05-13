@@ -264,21 +264,6 @@ public class ManagerTest {
         }
     }
 
-    @Test
-    public void transportNotExists()
-            throws  Exception{
-        int referencePrice = 12;
-
-        try {
-            manager.requestTransport("Beja", "Lisboa", referencePrice);
-            fail();
-        } catch (UnavailableTransportFault_Exception e) {
-
-            assertTrue("transporter offer saved", manager.getTransportsList().isEmpty());
-
-        }
-    }
-
     //-------------------------------------------decideBestOffer()------------------------------------------------------
     @Test
     public void referencePrice0ShouldReturn0(@Mocked TransporterClient transporterClientMock) throws  Exception {
