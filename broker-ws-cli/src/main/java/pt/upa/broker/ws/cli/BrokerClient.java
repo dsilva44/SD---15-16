@@ -109,7 +109,7 @@ public class BrokerClient implements BrokerPortType {
             try {
                 return port.requestTransport(origin, destination, price);
             } catch (WebServiceException wse) {
-                //if (isSocketTimeoutException(wse)) break;
+                if (isSocketTimeoutException(wse)) break;
                 retry();
             }
         }
@@ -134,7 +134,7 @@ public class BrokerClient implements BrokerPortType {
             try {
                 return port.viewTransport(id);
             } catch (WebServiceException wse) {
-                //if (isSocketTimeoutException(wse)) break;
+                if (isSocketTimeoutException(wse)) break;
                 retry();
             }
         }
